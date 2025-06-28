@@ -1,0 +1,66 @@
+﻿@using DUPSS.Web.Components.Service
+@using Microsoft.AspNetCore.Components.Authorization
+@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
+@inject JwtAuthenticationStateProvider AuthProvider
+@implements IAsyncDisposable
+
+<HeadContent>
+    <link href="css/footer.css" rel="stylesheet" />
+</HeadContent>
+
+@{
+    var currentPath = new Uri(NavigationManager.Uri).AbsolutePath.TrimEnd('/');
+}
+
+@if (NavigationManager != null)
+{
+    <NavMenu/>
+}
+else if (NavigationManager == null)
+{
+    <div style="color:red">NavigationManager is null!</div>
+}
+@* Đưa navbar lên đầu trang *@
+
+<div class="container mt-4">
+    <article class="content px-4">
+        @Body
+    </article>
+</div>
+
+<footer/> @* Your footer component *@
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>
+<script src="_framework/blazor.server.js"></script>
+<script src="js/inactivity.js"></script>
+<script src="js/dashboard-dnd.js"></script>
+@code {
+    private DotNetObjectReference<MainLayout>? objRef;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            objRef = DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("monitorUserActivity", objRef);
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnUserInactive()
+    {
+        Console.WriteLine("User has been inactive. Logging out...");
+        await AuthProvider.Logout();
+        NavigationManager.NavigateTo("/", forceLoad: true);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        objRef?.Dispose();
+    }
+}

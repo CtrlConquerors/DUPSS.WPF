@@ -1,0 +1,216 @@
+﻿@page "/Campaign/Detail/{CampaignId}"
+@using DUPSS.API.Models.DTOs
+@using System.Security.Claims
+@using DUPSS.Web.Components.Service
+@inject CampaignApiService CampaignApiService
+@inject CampaignRegistrationApiService CampaignRegistrationApiService
+@inject NavigationManager NavigationManager
+@inject IHttpClientFactory HttpClientFactory
+@inject IJSRuntime JS
+@inject AuthenticationStateProvider AuthProvider
+
+
+
+@if (campaign == null)
+{
+    <p>Loading campaign details...</p>
+}
+else
+{
+    <div class="campaign-detail-container">
+        <div class="campaign-hero-wrapper">
+            <div class="campaign-hero-image" style="background-image: url('@campaign.ImageUrl');"></div>
+            <div class="campaign-hero-title">
+                <span class="title-letters">
+                    @foreach (var c in campaign.Title)
+                    {
+                        if (c == ' ')
+                        {
+                            <span class="title-letter" style="width:0.4em;display:inline-block;">&nbsp;</span>
+                        }
+                        else
+                        {
+                            <span class="title-letter">@c</span>
+                        }
+                    }
+                </span>
+                <div class="campaign-hero-meta">
+                    <div class="info-row">
+                        <label>Status:</label>
+                        <span>@campaign.Status</span>
+                    </div>
+                    <div class="info-row">
+                        <label>Location:</label>
+                        <span>@campaign.Location</span>
+                    </div>
+                    <div class="info-row">
+                        <label>Phase</label>
+                        <span>
+                            @campaign.StartDate.ToString("dd/MM/yyyy")
+                            –
+                            @(campaign.EndDate?.ToString("dd/MM/yyyy") ?? "N/A")
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @* <div class="info-row">
+            <label>Status</label>
+            <span>@campaign.Status</span>
+        </div>
+        <div class="info-row">
+            <label>Phase</label>
+            <span>
+                @campaign.StartDate.ToString("dd/MM/yyyy")
+                –
+                @(campaign.EndDate?.ToString("dd/MM/yyyy") ?? "N/A")
+            </span>
+        </div> *@
+
+        <div class="campaign-section">
+
+            <div>@((MarkupString)campaign.Introduction.Replace("\n", "<br />"))</div>
+        </div>
+    </div>
+
+
+
+    @if (campaign.Status == "Active" || campaign.Status == "Planned")
+    {
+        <AuthorizeView Roles="ME,AD,ST,MA,CO">
+            <Authorized>
+                <div class="campaign-card animate-fadein">
+                    <h3 class="card-title">🎯 Campaign Actions</h3>
+                    <div class="action-buttons">
+                        <button class="fancy-btn register" @onclick="HandleRegister">🚀 Join Campaign</button>
+                        <button class="fancy-btn unregister" @onclick="@(() => HandleUnregister(CampaignId))">❌ Leave Campaign</button>
+                    </div>
+                </div>
+            </Authorized>
+            <NotAuthorized>
+                <div class="campaign-card warning-card animate-fadein">
+                    <h3 class="card-title">🔒 Access Restricted</h3>
+                    <p>You need to be a member to join this campaign.</p>
+                    <a href="/register" class="link-cta">✨ Become a Member</a>
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
+    }
+
+    <div class="campaign-card animate-fadein">
+        <h3 class="card-title">📝 Campaign Survey</h3>
+        <div class="survey-buttons">
+            @if (campaign.Status == "Active" || campaign.Status == "Planned")
+            {
+                <a href="https://docs.google.com/forms/d/e/1FAIpQLSfhtJRyq5c0GmCAKJRunIG9bbNelNwSIkt_IVAARJPIKjTcoA/viewform?usp=dialog"
+                   class="fancy-btn survey">🧠 Pre-Campaign Survey</a>
+            }
+            else if (campaign.Status == "Completed")
+            {
+                <a href="https://docs.google.com/forms/d/e/1FAIpQLSeJ165SU_u1cYj_QoHYLIpksk-ji26nFbCLxADWpVHr9jhfYg/viewform?usp=dialog"
+                   class="fancy-btn survey">📊 Post-Campaign Survey</a>
+            }
+        </div>
+    </div>
+
+
+
+
+    <Footer />
+}
+
+@code {
+    [Parameter]
+    public string CampaignId { get; set; } = string.Empty;
+    private string? MemberId;
+
+    private CampaignDTO? campaign;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            campaign = await CampaignApiService.GetByIdAsync(CampaignId);
+
+            var authState = await AuthProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            if (user.Identity?.IsAuthenticated == true)
+            {
+                MemberId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                        ?? user.FindFirst("sub")?.Value
+                        ?? user.FindFirst("MemberId")?.Value;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading campaign detail: {ex.Message}");
+        }
+    }
+
+    private async Task HandleRegister()
+    {
+        if (string.IsNullOrEmpty(MemberId))
+        {
+            var authState = await AuthProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            if (user.Identity?.IsAuthenticated == true)
+            {
+                MemberId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                        ?? user.FindFirst("sub")?.Value
+                        ?? user.FindFirst("MemberId")?.Value;
+            }
+
+            if (string.IsNullOrEmpty(MemberId))
+            {
+                await JS.InvokeVoidAsync("alert", "Failed to retrieve Member ID. Please login again.");
+                NavigationManager.NavigateTo("/login");
+                return;
+            }
+        }
+
+        var registration = new
+        {
+            MemberId = MemberId,
+            CampaignId = CampaignId,
+            RegisteredAt = DateTime.UtcNow
+        };
+
+        var registrationJson = System.Text.Json.JsonSerializer.Serialize(registration);
+
+        var response = await HttpClientFactory.CreateClient("ApiClient")
+            .PostAsJsonAsync("api/CampaignRegistration", registration);
+
+        if (response.IsSuccessStatusCode)
+        {
+            await JS.InvokeVoidAsync("alert", "You have successfully registered for the campaign!");
+        }
+        else if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
+        {
+            await JS.InvokeVoidAsync("alert", "You have already registered for this campaign.");
+        }
+        else
+        {
+            var content = await response.Content.ReadAsStringAsync();
+
+            await JS.InvokeVoidAsync("alert", $"Failed to register. Server said: {response.StatusCode}");
+        }
+    }
+    private async Task HandleUnregister(string campaignId)
+    {
+        var confirmed = await JS.InvokeAsync<bool>("confirm", "Are you sure to unregister this campaign?");
+        if (!confirmed) return;
+
+        var success = await CampaignRegistrationApiService.UnregisterAsync(MemberId, campaignId);
+        if (success)
+        {
+            await JS.InvokeVoidAsync("alert", "Unregister success.");
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("alert", "Unregister fail.");
+        }
+    }
+
+}

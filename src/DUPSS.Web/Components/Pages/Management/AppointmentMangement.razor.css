@@ -1,0 +1,390 @@
+﻿/* General page container styling */
+.appointment-management-container {
+    padding: 30px;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Header section */
+.header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.page-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #343a40;
+    margin: 0;
+    flex-grow: 1;
+    text-align: center;
+}
+
+.actions {
+    display: flex;
+    gap: 15px;
+}
+
+.add-appointment-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 123, 255, 0.25);
+}
+
+.add-appointment-button:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 123, 255, 0.35);
+}
+
+.add-appointment-button i {
+    font-size: 1.2rem;
+}
+
+/* Filter and Sort Section */
+.filter-sort-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+.search-input-container {
+    flex-grow: 1;
+    min-width: 200px;
+}
+
+.filter-dropdown-container {
+    min-width: 150px;
+}
+
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+    padding: 10px 15px;
+    font-size: 1rem;
+}
+
+.sort-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    min-width: 250px;
+}
+
+.sort-controls .form-select {
+    flex-grow: 1;
+    min-width: 200px;
+}
+
+.sort-direction-button {
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 50px;
+}
+
+.sort-direction-button i {
+    font-size: 1.5rem;
+}
+
+/* Table Container Styling */
+.table-container {
+    background-color: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    overflow-x: auto;
+    margin-bottom: 30px;
+}
+
+/* Table Styling */
+.appointment-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
+    min-width: 900px;
+}
+
+.appointment-table th,
+.appointment-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+    border-right: 1px solid #e0e0e0;
+}
+
+.appointment-table th:first-child,
+.appointment-table td:first-child {
+    width: 50px;
+    text-align: center;
+}
+
+.appointment-table th:nth-child(3),
+.appointment-table td:nth-child(3) {
+    width: 120px;
+    text-align: center;
+}
+
+.appointment-table th:nth-child(7),
+.appointment-table td:nth-child(7) {
+    width: 120px;
+    text-align: center;
+}
+
+.appointment-table th:last-child,
+.appointment-table td:last-child {
+    width: 100px;
+    border-right: none;
+}
+
+.appointment-table th:nth-child(4),
+.appointment-table td:nth-child(4),
+.appointment-table th:nth-child(5),
+.appointment-table td:nth-child(5),
+.appointment-table th:nth-child(6),
+.appointment-table td:nth-child(6) {
+    white-space: normal;
+    text-overflow: clip;
+    word-wrap: break-word;
+}
+
+.appointment-table thead th {
+    background-color: #f2f4f7;
+    font-weight: bold;
+    color: black;
+    text-transform: none;
+    font-size: 1rem;
+    text-align: center;
+}
+
+.appointment-table thead th:nth-child(2),
+.appointment-table thead th:nth-child(4),
+.appointment-table thead th:nth-child(5),
+.appointment-table thead th:nth-child(6) {
+    text-align: left;
+}
+
+.appointment-table tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+.appointment-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Action buttons */
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+}
+
+.btn {
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn-primary {
+    background-color: white;
+    border-color: white;
+    color: black;
+    font-size: 15px;
+}
+
+.btn-primary:hover {
+    background-color: lightgray;
+    border-color: lightgray;
+    transform: translateY(-1px);
+}
+
+.btn-danger {
+    background-color: white;
+    border-color: white;
+    color: red;
+}
+
+.btn-danger:hover {
+    background-color: lightgray;
+    border-color: lightgray;
+    transform: translateY(-1px);
+}
+
+/* Pagination buttons */
+.d-flex.justify-content-center.mt-3 .btn {
+    background-color: #007bff;
+    color: white;
+    border: 1px solid #007bff;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-weight: 600;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.d-flex.justify-content-center.mt-3 .btn.active {
+    background-color: white;
+    border-color: white;
+}
+
+.d-flex.justify-content-center.mt-3 .btn-outline-primary {
+    background-color: #f8f9fa;
+    color: black;
+    border-color: #007bff;
+    border-radius: 50px;
+}
+
+.d-flex.justify-content-center.mt-3 .btn-outline-primary:hover {
+    background-color: #e9f2ff;
+    color: #0056b3;
+    border-color: #0056b3;
+    border-radius: 50px;
+}
+
+/* Inline Edit/Add Form */
+.edit-form-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    padding: 25px;
+    margin-top: 30px;
+}
+
+.edit-form-card h5 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #343a40;
+    margin-bottom: 20px;
+}
+
+.edit-form-card .form-label {
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 5px;
+}
+
+.edit-form-card .form-control,
+.edit-form-card .form-select {
+    border-radius: 6px;
+    border: 1px solid #ced4da;
+    padding: 10px 15px;
+    font-size: 1rem;
+}
+
+.edit-form-card .btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+    color: white;
+}
+
+.edit-form-card .btn-success:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+}
+
+.edit-form-card .btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: white;
+}
+
+.edit-form-card .btn-secondary:hover {
+    background-color: #5a6268;
+    border-color: #545b62;
+}
+
+/* Status Indicators */
+.scheduled-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background-color: #007bff;
+    border-radius: 50%;
+    margin-right: 5px;
+    vertical-align: middle;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+.completed-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background-color: #28a745;
+    border-radius: 50%;
+    margin-right: 5px;
+    vertical-align: middle;
+    box-shadow: 0 0 5px rgba(40, 167, 69, 0.5);
+}
+
+.cancelled-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background-color: #dc3545;
+    border-radius: 50%;
+    margin-right: 5px;
+    vertical-align: middle;
+    box-shadow: 0 0 5px rgba(220, 53, 69, 0.5);
+}
+
+/* Loading, Error, and No Data States */
+.loading-indicator,
+.error-message,
+.no-data-message {
+    text-align: center;
+    padding: 50px;
+    font-size: 1.2rem;
+    color: #6c757d;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    margin-top: 20px;
+}
+
+.error-message {
+    color: #dc3545;
+}
+
+.loading-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .page-title {
+        font-size: 2rem;
+    }
+
+    .add-appointment-button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .header-section {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

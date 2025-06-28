@@ -1,0 +1,317 @@
+﻿@* Answer Management Page *@
+@page "/Management/Assessment/{AssessmentId}/Questions/{questionId}/Answers/"
+@using DUPSS.Web.Components.Service
+@using DUPSS.API.Models.DTOs
+@inject NavigationManager NavigationManager
+@inject AssessmentAnswerApiService AnswerApiService
+@inject AssessmentQuestionApiService QuestionApiService
+@inject IJSRuntime JSRuntime
+
+<div class="answer-management-container">
+    <div class="navigation">
+        <button @onclick="GoBackToQuestions">← Back to Questions</button>
+    </div>
+
+    <h1>Answer Management for Question: @QuestionId</h1>
+
+    @if (question != null)
+    {
+        <div class="question-info">
+            <h3>Question: @question.Question</h3>
+            <p>Type: @question.QuestionType</p>
+        </div>
+    }
+
+    <div class="management-actions">
+        <button @onclick="ShowCreateAnswerForm">Add New Answer</button>
+        <button @onclick="RefreshAnswers">Refresh Answers</button>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="loading">
+            <p>Loading answers...</p>
+        </div>
+    }
+    else if (hasError)
+    {
+        <div class="error">
+            <p>Error loading answers: @errorMessage</p>
+            <button @onclick="RefreshAnswers">Retry</button>
+        </div>
+    }
+    else
+    {
+        @if (showCreateForm)
+        {
+            <div class="create-form">
+                <h3>Create New Answer</h3>
+                <form @onsubmit="CreateAnswer" @onsubmit:preventDefault="true">
+                    <div class="form-group">
+                        <label for="answerId">Answer ID:</label>
+                        <input id="answerId" @bind="newAnswer.AnswerId" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="answerText">Answer Text:</label>
+                        <textarea id="answerText" @bind="newAnswer.Answer" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="answerDetails">Answer Details (Optional):</label>
+                        <textarea id="answerDetails" @bind="newAnswer.AnswerDetails"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="scoreValue">Score Value:</label>
+                        <input id="scoreValue" type="number" @bind="newAnswer.ScoreValue" />
+                    </div>
+                    <div class="form-group">
+                        <label for="scoreDescription">Score Description (Optional):</label>
+                        <input id="scoreDescription" @bind="newAnswer.ScoreDescription" />
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit">Create Answer</button>
+                        <button type="button" @onclick="CancelCreateAnswer">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        }
+
+        <div class="answers-list">
+            <h3>Answers</h3>
+            @if (answers != null && answers.Any())
+            {
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Answer ID</th>
+                            <th>Answer Text</th>
+                            <th>Score Value</th>
+                            <th>Score Description</th>
+                            <th>Details</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var answer in answers)
+                        {
+                            <tr>
+                                <td>@answer.AnswerId</td>
+                                <td>@answer.Answer</td>
+                                <td>@answer.ScoreValue</td>
+                                <td>@(answer.ScoreDescription ?? "N/A")</td>
+                                <td>@(answer.AnswerDetails ?? "N/A")</td>
+                                <td>
+                                    <button @onclick="() => EditAnswer(answer)">Edit</button>
+                                    <button @onclick="() => DeleteAnswer(answer.AnswerId)">Delete</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p>No answers found for this question.</p>
+            }
+        </div>
+
+        @if (showEditForm && editingAnswer != null)
+        {
+            <div class="edit-form">
+                <h3>Edit Answer</h3>
+                <form @onsubmit="UpdateAnswer" @onsubmit:preventDefault="true">
+                    <div class="form-group">
+                        <label for="editAnswerText">Answer Text:</label>
+                        <textarea id="editAnswerText" @bind="editingAnswer.Answer" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="editAnswerDetails">Answer Details (Optional):</label>
+                        <textarea id="editAnswerDetails" @bind="editingAnswer.AnswerDetails"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="editScoreValue">Score Value:</label>
+                        <input id="editScoreValue" type="number" @bind="editingAnswer.ScoreValue" />
+                    </div>
+                    <div class="form-group">
+                        <label for="editScoreDescription">Score Description (Optional):</label>
+                        <input id="editScoreDescription" @bind="editingAnswer.ScoreDescription" />
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit">Update Answer</button>
+                        <button type="button" @onclick="CancelEditAnswer">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string QuestionId { get; set; } = string.Empty;
+    [Parameter]
+    public string AssessmentId { get; set; } = string.Empty;
+
+    private AssessmentQuestionDTO? question;
+    private List<AssessmentAnswerDTO>? answers;
+    private List<AssessmentAnswerDTO>? allAnswers;
+    private bool isLoading = true;
+    private bool hasError = false;
+    private string errorMessage = "";
+    private bool showCreateForm = false;
+    private bool showEditForm = false;
+    private AssessmentAnswerDTO newAnswer = new() { AnswerId = "", QuestionId = "", Answer = "" };
+    private AssessmentAnswerDTO? editingAnswer = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadQuestion();
+        await LoadAnswers();
+    }
+
+    private async Task LoadQuestion()
+    {
+        try
+        {
+            question = await QuestionApiService.GetByIdAsync(QuestionId);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading question: {ex.Message}");
+        }
+    }
+
+    private async Task LoadAnswers()
+    {
+        try
+        {
+            isLoading = true;
+            hasError = false;
+            allAnswers = await AnswerApiService.GetAllAsync();
+            answers = allAnswers?.Where(a => a.QuestionId == QuestionId).ToList();
+        }
+        catch (Exception ex)
+        {
+            hasError = true;
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void ShowCreateAnswerForm()
+    {
+        newAnswer = new() { AnswerId = "", QuestionId = QuestionId, Answer = "" };
+        showCreateForm = true;
+        showEditForm = false;
+    }
+
+    private async Task CreateAnswer()
+    {
+        try
+        {
+            var answer = new AssessmentAnswerDTO
+            {
+                AnswerId = newAnswer.AnswerId,
+                QuestionId = QuestionId,
+                Answer = newAnswer.Answer,
+                AnswerDetails = newAnswer.AnswerDetails,
+                ScoreValue = newAnswer.ScoreValue,
+                ScoreDescription = newAnswer.ScoreDescription
+            };
+
+            await AnswerApiService.CreateAsync(answer);
+            await LoadAnswers();
+            showCreateForm = false;
+            await JSRuntime.InvokeVoidAsync("alert", "Answer created successfully!");
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"Error creating answer: {ex.Message}");
+        }
+    }
+
+    private void EditAnswer(AssessmentAnswerDTO answer)
+    {
+        editingAnswer = new AssessmentAnswerDTO
+        {
+            AnswerId = answer.AnswerId,
+            QuestionId = answer.QuestionId,
+            Answer = answer.Answer,
+            AnswerDetails = answer.AnswerDetails,
+            ScoreValue = answer.ScoreValue,
+            ScoreDescription = answer.ScoreDescription
+        };
+        showEditForm = true;
+        showCreateForm = false;
+    }
+
+    private async Task UpdateAnswer()
+    {
+        try
+        {
+            if (editingAnswer != null)
+            {
+                var answer = new AssessmentAnswerDTO
+                {
+                    AnswerId = editingAnswer.AnswerId,
+                    QuestionId = editingAnswer.QuestionId,
+                    Answer = editingAnswer.Answer,
+                    AnswerDetails = editingAnswer.AnswerDetails,
+                    ScoreValue = editingAnswer.ScoreValue,
+                    ScoreDescription = editingAnswer.ScoreDescription
+                };
+
+                await AnswerApiService.UpdateAsync(answer);
+                await LoadAnswers();
+                showEditForm = false;
+                editingAnswer = null;
+                await JSRuntime.InvokeVoidAsync("alert", "Answer updated successfully!");
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"Error updating answer: {ex.Message}");
+        }
+    }
+
+    private async Task DeleteAnswer(string answerId)
+    {
+        if (await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete answer {answerId}?"))
+        {
+            try
+            {
+                await AnswerApiService.DeleteAsync(answerId);
+                await LoadAnswers();
+                await JSRuntime.InvokeVoidAsync("alert", "Answer deleted successfully!");
+            }
+            catch (Exception ex)
+            {
+                await JSRuntime.InvokeVoidAsync("alert", $"Error deleting answer: {ex.Message}");
+            }
+        }
+    }
+
+    private async Task RefreshAnswers()
+    {
+        await LoadAnswers();
+    }
+
+    private void CancelCreateAnswer()
+    {
+        showCreateForm = false;
+    }
+
+    private void CancelEditAnswer()
+    {
+        showEditForm = false;
+        editingAnswer = null;
+    }
+
+    private void GoBackToQuestions()
+    {
+        NavigationManager.NavigateTo($"/Management/Assessment/{AssessmentId}/Questions/", forceLoad: true);
+    }
+}

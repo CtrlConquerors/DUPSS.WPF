@@ -1,0 +1,28 @@
+# .NET Build Output
+bin/
+obj/
+
+# IDE Files
+.vs/
+.vscode/
+*.sln.user
+.idea/
+
+# User Secrets
+secrets.json
+
+# Local Configuration
+appsettings.Development.json
+Properties/launchSettings.json
+*.log
+
+# NuGet Packages
+*.nupkg
+.nuget/
+packages/
+
+# OS and Miscellaneous
+Thumbs.db
+.DS_Store
+*.cache
+*.bak

@@ -1,0 +1,168 @@
+﻿@page "/Blog"
+@using DUPSS.API.Models.DTOs
+@using DUPSS.API.Models.Objects
+@using DUPSS.Web.Components.Service
+@inject NavigationManager NavigationManager
+@inject BlogApiService BlogApiService
+@inject BlogTopicApiService BlogTopicApiService
+@inject IJSRuntime JSRuntime
+
+<div class="blog-page-container">
+    <h1 class="page-title">Ongoing Blog Posts</h1>
+    <p class="page-subtitle">Discover insights and updates from our team.</p>
+
+    <div class="search-input-container">
+        <input type="text" class="form-control" placeholder="Search blogs by title, topic, or content..."
+               @bind="searchTerm" @bind:event="oninput" @onkeyup="ApplySearchAndDisplay" />
+    </div>
+
+    @if (blogs == null)
+    {
+        <div class="loading-indicator">
+            <p>Loading blogs...</p>
+            <div class="spinner"></div>
+        </div>
+    }
+    else if (hasError)
+    {
+        <div class="error-message">
+            <p>Oops! Something went wrong while loading blogs. Please try again later.</p>
+            <button class="retry-button" @onclick="RetryLoadBlogs">Retry</button>
+        </div>
+    }
+    else if (!filteredBlogs.Any())
+    {
+        <div class="no-blog-message">
+            <p>No blogs found matching your criteria. Please try a different search term or filters.</p>
+        </div>
+    }
+    else
+    {
+        <div class="blog-grid">
+            @foreach (var item in showAllBlogs ? filteredBlogs : filteredBlogs.Take(DefaultBlogDisplayLimit))
+            {
+                <div class="blog-card clickable" @onclick="() => NavigateToDetail(item.BlogId)">
+                    <div class="card-image">
+                        <img src= "@(item.ImageUrl ?? "https://placehold.co/300x200/F0F0F0/000000?text=Blog+Image")"
+                             alt="Blog Image" />
+                    </div>
+                    <div class="card-content">
+                        <h3 class="blog-name">@item.Title</h3>
+                        <p class="blog-status">Topic: @(item.BlogTopic?.BlogTopicName ?? "-")</p>
+                        <p>@(item.Content.Length > 100 ? item.Content.Substring(0, 100) + "..." : item.Content)</p>
+                    </div>
+                </div>
+            }
+        </div>
+
+        @if (filteredBlogs.Count > DefaultBlogDisplayLimit && !showAllBlogs)
+        {
+            <div class="main-explore-button-container">
+                <button class="main-explore-button" @onclick="ToggleShowAllBlogs" disabled="@(!_isHydrated)">
+                    @(_isHydrated ? "Explore More" : "Loading...")
+                </button>
+            </div>
+        }
+
+        @if (showAllBlogs && filteredBlogs.Any())
+        {
+            <div class="main-explore-button-container">
+                <button class="main-explore-button" @onclick="ToggleShowAllBlogs">Show Less</button>
+            </div>
+        }
+    }
+</div>
+
+<Footer />
+
+@code {
+    private List<BlogDTO>? blogs;
+    private List<BlogDTO> filteredBlogs = new List<BlogDTO>();
+    private bool hasError = false;
+    private bool showAllBlogs = false;
+    private const int DefaultBlogDisplayLimit = 3;
+    private bool _isHydrated = false;
+    private string searchTerm = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadBlogsAsync();
+        ApplySearchAndDisplay();
+    }
+
+    private async Task LoadBlogsAsync()
+    {
+        try
+        {
+            blogs = (await BlogApiService.GetAllAsync())?.Where(b => b.Status == "Published").ToList();
+            Console.WriteLine($"Loaded {blogs?.Count} blogs.");
+            hasError = false;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading blogs: {ex.Message}");
+            hasError = true;
+        }
+        finally
+        {
+            ApplySearchAndDisplay();
+            StateHasChanged();
+        }
+    }
+
+    private void ApplySearchAndDisplay()
+    {
+        if (blogs == null)
+        {
+            filteredBlogs = new List<BlogDTO>();
+            return;
+        }
+        IEnumerable<BlogDTO> query = blogs;
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var lowerSearchTerm = searchTerm.ToLower().Trim();
+            query = query.Where(b =>
+                (b.Title?.ToLower().Contains(lowerSearchTerm) ?? false) ||
+                (b.BlogTopic?.BlogTopicName?.ToLower().Contains(lowerSearchTerm) ?? false) ||
+                (b.Content?.ToLower().Contains(lowerSearchTerm) ?? false) ||
+                (b.BlogId?.ToLower().Contains(lowerSearchTerm) ?? false)
+            );
+        }
+        filteredBlogs = query.ToList();
+        showAllBlogs = false;
+        StateHasChanged();
+    }
+
+    private async Task RetryLoadBlogs()
+    {
+        hasError = false;
+        await LoadBlogsAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _isHydrated = true;
+            Console.WriteLine("[Hydration] isHydrated: true");
+            StateHasChanged();
+            await Task.CompletedTask;
+        }
+    }
+
+    private async Task ToggleShowAllBlogs()
+    {
+        showAllBlogs = !showAllBlogs;
+        Console.WriteLine($"ToggleShowAllBlogs called. showAllBlogs is now: {showAllBlogs}");
+        if (!showAllBlogs)
+        {
+            await JSRuntime.InvokeVoidAsync("window.scrollTo", 0, 0);
+        }
+    }
+
+    private void NavigateToDetail(string blogId)
+    {
+        Console.WriteLine($"Navigating to blog detail: BlogId={blogId}");
+        NavigationManager.NavigateTo($"/Blog/Detail/{blogId}", forceLoad: true);
+    }
+}

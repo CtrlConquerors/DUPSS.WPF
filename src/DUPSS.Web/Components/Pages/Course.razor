@@ -1,0 +1,181 @@
+﻿@page "/Course"
+@using DUPSS.API.Models.DTOs
+@using DUPSS.Web.Components.Service
+
+
+
+<div class="course-page-container">
+    <h1 class="page-title">Our Most Popular Courses</h1>
+    <p class="page-subtitle">The sky was cloudless and of a deep dark blue the spectacle before us was indeed.</p>
+
+    <div class="search-input-container">
+        @* NEW: Search input container *@
+        <input type="text" class="form-control" placeholder="Search courses by name or topic..."
+               @bind="searchTerm" @bind:event="oninput" @onkeyup="ApplySearchAndDisplay" />
+    </div>
+
+    @if (courses == null)
+    {
+        <div class="loading-indicator">
+            <p>Loading courses...</p>
+            <div class="spinner"></div>
+        </div>
+    }
+    else if (hasError)
+    {
+        <div class="error-message">
+            <p>Oops! Something went wrong while loading courses. Please try again later.</p>
+        </div>
+    }
+    else if (!filteredCourses.Any())
+ @* Use filteredCourses here *@
+    {
+        <div class="no-courses-message">
+            <p>No courses found matching your criteria. Please try a different search term or filters.</p> @* Updated message *@
+        </div>
+    }
+    else
+    {
+        <div class="course-grid">
+            @foreach (var course in showAllCourses ? filteredCourses : filteredCourses.Take(DefaultCourseDisplayLimit)) @* Use filteredCourses here *@
+            {
+                <div class="course-card clickable" @onclick="() => NavigateToDetail(course.CourseId)">
+                    <div class="card-image">
+                        <img src="@(course.ImageUrl ?? "https://placehold.co/300x200/F0F0F0/000000?text=Course+Image")"
+                             alt="Course Image" />
+                    </div>
+                    <div class="card-content">
+                        <span class="course-category">@(course.Topic?.TopicName?.Trim() ?? "General")</span>
+                        <h3 class="course-name">
+                            @course.CourseName
+                        </h3>
+                        <p class="course-type">
+                            Type:
+                            @switch (course.CourseType?.Trim()?.ToLower())
+                            {
+                                case "online":
+                                    <span class="online-indicator" title="Online Course"></span>
+                                    break;
+                                case "hybrid":
+                                    <span class="hybrid-indicator" title="Hybrid Course"></span>
+                                    break;
+                                case "offline":
+                                    <span class="offline-indicator" title="Offline Course"></span>
+                                    break;
+                                default:
+                                    break;
+                            }
+                            @course.CourseType
+                        </p>
+                    </div>
+                </div>
+            }
+        </div>
+
+        @if (filteredCourses.Count > DefaultCourseDisplayLimit && !showAllCourses) @* Use filteredCourses.Count *@
+        {
+            <div class="main-explore-button-container">
+                <button class="main-explore-button" @onclick="ToggleShowAllCourses">
+                    Explore More
+                </button>
+            </div>
+        }
+
+        @if (showAllCourses && filteredCourses.Any()) @* Check if there are filtered courses to show less *@
+        {
+            <div class="main-explore-button-container">
+                <button class="main-explore-button" @onclick="ToggleShowAllCourses">Show Less</button>
+            </div>
+        }
+    }
+</div>
+
+@* Footer component - ensure it's defined elsewhere or removed if not used *@
+<Footer />
+
+@code {
+    private List<CourseDTO>? courses; // Stores all courses fetched initially
+    private List<CourseDTO> filteredCourses = new List<CourseDTO>(); // Stores courses after search filter
+    private bool hasError = false;
+    private string searchTerm = string.Empty; // NEW: Search term property
+    private bool showAllCourses = false;
+    private const int DefaultCourseDisplayLimit = 3; // Number of courses to show initially
+
+    // Injections
+    [Inject]
+    private NavigationManager NavigationManager { get; set; } = default!;
+    [Inject]
+    private CourseApiService CourseApiService { get; set; } = default!;
+
+    // Removed IJSRuntime JSRuntime as it's not directly used for scrolling or popups in this component
+    // If you plan to add custom message boxes, re-add it.
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Fetch all courses
+            courses = await CourseApiService.GetAllAsync();
+            Console.WriteLine($"Loaded {courses?.Count} courses.");
+            hasError = false;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading courses: {ex.Message}");
+            hasError = true;
+            courses = new List<CourseDTO>(); // Ensure 'courses' is not null even on error
+        }
+        finally
+        {
+            // Apply initial search/filter (which will be empty initially) and display
+            ApplySearchAndDisplay();
+        }
+    }
+
+    /// <summary>
+    /// Applies the search filter to the main 'courses' list and updates 'filteredCourses'.
+    /// This method is called when the search term changes or on initial load.
+    /// </summary>
+    private void ApplySearchAndDisplay()
+    {
+        if (courses == null)
+        {
+            filteredCourses = new List<CourseDTO>();
+            return;
+        }
+
+        IEnumerable<CourseDTO> query = courses;
+
+        // Apply search term filter
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var lowerSearchTerm = searchTerm.ToLower().Trim();
+            query = query.Where(c =>
+                (c.CourseName?.ToLower().Contains(lowerSearchTerm) ?? false) ||
+                (c.Topic?.TopicName?.ToLower().Contains(lowerSearchTerm) ?? false) ||
+                (c.Description?.ToLower().Contains(lowerSearchTerm) ?? false) || // Include description in search
+                (c.CourseId?.ToLower().Contains(lowerSearchTerm) ?? false) // Include CourseId in search
+            );
+        }
+
+        // Update the filtered list
+        filteredCourses = query.ToList();
+        // Reset showAllCourses state when filter changes, so it defaults to showing only a few
+        showAllCourses = false;
+        StateHasChanged(); // Re-render the component with the new filtered list
+    }
+
+    private void ToggleShowAllCourses()
+    {
+        showAllCourses = !showAllCourses;
+        Console.WriteLine($"ToggleShowAllCourses called. showAllCourses is now: {showAllCourses}");
+        // No need to call StateHasChanged() explicitly here, as the UI will react to showAllCourses changing.
+        // If you had scrolling logic like in CampaignManagement, you'd put it here.
+    }
+
+    // Method to navigate to Course Detail page
+    private void NavigateToDetail(string courseId)
+    {
+        NavigationManager.NavigateTo($"/CourseDetailPage/{courseId}", forceLoad: true);
+    }
+}

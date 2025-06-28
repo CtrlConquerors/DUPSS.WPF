@@ -1,0 +1,239 @@
+﻿@page "/BookAppointment"
+@using DUPSS.API.Models.AccessLayer.Interfaces
+@using DUPSS.Web.Components.Service
+@using DUPSS.API.Models.DTOs
+@inject AppointmentApiService AppointmentApiService
+@inject UserApiService UserService
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthProvider
+@inject IJSRuntime JS
+
+<div class="vangogh-bg">
+    <div class="vangogh-stars"></div>
+    <div class="vangogh-swirls"></div>
+    <div class="book-appointment-outer">
+        <div class="soft-card vangogh-card">
+            <h3>
+                <span class="vangogh-title">🎨 Booking appointment with consultant</span>
+            </h3>
+
+            @if (consultants == null)
+            {
+                <div class="vangogh-loader">
+                    <span>Loading consultants...</span>
+                </div>
+            }
+            else if (!canBook)
+            {
+                <div class="alert alert-warning vangogh-alert">
+                    <span class="vangogh-alert-icon">⚠️</span>
+                    You already have @MaxActiveAppointments active appointment(s). Please cancel or finish them before booking a new one.
+                </div>
+            }
+            else
+            {
+                <div class="vangogh-form-container">
+                    <EditForm Model="newAppointment" OnValidSubmit="HandleBooking" class="edit-form">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary class="vangogh-validation" />
+
+                        <div class="mb-3">
+                            <InputCheckbox @bind-Value="autoSelectConsultant" />
+                            <label class="form-label ms-2">Let system auto-assign consultant</label>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Choose Consultant</label>
+                            <InputSelect @bind-Value="newAppointment.ConsultantId" class="form-select" @onchange="HandleConsultantChange" disabled="@autoSelectConsultant">
+                                <option value="">-- Choose Consultant --</option>
+                                @foreach (var consultant in consultants)
+                                {
+                                    <option value="@consultant.UserId">
+                                        @consultant.Username
+                                    </option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Appointment Date</label>
+                            <input type="datetime-local" class="form-control" @bind="newAppointment.AppointmentDate" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Topic (Describe what you'd like to discuss)</label>
+                            <InputText class="form-control" @bind-Value="newAppointment.Topic" />
+                        </div>
+
+                        <div class="vangogh-btn-row">
+                            <button class="btn btn-primary vangogh-btn" type="submit">
+                                <span class="vangogh-btn-text">Book Now</span> <span class="vangogh-btn-brush">🖌️</span>
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<UserDTO>? consultants;
+    private List<AppointmentDTO> existingAppointments = new();
+    private const int MaxActiveAppointments = 1;
+    private bool canBook = true;
+    private bool autoSelectConsultant = false;
+
+    private AppointmentDTO newAppointment = new()
+        {
+            AppointmentId = "",
+            MemberId = "",
+            ConsultantId = "",
+            AppointmentDate = DateTime.Today.AddDays(1),
+            Status = "Pending",
+            Topic = ""
+        };
+
+    protected override async Task OnInitializedAsync()
+    {
+        consultants = await UserService.GetConsultantsAsync();
+
+        var authState = await AuthProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            var memberId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                        ?? user.FindFirst("sub")?.Value
+                        ?? user.FindFirst("MemberId")?.Value;
+
+            if (!string.IsNullOrEmpty(memberId))
+            {
+                newAppointment.MemberId = memberId;
+
+                existingAppointments = await AppointmentApiService.GetAppointmentsForMemberAsync(memberId);
+                var activeCount = existingAppointments
+                    .Count(a => a.Status is "Pending" or "Accepted" );
+
+                canBook = activeCount < MaxActiveAppointments;
+            }
+        }
+        else
+        {
+            Navigation.NavigateTo("/login", true);
+        }
+    }
+
+    private async Task HandleBooking()
+    {
+        if (string.IsNullOrWhiteSpace(newAppointment.Topic))
+        {
+            await JS.InvokeVoidAsync("alert", "Please enter the topic for the appointment.");
+            return;
+        }
+
+        if (autoSelectConsultant)
+        {
+            var availableConsultants = await UserService.GetConsultantsAsync();
+            var consultantLoad = new List<(UserDTO Consultant, int Load)>();
+
+            foreach (var c in availableConsultants)
+            {
+                var consultantAppointments = await AppointmentApiService.GetAppointmentsForConsultantAsync(c.UserId);
+
+                bool hasConflict = consultantAppointments.Any(a =>
+                {
+                    TimeSpan duration = TimeSpan.FromMinutes(30);
+
+                    var existingStart = a.AppointmentDate;
+                    var existingEnd = existingStart.Add(duration);
+
+                    var requestedStart = newAppointment.AppointmentDate.ToUniversalTime();
+                    var requestedEnd = requestedStart.Add(duration);
+
+                    bool isOverlap = requestedStart < existingEnd && existingStart < requestedEnd;
+
+                    return isOverlap && a.Status == "Accepted"; 
+                });
+
+                if (!hasConflict)
+                {
+                    int active = consultantAppointments.Count(a =>
+                        a.Status is "Pending" or "Accepted");
+
+                    consultantLoad.Add((c, active));
+                }
+            }
+
+            var best = consultantLoad
+                .OrderBy(x => x.Load)
+                .ThenBy(_ => Guid.NewGuid())
+                .FirstOrDefault();
+
+            if (best.Consultant != null)
+            {
+                newAppointment.ConsultantId = best.Consultant.UserId;
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("alert", "No available consultant at selected time. Please try another time.");
+                return;
+            }
+        }
+        else
+        {
+            if (string.IsNullOrEmpty(newAppointment.ConsultantId))
+            {
+                await JS.InvokeVoidAsync("alert", "Please pick a consultant.");
+                return;
+            }
+
+            // ✅ Check conflict manually when user chooses consultant
+            var consultantAppointments = await AppointmentApiService.GetAppointmentsForConsultantAsync(newAppointment.ConsultantId);
+
+            bool hasConflict = consultantAppointments.Any(a =>
+            {
+                TimeSpan duration = TimeSpan.FromMinutes(30);
+
+                var existingStart = a.AppointmentDate;
+                var existingEnd = existingStart.Add(duration);
+
+                var requestedStart = newAppointment.AppointmentDate.ToUniversalTime();
+                var requestedEnd = requestedStart.Add(duration);
+
+                bool isOverlap = requestedStart < existingEnd && existingStart < requestedEnd;
+                return isOverlap && a.Status == "Accepted"; 
+            });
+
+            if (hasConflict)
+            {
+                await JS.InvokeVoidAsync("alert", "This consultant already has an accepted appointment at the selected time. Please choose a different time or consultant.");
+                return;
+            }
+        }
+
+        var success = await AppointmentApiService.CreateAppointmentAsync(newAppointment);
+
+        if (success)
+        {
+            await JS.InvokeVoidAsync("alert", "Appointment booked successfully!");
+            Navigation.NavigateTo("/Appointment", forceLoad: true);
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("alert", "Failed to book appointment. Please try again.");
+        }
+    }
+
+
+
+
+    private void HandleConsultantChange(ChangeEventArgs e)
+    {
+        var selectedValue = e.Value?.ToString();
+        if (!string.IsNullOrEmpty(selectedValue))
+        {
+            newAppointment.ConsultantId = selectedValue;
+        }
+    }
+}

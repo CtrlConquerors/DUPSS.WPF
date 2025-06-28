@@ -1,0 +1,762 @@
+﻿@page "/Management/Blog"
+@using DUPSS.API.Models.DTOs
+@using DUPSS.API.Models.Objects
+@using DUPSS.Web.Components.Layout
+@using DUPSS.Web.Components.Service
+@inject NavigationManager NavigationManager
+@inject BlogApiService BlogApiService
+@inject UserApiService UserApiService
+@inject RoleApiService RoleApiService
+@inject BlogTopicApiService BlogTopicApiService
+@inject IJSRuntime JS
+@layout ManagementLayout
+
+<div class="blog-management-container">
+    <div class="header-section">
+        <h1 class="page-title">Blog Management</h1>
+        <div class="actions">
+            <button class="add-blog-button" @onclick="AddBlog">
+                <i class="bi bi-plus-circle"></i> ADD BLOG
+            </button>
+        </div>
+    </div>
+    <div class="filter-sort-section">
+        <div class="search-input-container">
+            <input type="text" class="form-control" placeholder="Search by Blog Title, Topic, Staff, ID, Content"
+                   @bind="searchTerm" @bind:event="oninput" @onkeyup="FilterAndSortBlogs"/>
+        </div>
+
+        <div class="filter-dropdown-container">
+            <select class="form-select" @onchange="OnTopicFilterChanged">
+                <option value="">All Topics</option>
+                @if (blogTopics != null)
+                {
+                    @foreach (var topic in blogTopics)
+                    {
+                        <option value="@topic.BlogTopicId">@topic.BlogTopicName</option>
+                    }
+                }
+            </select>
+        </div>
+
+        <div class="filter-dropdown-container">
+            <select class="form-select" @onchange="OnStaffFilterChanged">
+                <option value="">All Staff</option>
+                @if (staffUsers != null)
+                {
+                    @foreach (var staff in staffUsers)
+                    {
+                        <option value="@staff.UserId">@staff.Username</option>
+                    }
+                }
+            </select>
+        </div>
+
+        <div class="sort-controls">
+            <select class="form-select" @bind="sortBy" @bind:after="FilterAndSortBlogs">
+                <option value="BlogId">Sort: Blog ID</option>
+                <option value="Title">Sort: Title</option>
+                <option value="TopicName">Sort: Topic Name</option>
+                <option value="StaffName">Sort: Staff Name</option>
+                <option value="Status">Sort: Status</option>
+            </select>
+            <button class="btn btn-outline-primary sort-direction-button" @onclick="ToggleSortDirection">
+                @if (sortDirection == SortDirection.Ascending)
+                {
+                    <i class="bi bi-sort-alpha-down"></i>
+                }
+                else
+                {
+                    <i class="bi bi-sort-alpha-down-alt"></i>
+                }
+            </button>
+        </div>
+    </div>
+
+    @if (blogs == null || blogTopics == null || staffUsers == null || roles == null)
+    {
+        <div class="loading-indicator">Loading blogs and related data...</div>
+    }
+    else if (hasError)
+    {
+        <div class="error-message">Error loading data. Please try again later.</div>
+    }
+    else if (!filteredBlogs.Any())
+    {
+        <div class="no-data-message">No blogs found matching your criteria.</div>
+    }
+    else
+    {
+        <div class="table-container">
+            <table class="blog-table">
+                <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Blog ID</th>
+                    <th>Title</th>
+                    <th>Topic Name</th>
+                    <th>Status</th>
+                    <th>Staff Name</th>
+                    <th>Content</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                @{
+                    var index = (currentPage - 1) * itemsPerPage + 1;
+                }
+                @foreach (var blog in PaginatedBlogs)
+                {
+                    <tr>
+                        <td>@index</td>
+                        <td>@blog.BlogId</td>
+                        <td>@blog.Title</td>
+                        <td>@blog.BlogTopic?.BlogTopicName</td>
+                        <td>
+                            @if (blog.Status?.Equals("Published", StringComparison.OrdinalIgnoreCase) == true)
+                            {
+                                <span class="published-indicator" title="Published Blog"></span>
+                            }
+                            else if (blog.Status?.Equals("Draft", StringComparison.OrdinalIgnoreCase) == true)
+                            {
+                                <span class="draft-indicator" title="Draft Blog"></span>
+                            }
+                            @blog.Status
+                        </td>
+                        <td>@blog.Staff?.Username</td>
+                        <td>@(blog.Content?.Length > 100 ? blog.Content.Substring(0, 100) + "..." : blog.Content)</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-sm btn-primary me-2" @onclick="() => EditBlog(blog.BlogId)">
+                                    <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" @onclick="() => DeleteBlog(blog.BlogId)">
+                                    <i class="bi bi-trash3-fill"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    index++;
+                }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-center mt-3">
+            @for (var i = 1; i <= TotalPages; i++)
+            {
+                var pageIndex = i;
+                <button class="btn btn-outline-primary mx-1 @(pageIndex == currentPage ? "active" : "")"
+                        @onclick="() => GoToPage(pageIndex)">
+                    @pageIndex
+                </button>
+            }
+        </div>
+    }
+
+    @if (showEditForm)
+    {
+        <div class="card p-3 my-4 edit-form-card">
+            <h5>@(isNewBlog ? "Add New Blog" : "Edit Blog: " + blogToEdit.Title)</h5>
+
+            @if (!string.IsNullOrEmpty(validationMessage))
+            {
+                <div class="alert alert-danger" role="alert">
+                    @validationMessage
+                </div>
+            }
+
+            <div class="mb-3">
+                <label class="form-label">Blog Title</label>
+                <input class="form-control" @bind="blogToEdit.Title"/>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">Topic</label>
+                @if (showNewTopicInput)
+                {
+                    <input type="text" class="form-control" @bind="newTopicName" placeholder="Enter new topic name"/>
+                    <button class="btn btn-sm btn-outline-secondary mt-2" @onclick="CancelNewTopicInput">Cancel New Topic</button>
+                }
+                else
+                {
+                    <select class="form-select" @bind="blogToEdit.BlogTopicId">
+                        <option value="">Select Topic</option>
+                        @if (blogTopics != null)
+                        {
+                            @foreach (var topic in blogTopics)
+                            {
+                                <option value="@topic.BlogTopicId">@topic.BlogTopicName</option>
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("No blog topics available.");
+                        }
+                    </select>
+                    <div class="d-flex justify-content-between mt-2">
+                        <button class="btn btn-sm btn-outline-info" @onclick="PromptAddNewTopic">Add New Topic</button>
+                        @if (!string.IsNullOrWhiteSpace(blogToEdit.BlogTopicId))
+                        {
+                            <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteTopic(blogToEdit.BlogTopicId)">Delete Selected Topic</button>
+                        }
+                    </div>
+                }
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Content (Markdown)</label>
+                <textarea class="form-control" id="markdownEditor" rows="10"></textarea>
+                @if (!isSimpleMDELoaded)
+                {
+                    <p class="text-warning mt-2">Warning: Rich text editor failed to load. Using plain text input.</p>
+                    <textarea class="form-control" @bind="blogToEdit.Content" rows="10" placeholder="SimpleMDE failed to load. Enter Markdown content here."></textarea>
+                }
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Status</label>
+                <select class="form-select" @bind="blogToEdit.Status">
+                    <option value="Draft">Draft</option>
+                    <option value="Published">Published</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Staff</label>
+                <select class="form-select" @bind="blogToEdit.StaffId">
+                    <option value="">Select Staff</option>
+                    @if (staffUsers != null)
+                    {
+                        @foreach (var staff in staffUsers)
+                        {
+                            <option value="@staff.UserId">@staff.Username</option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <div>
+                <button class="btn btn-success me-2" @onclick="SaveBlog">Save</button>
+                <button class="btn btn-secondary" @onclick="CancelEdit">Cancel</button>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<BlogDTO>? blogs;
+    private List<BlogTopic>? blogTopics;
+    private List<UserDTO>? staffUsers;
+    private List<RoleDTO>? roles;
+    private bool hasError = false;
+    private int currentPage = 1;
+    private int itemsPerPage = 8;
+    private string validationMessage = string.Empty;
+    private bool isSimpleMDELoaded = false;
+    private bool shouldInitSimpleMDE = false;
+
+    // Search, Sort, Filter state
+    private string searchTerm = string.Empty;
+    private string selectedTopicId = string.Empty;
+    private string selectedStaffId = string.Empty;
+    private string sortBy = "BlogId";
+    private SortDirection sortDirection = SortDirection.Ascending;
+
+    private enum SortDirection { Ascending, Descending }
+
+    private BlogDTO blogToEdit = new BlogDTO
+    {
+        BlogId = "",
+        Title = "",
+        Content = "",
+        Status = "Draft",
+        StaffId = "",
+        BlogTopicId = ""
+    };
+    private bool showEditForm = false;
+    private bool isNewBlog = false;
+    private bool showNewTopicInput = false;
+    private string newTopicName = string.Empty;
+
+    private List<BlogDTO> filteredBlogs = new List<BlogDTO>();
+
+    private IEnumerable<BlogDTO> PaginatedBlogs =>
+        filteredBlogs?
+            .Skip((currentPage - 1) * itemsPerPage)
+            .Take(itemsPerPage) ?? Enumerable.Empty<BlogDTO>();
+
+    private int TotalPages => (int)Math.Ceiling((filteredBlogs?.Count ?? 0) / (double)itemsPerPage);
+
+    private void GoToPage(int page)
+    {
+        if (page < 1) page = 1;
+        if (page > TotalPages) page = TotalPages;
+
+        if (currentPage != page)
+        {
+            currentPage = page;
+            StateHasChanged();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            blogs = await BlogApiService.GetAllAsync();
+            blogTopics = await BlogTopicApiService.GetAllAsync();
+            roles = await RoleApiService.GetAllAsync();
+            var allUsers = await UserApiService.GetAllAsync();
+
+            // Filter for Staff users (assuming RoleId starts with "ST")
+            var staffRoleIds = roles?.Where(r => r.RoleId.StartsWith("ST", StringComparison.OrdinalIgnoreCase)).Select(r => r.RoleId).ToList();
+            staffUsers = allUsers?.Where(u => staffRoleIds != null && staffRoleIds.Contains(u.RoleId)).ToList();
+
+            FilterAndSortBlogs();
+            hasError = false;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching data: {ex.Message}");
+            blogs = new List<BlogDTO>();
+            filteredBlogs = new List<BlogDTO>();
+            blogTopics = new List<BlogTopic>();
+            staffUsers = new List<UserDTO>();
+            roles = new List<RoleDTO>();
+            hasError = true;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (showEditForm && shouldInitSimpleMDE)
+        {
+            try
+            {
+                var isSimpleMDEAvailable = await JS.InvokeAsync<bool>("eval", "typeof SimpleMDE !== 'undefined'");
+                if (isSimpleMDEAvailable)
+                {
+                    await JS.InvokeVoidAsync("initializeSimpleMDE", "#markdownEditor");
+                    isSimpleMDELoaded = true;
+                    await JS.InvokeVoidAsync("setSimpleMDEContent", "#markdownEditor", blogToEdit.Content);
+                }
+                else
+                {
+                    Console.WriteLine("SimpleMDE not available. Falling back to plain textarea.");
+                    validationMessage = "Markdown editor failed to load. Using plain text input.";
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error initializing SimpleMDE: {ex.Message}");
+                validationMessage = "Failed to initialize Markdown editor.";
+                isSimpleMDELoaded = false;
+            }
+            shouldInitSimpleMDE = false;
+            StateHasChanged();
+        }
+    }
+
+    private void FilterAndSortBlogs()
+    {
+        if (blogs == null)
+        {
+            filteredBlogs = new List<BlogDTO>();
+            return;
+        }
+
+        IEnumerable<BlogDTO> query = blogs;
+
+        // Apply Search Term (Blog Title, Topic Name, Staff Name, Blog ID, Content)
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var lowerSearchTerm = searchTerm.ToLower();
+            query = query.Where(b =>
+                (b.Title?.ToLower().Contains(lowerSearchTerm) ?? false) ||
+                (b.BlogTopic?.BlogTopicName?.ToLower().Contains(lowerSearchTerm) ?? false) ||
+                (b.Staff?.Username?.ToLower().Contains(lowerSearchTerm) ?? false) ||
+                (b.BlogId?.ToLower().Contains(lowerSearchTerm) ?? false) ||
+                (b.Content?.ToLower().Contains(lowerSearchTerm) ?? false)
+            );
+        }
+
+        // Apply Topic Filter
+        if (!string.IsNullOrWhiteSpace(selectedTopicId))
+        {
+            query = query.Where(b => b.BlogTopicId == selectedTopicId);
+        }
+
+        // Apply Staff Filter
+        if (!string.IsNullOrWhiteSpace(selectedStaffId))
+        {
+            query = query.Where(b => b.StaffId == selectedStaffId);
+        }
+
+        // Apply Sorting
+        switch (sortBy)
+        {
+            case "Title":
+                query = sortDirection == SortDirection.Ascending ?
+                    query.OrderBy(b => b.Title, StringComparer.OrdinalIgnoreCase) :
+                    query.OrderByDescending(b => b.Title, StringComparer.OrdinalIgnoreCase);
+                break;
+            case "TopicName":
+                query = sortDirection == SortDirection.Ascending ?
+                    query.OrderBy(b => b.BlogTopic?.BlogTopicName, StringComparer.OrdinalIgnoreCase) :
+                    query.OrderByDescending(b => b.BlogTopic?.BlogTopicName, StringComparer.OrdinalIgnoreCase);
+                break;
+            case "StaffName":
+                query = sortDirection == SortDirection.Ascending ?
+                    query.OrderBy(b => b.Staff?.Username, StringComparer.OrdinalIgnoreCase) :
+                    query.OrderByDescending(b => b.Staff?.Username, StringComparer.OrdinalIgnoreCase);
+                break;
+            case "Status":
+                query = sortDirection == SortDirection.Ascending ?
+                    query.OrderBy(b => b.Status, StringComparer.OrdinalIgnoreCase) :
+                    query.OrderByDescending(b => b.Status, StringComparer.OrdinalIgnoreCase);
+                break;
+            case "BlogId":
+                query = sortDirection == SortDirection.Ascending ?
+                    query.OrderBy(b => b.BlogId) :
+                    query.OrderByDescending(b => b.BlogId);
+                break;
+            default:
+                query = query.OrderBy(b => b.BlogId);
+                break;
+        }
+
+        filteredBlogs = query.ToList();
+        currentPage = 1;
+    }
+
+    private void OnTopicFilterChanged(ChangeEventArgs e)
+    {
+        selectedTopicId = e.Value?.ToString() ?? string.Empty;
+        FilterAndSortBlogs();
+    }
+
+    private void OnStaffFilterChanged(ChangeEventArgs e)
+    {
+        selectedStaffId = e.Value?.ToString() ?? string.Empty;
+        FilterAndSortBlogs();
+    }
+
+    private void ToggleSortDirection()
+    {
+        sortDirection = sortDirection == SortDirection.Ascending ? SortDirection.Descending : SortDirection.Ascending;
+        FilterAndSortBlogs();
+    }
+
+    private string GenerateNextBlogId()
+    {
+        var maxIdNum = 0;
+        if (blogs != null && blogs.Any())
+        {
+            maxIdNum = blogs
+                .Select(b => {
+                    if (b.BlogId != null && b.BlogId.StartsWith("B") && int.TryParse(b.BlogId.Substring(1), out var num))
+                    {
+                        return num;
+                    }
+                    return 0;
+                })
+                .DefaultIfEmpty(0)
+                .Max();
+        }
+        return $"B{maxIdNum + 1:D4}";
+    }
+
+    private string GenerateNextTopicId()
+    {
+        var maxIdNum = 0;
+        if (blogTopics != null && blogTopics.Any())
+        {
+            maxIdNum = blogTopics
+                .Select(t => {
+                    if (t.BlogTopicId != null && t.BlogTopicId.StartsWith("BTP") && int.TryParse(t.BlogTopicId.Substring(3), out var num))
+                    {
+                        return num;
+                    }
+                    return 0;
+                })
+                .DefaultIfEmpty(0)
+                .Max();
+        }
+        return $"BTP{maxIdNum + 1:D4}";
+    }
+
+    private void AddBlog()
+    {
+        validationMessage = string.Empty;
+        showNewTopicInput = false;
+        newTopicName = string.Empty;
+        blogToEdit = new BlogDTO
+        {
+            BlogId = GenerateNextBlogId(),
+            Title = "",
+            Content = "",
+            Status = "Draft",
+            StaffId = "",
+            BlogTopicId = ""
+        };
+        isNewBlog = true;
+        showEditForm = true;
+        isSimpleMDELoaded = false;
+        shouldInitSimpleMDE = true;
+        StateHasChanged();
+    }
+
+    private void EditBlog(string blogId)
+    {
+        validationMessage = string.Empty;
+        showNewTopicInput = false;
+        newTopicName = string.Empty;
+        var blog = blogs?.FirstOrDefault(b => b.BlogId == blogId);
+        if (blog != null)
+        {
+            blogToEdit = new BlogDTO
+            {
+                BlogId = blog.BlogId,
+                Title = blog.Title,
+                Content = blog.Content,
+                Status = blog.Status,
+                StaffId = blog.StaffId,
+                BlogTopicId = blog.BlogTopicId,
+                Staff = blog.Staff,
+                BlogTopic = blog.BlogTopic != null ? new BlogTopicDTO
+                {
+                    BlogTopicId = blog.BlogTopic.BlogTopicId,
+                    BlogTopicName = blog.BlogTopic.BlogTopicName
+                } : null
+            };
+            isNewBlog = false;
+            showEditForm = true;
+            isSimpleMDELoaded = false;
+            shouldInitSimpleMDE = true;
+            StateHasChanged();
+        }
+    }
+
+    private void PromptAddNewTopic()
+    {
+        showNewTopicInput = true;
+        blogToEdit.BlogTopicId = "";
+        newTopicName = string.Empty;
+        validationMessage = string.Empty;
+    }
+
+    private void CancelNewTopicInput()
+    {
+        showNewTopicInput = false;
+        newTopicName = string.Empty;
+        validationMessage = string.Empty;
+    }
+
+    private async Task DeleteTopic(string topicId)
+    {
+        if (string.IsNullOrWhiteSpace(topicId))
+        {
+            validationMessage = "No topic selected for deletion.";
+            return;
+        }
+
+        var topic = blogTopics?.FirstOrDefault(t => t.BlogTopicId == topicId);
+        if (topic == null)
+        {
+            validationMessage = "Topic not found.";
+            return;
+        }
+
+        var blogsUsingTopic = blogs?.Any(b => b.BlogTopicId == topicId) ?? false;
+        if (blogsUsingTopic)
+        {
+            validationMessage = $"Cannot delete topic '{topic.BlogTopicName}' because it is currently assigned to one or more blogs. Please reassign blogs first.";
+            return;
+        }
+
+        var confirmed = await JS.InvokeAsync<bool>("confirm", $"Are you sure you want to delete topic '{topic.BlogTopicName}' (ID: {topicId})?");
+        if (confirmed)
+        {
+            try
+            {
+                var success = await BlogTopicApiService.DeleteAsync(topicId);
+                if (success)
+                {
+                    Console.WriteLine($"Topic '{topic.BlogTopicName}' (ID: {topicId}) deleted successfully.");
+                    validationMessage = string.Empty;
+
+                    blogTopics = await BlogTopicApiService.GetAllAsync();
+                    blogs = await BlogApiService.GetAllAsync();
+                    FilterAndSortBlogs();
+
+                    if (blogToEdit.BlogTopicId == topicId)
+                    {
+                        blogToEdit.BlogTopicId = "";
+                    }
+                }
+                else
+                {
+                    validationMessage = $"Failed to delete topic '{topic.BlogTopicName}'.";
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting topic: {ex.Message}");
+                validationMessage = $"Error deleting topic: {ex.Message}";
+            }
+        }
+    }
+
+    private async Task SaveBlog()
+    {
+        if (string.IsNullOrWhiteSpace(blogToEdit.Title))
+        {
+            validationMessage = "Blog Title cannot be empty.";
+            return;
+        }
+        if (isSimpleMDELoaded)
+        {
+            try
+            {
+                blogToEdit.Content = await JS.InvokeAsync<string>("getSimpleMDEContent", "#markdownEditor");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting SimpleMDE content: {ex.Message}");
+            }
+        }
+        if (string.IsNullOrWhiteSpace(blogToEdit.Content))
+        {
+            validationMessage = "Blog Content cannot be empty.";
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(blogToEdit.StaffId))
+        {
+            validationMessage = "Please select a Staff.";
+            return;
+        }
+        if (showNewTopicInput)
+        {
+            if (string.IsNullOrWhiteSpace(newTopicName))
+            {
+                validationMessage = "New Topic Name cannot be empty.";
+                return;
+            }
+            var existingTopic = blogTopics?.FirstOrDefault(t => t.BlogTopicName.Equals(newTopicName, StringComparison.OrdinalIgnoreCase));
+            if (existingTopic != null)
+            {
+                validationMessage = $"Topic '{newTopicName}' already exists. Please select it from the dropdown or enter a different name.";
+                return;
+            }
+
+            try
+            {
+                var newTopicId = GenerateNextTopicId();
+                var newTopic = new BlogTopic { BlogTopicId = newTopicId, BlogTopicName = newTopicName };
+                await BlogTopicApiService.CreateAsync(newTopic);
+                blogToEdit.BlogTopicId = newTopic.BlogTopicId;
+                blogTopics = await BlogTopicApiService.GetAllAsync();
+                showNewTopicInput = false;
+                newTopicName = string.Empty;
+            }
+            catch (Exception ex)
+            {
+                validationMessage = $"Error creating new topic: {ex.Message}";
+                return;
+            }
+        }
+        else
+        {
+            if (string.IsNullOrWhiteSpace(blogToEdit.BlogTopicId))
+            {
+                validationMessage = "Please select a Topic.";
+                return;
+            }
+        }
+
+        validationMessage = string.Empty;
+
+        try
+        {
+            if (isNewBlog)
+            {
+                await BlogApiService.CreateAsync(blogToEdit);
+                Console.WriteLine($"Blog '{blogToEdit.Title}' created with ID: {blogToEdit.BlogId}");
+            }
+            else
+            {
+                var response = await BlogApiService.UpdateAsync(blogToEdit);
+                if (response == null)
+                {
+                    validationMessage = "Failed to update blog. Please try again.";
+                    return;
+                }
+                
+                Console.WriteLine($"Blog '{blogToEdit.Title}' updated.");
+            }
+
+            blogs = await BlogApiService.GetAllAsync();
+            FilterAndSortBlogs();
+            showEditForm = false;
+            GoToPage(1);
+        }
+        catch (Exception ex)
+        {
+            validationMessage = $"Error saving blog: {ex.Message}";
+        }
+        StateHasChanged();
+    }
+
+    private void CancelEdit()
+    {
+        validationMessage = string.Empty;
+        showNewTopicInput = false;
+        newTopicName = string.Empty;
+        blogToEdit = new BlogDTO
+        {
+            BlogId = "",
+            Title = "",
+            Content = "",
+            Status = "Draft",
+            StaffId = "",
+            BlogTopicId = ""
+        };
+        isNewBlog = false;
+        showEditForm = false;
+        isSimpleMDELoaded = false;
+    }
+
+    private async Task DeleteBlog(string blogId)
+    {
+        var blogToDelete = blogs?.FirstOrDefault(b => b.BlogId == blogId);
+        if (blogToDelete == null)
+        {
+            Console.WriteLine($"Blog with ID {blogId} not found for deletion.");
+            return;
+        }
+
+        var confirmed = await JS.InvokeAsync<bool>("confirm", $"Are you sure you want to delete blog '{blogToDelete.Title}' (ID: {blogId})?");
+        if (confirmed)
+        {
+            try
+            {
+                var success = await BlogApiService.DeleteAsync(blogId);
+                if (success)
+                {
+                    Console.WriteLine($"Blog '{blogToDelete.Title}' (ID: {blogId}) deleted successfully.");
+                    blogs = await BlogApiService.GetAllAsync();
+                    FilterAndSortBlogs();
+                }
+                else
+                {
+                    Console.WriteLine($"Failed to delete blog '{blogToDelete.Title}'.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting blog: {ex.Message}");
+            }
+        }
+    }
+}

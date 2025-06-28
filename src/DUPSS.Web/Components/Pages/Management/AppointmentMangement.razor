@@ -1,0 +1,613 @@
+﻿@page "/Management/Appointment"
+@using DUPSS.API.Models.DTOs
+@using DUPSS.API.Models.Objects
+@using DUPSS.Web.Components.Layout
+@using DUPSS.Web.Components.Service
+@inject NavigationManager NavigationManager
+@inject AppointmentApiService AppointmentApiService
+@inject UserApiService UserApiService
+@inject RoleApiService RoleApiService
+@inject IJSRuntime JS
+@layout ManagementLayout
+
+<div class="appointment-management-container">
+    <div class="header-section">
+        <h1 class="page-title">Appointment Management</h1>
+        <div class="actions">
+            <button class="add-appointment-button" @onclick="AddAppointment">
+                <i class="bi bi-plus-circle"></i> ADD APPOINTMENT
+            </button>
+        </div>
+    </div>
+    <div class="filter-sort-section">
+        <div class="search-input-container">
+            <input type="text" class="form-control"
+                   placeholder="Search by Appointment ID, Member, Consultant, Topic, Status"
+                   @bind="searchTerm" @bind:event="oninput" @onkeyup="FilterAndSortAppointments"/>
+        </div>
+
+        <div class="filter-dropdown-container">
+            <select class="form-select" @onchange="OnMemberFilterChanged">
+                <option value="">All Members</option>
+                @if (memberUsers != null)
+                {
+                    @foreach (var member in memberUsers)
+                    {
+                        <option value="@member.UserId">@member.Username</option>
+                    }
+                }
+            </select>
+        </div>
+
+        <div class="filter-dropdown-container">
+            <select class="form-select" @onchange="OnConsultantFilterChanged">
+                <option value="">All Consultants</option>
+                @if (consultantUsers != null)
+                {
+                    @foreach (var consultant in consultantUsers)
+                    {
+                        <option value="@consultant.UserId">@consultant.Username</option>
+                    }
+                }
+            </select>
+        </div>
+
+        <div class="sort-controls">
+            <select class="form-select" @bind="sortBy" @bind:after="FilterAndSortAppointments">
+                <option value="AppointmentId">Sort: Appointment ID</option>
+                <option value="AppointmentDate">Sort: Date</option>
+                <option value="MemberName">Sort: Member Name</option>
+                <option value="ConsultantName">Sort: Consultant Name</option>
+                <option value="Topic">Sort: Topic</option>
+                <option value="Status">Sort: Status</option>
+            </select>
+            <button class="btn btn-outline-primary sort-direction-button" @onclick="ToggleSortDirection">
+                @if (sortDirection == SortDirection.Ascending)
+                {
+                    <i class="bi bi-sort-alpha-down"></i>
+                }
+                else
+                {
+                    <i class="bi bi-sort-alpha-down-alt"></i>
+                }
+            </button>
+        </div>
+    </div>
+
+    @if (appointments == null || memberUsers == null || consultantUsers == null || roles == null)
+    {
+        <div class="loading-indicator">Loading appointments and related data...</div>
+    }
+    else if (hasError)
+    {
+        <div class="error-message">Error loading data. Please try again later.</div>
+    }
+    else if (!filteredAppointments.Any())
+    {
+        <div class="no-data-message">No appointments found matching your criteria.</div>
+    }
+    else
+    {
+        <div class="table-container">
+            <table class="appointment-table">
+                <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Appointment ID</th>
+                    <th>Date</th>
+                    <th>Member</th>
+                    <th>Consultant</th>
+                    <th>Topic</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                @{
+                    var index = (currentPage - 1) * itemsPerPage + 1;
+                }
+                @foreach (var appointment in PaginatedAppointments)
+                {
+                    <tr>
+                        <td>@index</td>
+                        <td>@appointment.AppointmentId</td>
+                        <td>@appointment.AppointmentDate.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>@appointment.Member?.Username</td>
+                        <td>@appointment.Consultant?.Username</td>
+                        <td>@appointment.Topic</td>
+                        <td>
+                            @if (appointment.Status?.Equals("Pending", StringComparison.OrdinalIgnoreCase) == true)
+                            {
+                                    <span class="pending-indicator" title="Pending Appointment"></span>
+                            }
+                            else if (appointment.Status?.Equals("Accepted", StringComparison.OrdinalIgnoreCase) == true)
+                            {
+                                    <span class="accepted-indicator" title="Accepted Appointment"></span>
+                            }
+                            else if (appointment.Status?.Equals("Declined", StringComparison.OrdinalIgnoreCase) == true)
+                            {
+                                <span class="cancelled-indicator" title="Cancelled Appointment"></span>
+                            }
+                            else if (appointment.Status?.Equals("Finished", StringComparison.OrdinalIgnoreCase) == true)
+                            {
+                                    <span class="cancelled-indicator" title="Cancelled Appointment"></span>
+                            }
+                            @appointment.Status
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-sm btn-primary me-2"
+                                        @onclick="() => EditAppointment(appointment.AppointmentId)">
+                                    <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger"
+                                        @onclick="() => DeleteAppointment(appointment.AppointmentId)">
+                                    <i class="bi bi-trash3-fill"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    index++;
+                }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-center mt-3">
+            @for (var i = 1; i <= TotalPages; i++)
+            {
+                var pageIndex = i;
+                <button class="btn btn-outline-primary mx-1 @(pageIndex == currentPage ? "active" : "")"
+                        @onclick="() => GoToPage(pageIndex)">
+                    @pageIndex
+                </button>
+            }
+        </div>
+    }
+
+    @if (showEditForm)
+    {
+        <div class="card p-3 my-4 edit-form-card">
+            <h5>@(isNewAppointment ? "Add New Appointment" : "Edit Appointment: " + appointmentToEdit.AppointmentId)</h5>
+
+            @if (!string.IsNullOrEmpty(validationMessage))
+            {
+                <div class="alert alert-danger" role="alert">
+                    @validationMessage
+                </div>
+            }
+
+            <div class="mb-3">
+                <label class="form-label">Appointment Date</label>
+                <input type="date" class="form-control" @bind="appointmentToEdit.AppointmentDate"/>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Member</label>
+                <select class="form-select" @bind="appointmentToEdit.MemberId">
+                    <option value="">Select Member</option>
+                    @if (memberUsers != null)
+                    {
+                        @foreach (var member in memberUsers)
+                        {
+                            <option value="@member.UserId">@member.Username</option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Consultant</label>
+                <select class="form-select" @bind="appointmentToEdit.ConsultantId">
+                    <option value="">Select Consultant</option>
+                    @if (consultantUsers != null)
+                    {
+                        @foreach (var consultant in consultantUsers)
+                        {
+                            <option value="@consultant.UserId">@consultant.Username</option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Topic</label>
+                <input class="form-control" @bind="appointmentToEdit.Topic"/>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Status</label>
+                <select class="form-select" @bind="appointmentToEdit.Status">
+                    <option value="Pending">Pending</option>
+                    <option value="Accepted">Accepted</option>
+                    <option value="Declined">Declined</option>
+                    <option value="Finished">Finished</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Notes</label>
+                <textarea class="form-control" @bind="appointmentToEdit.Notes" rows="4"></textarea>
+            </div>
+
+            <div>
+                <button class="btn btn-success me-2" @onclick="SaveAppointment">Save</button>
+                <button class="btn btn-secondary" @onclick="CancelEdit">Cancel</button>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    // Changed the type to AppointmentDTO to match the AppointmentApiService return type
+    private List<AppointmentDTO>? appointments;
+    // UPDATED: Change type from User to UserDTO
+    private List<UserDTO>? memberUsers;
+    // UPDATED: Change type from User to UserDTO
+    private List<UserDTO>? consultantUsers;
+    // UPDATED: Change type from Role to RoleDTO
+    private List<RoleDTO>? roles;
+    private bool hasError = false;
+    private int currentPage = 1;
+    private int itemsPerPage = 8;
+    private string validationMessage = string.Empty;
+
+    private string searchTerm = string.Empty;
+    private string selectedMemberId = string.Empty;
+    private string selectedConsultantId = string.Empty;
+    private string sortBy = "AppointmentId";
+    private SortDirection sortDirection = SortDirection.Ascending;
+
+    private enum SortDirection { Ascending, Descending }
+
+    // Changed the type from Appointment to AppointmentDTO
+    private AppointmentDTO appointmentToEdit = new AppointmentDTO
+    {
+        AppointmentId = "",
+        MemberId = "",
+        ConsultantId = "",
+            AppointmentDate = DateTime.Now,
+
+        Topic = "",
+        Status = "Pending",
+        Notes = ""
+    };
+    private bool showEditForm = false;
+    private bool isNewAppointment = false;
+
+    // Changed the type from Appointment to AppointmentDTO
+    private List<AppointmentDTO> filteredAppointments = new List<AppointmentDTO>();
+
+    // Changed the type from Appointment to AppointmentDTO
+    private IEnumerable<AppointmentDTO> PaginatedAppointments =>
+        filteredAppointments?
+            .Skip((currentPage - 1) * itemsPerPage)
+            .Take(itemsPerPage) ?? Enumerable.Empty<AppointmentDTO>();
+
+    private int TotalPages => (int)Math.Ceiling((filteredAppointments?.Count ?? 0) / (double)itemsPerPage);
+
+    private void GoToPage(int page)
+    {
+        if (page < 1) page = 1;
+        if (page > TotalPages) page = TotalPages;
+
+        if (currentPage != page)
+        {
+            currentPage = page;
+            StateHasChanged();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Ensure AppointmentApiService returns AppointmentDTOs
+            appointments = await AppointmentApiService.GetAllAsync();
+            // Ensure RoleApiService returns RoleDTOs
+            roles = await RoleApiService.GetAllAsync();
+            // Ensure UserApiService returns UserDTOs
+            var allUsers = await UserApiService.GetAllAsync();
+
+            // Filter for Member users (assuming RoleId starts with "ME")
+            var memberRoleIds = roles?.Where(r => r.RoleId.StartsWith("ME")).Select(r => r.RoleId).ToList();
+            // Assigning List<UserDTO> to List<UserDTO>
+            memberUsers = allUsers?.Where(u => memberRoleIds != null && memberRoleIds.Contains(u.RoleId)).ToList();
+
+            // Filter for Consultant users (assuming RoleId starts with "CO")
+            var consultantRoleIds = roles?.Where(r => r.RoleId.StartsWith("CO")).Select(r => r.RoleId).ToList();
+            // Assigning List<UserDTO> to List<UserDTO>
+            consultantUsers = allUsers?.Where(u => consultantRoleIds != null && consultantRoleIds.Contains(u.RoleId)).ToList();
+
+            FilterAndSortAppointments();
+            hasError = false;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching data: {ex.Message}");
+            // Initialize with correct DTO types on error as well
+            appointments = new List<AppointmentDTO>();
+            filteredAppointments = new List<AppointmentDTO>();
+            memberUsers = new List<UserDTO>();
+            consultantUsers = new List<UserDTO>();
+            roles = new List<RoleDTO>();
+            hasError = true;
+        }
+    }
+
+    private void FilterAndSortAppointments()
+    {
+        if (appointments == null)
+        {
+            filteredAppointments = new List<AppointmentDTO>();
+            return;
+        }
+
+        IEnumerable<AppointmentDTO> query = appointments;
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var lowerSearchTerm = searchTerm.ToLower();
+            query = query.Where(a =>
+                (a.AppointmentId?.ToLower().Contains(lowerSearchTerm) ?? false) ||
+                (a.Member?.Username?.ToLower().Contains(lowerSearchTerm) ?? false) ||
+                (a.Consultant?.Username?.ToLower().Contains(lowerSearchTerm) ?? false) ||
+                (a.Topic?.ToLower().Contains(lowerSearchTerm) ?? false) ||
+                (a.Status?.ToLower().Contains(lowerSearchTerm) ?? false)
+            );
+        }
+
+        if (!string.IsNullOrWhiteSpace(selectedMemberId))
+        {
+            query = query.Where(a => a.MemberId == selectedMemberId);
+        }
+
+        if (!string.IsNullOrWhiteSpace(selectedConsultantId))
+        {
+            query = query.Where(a => a.ConsultantId == selectedConsultantId);
+        }
+
+        switch (sortBy)
+        {
+            case "AppointmentDate":
+                query = sortDirection == SortDirection.Ascending ?
+                    query.OrderBy(a => a.AppointmentDate) :
+                    query.OrderByDescending(a => a.AppointmentDate);
+                break;
+            case "MemberName":
+                query = sortDirection == SortDirection.Ascending ?
+                    query.OrderBy(a => a.Member?.Username, StringComparer.OrdinalIgnoreCase) :
+                    query.OrderByDescending(a => a.Member?.Username, StringComparer.OrdinalIgnoreCase);
+                break;
+            case "ConsultantName":
+                query = sortDirection == SortDirection.Ascending ?
+                    query.OrderBy(a => a.Consultant?.Username, StringComparer.OrdinalIgnoreCase) :
+                    query.OrderByDescending(a => a.Consultant?.Username, StringComparer.OrdinalIgnoreCase);
+                break;
+            case "Topic":
+                query = sortDirection == SortDirection.Ascending ?
+                    query.OrderBy(a => a.Topic, StringComparer.OrdinalIgnoreCase) :
+                    query.OrderByDescending(a => a.Topic, StringComparer.OrdinalIgnoreCase);
+                break;
+            case "Status":
+                query = sortDirection == SortDirection.Ascending ?
+                    query.OrderBy(a => a.Status, StringComparer.OrdinalIgnoreCase) :
+                    query.OrderByDescending(a => a.Status, StringComparer.OrdinalIgnoreCase);
+                break;
+            case "AppointmentId":
+                query = sortDirection == SortDirection.Ascending ?
+                    query.OrderBy(a => a.AppointmentId) :
+                    query.OrderByDescending(a => a.AppointmentId);
+                break;
+            default:
+                query = query.OrderBy(a => a.AppointmentId);
+                break;
+        }
+
+        filteredAppointments = query.ToList();
+        currentPage = 1;
+    }
+
+    private void OnMemberFilterChanged(ChangeEventArgs e)
+    {
+        selectedMemberId = e.Value?.ToString() ?? string.Empty;
+        FilterAndSortAppointments();
+    }
+
+    private void OnConsultantFilterChanged(ChangeEventArgs e)
+    {
+        selectedConsultantId = e.Value?.ToString() ?? string.Empty;
+        FilterAndSortAppointments();
+    }
+
+    private void ToggleSortDirection()
+    {
+        sortDirection = sortDirection == SortDirection.Ascending ? SortDirection.Descending : SortDirection.Ascending;
+        FilterAndSortAppointments();
+    }
+
+    private string GenerateNextAppointmentId()
+    {
+        var maxIdNum = 0;
+        // Changed to List<AppointmentDTO>
+        if (appointments != null && appointments.Any())
+        {
+            maxIdNum = appointments
+                .Select(a => {
+                    if (a.AppointmentId != null && a.AppointmentId.StartsWith("A") && int.TryParse(a.AppointmentId.Substring(1), out var num))
+                    {
+                        return num;
+                    }
+                    return 0;
+                })
+                .DefaultIfEmpty(0)
+                .Max();
+        }
+        return $"A{maxIdNum + 1:D4}";
+    }
+
+    private void AddAppointment()
+    {
+        validationMessage = string.Empty;
+        // Changed to AppointmentDTO
+        appointmentToEdit = new AppointmentDTO
+        {
+            AppointmentId = GenerateNextAppointmentId(),
+            MemberId = "",
+            ConsultantId = "",
+                AppointmentDate = DateTime.Now,
+
+            Topic = "",
+            Status = "Pending",
+            Notes = ""
+        };
+        isNewAppointment = true;
+        showEditForm = true;
+    }
+
+    private void EditAppointment(string appointmentId)
+    {
+        validationMessage = string.Empty;
+        // Expecting AppointmentDTO from 'appointments' list
+        var appointment = appointments?.FirstOrDefault(a => a.AppointmentId == appointmentId);
+        if (appointment != null)
+        {
+            // Assign properties from AppointmentDTO to AppointmentDTO
+            appointmentToEdit = new AppointmentDTO
+            {
+                AppointmentId = appointment.AppointmentId,
+                MemberId = appointment.MemberId,
+                ConsultantId = appointment.ConsultantId,
+                AppointmentDate = appointment.AppointmentDate,
+                Topic = appointment.Topic,
+                Status = appointment.Status,
+                Notes = appointment.Notes,
+                Member = appointment.Member,
+                Consultant = appointment.Consultant
+            };
+            isNewAppointment = false;
+            showEditForm = true;
+        }
+    }
+
+    private async Task SaveAppointment()
+    {
+        if (appointmentToEdit.AppointmentDate == default)
+        {
+            validationMessage = "Appointment Date is required.";
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(appointmentToEdit.MemberId))
+        {
+            validationMessage = "Please select a Member.";
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(appointmentToEdit.ConsultantId))
+        {
+            validationMessage = "Please select a Consultant.";
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(appointmentToEdit.Topic))
+        {
+            validationMessage = "Topic cannot be empty.";
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(appointmentToEdit.Status))
+        {
+            validationMessage = "Please select a Status.";
+            return;
+        }
+
+        validationMessage = string.Empty;
+
+        try
+        {
+            if (isNewAppointment)
+            {
+                // Ensure CreateAsync expects and sends an AppointmentDTO
+                await AppointmentApiService.CreateAsync(appointmentToEdit);
+                Console.WriteLine($"Appointment '{appointmentToEdit.AppointmentId}' created.");
+            }
+            else
+            {
+                // Ensure UpdateAsync expects and sends an AppointmentDTO
+                await AppointmentApiService.UpdateAsync(appointmentToEdit);
+                Console.WriteLine($"Appointment '{appointmentToEdit.AppointmentId}' updated.");
+            }
+
+            // appointments is now List<AppointmentDTO>
+            appointments = await AppointmentApiService.GetAllAsync();
+            FilterAndSortAppointments();
+            showEditForm = false;
+            GoToPage(1);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving appointment: {ex.Message}");
+            validationMessage = $"Error saving appointment: {ex.Message}";
+        }
+    }
+
+    private void CancelEdit()
+    {
+        validationMessage = string.Empty;
+        // Changed to AppointmentDTO
+        appointmentToEdit = new AppointmentDTO
+        {
+            AppointmentId = "",
+            MemberId = "",
+            ConsultantId = "",
+                AppointmentDate = DateTime.Now,
+
+            Topic = "",
+            Status = "Pending",
+            Notes = ""
+        };
+        showEditForm = false;
+    }
+
+    private async Task DeleteAppointment(string appointmentId)
+    {
+        // Now expecting AppointmentDTO
+        var appointmentToDelete = appointments?.FirstOrDefault(a => a.AppointmentId == appointmentId);
+        if (appointmentToDelete == null)
+        {
+            Console.WriteLine($"Appointment with ID {appointmentId} not found for deletion.");
+            return;
+        }
+
+        var confirmed = await JS.InvokeAsync<bool>("confirm", $"Are you sure you want to delete appointment '{appointmentToDelete.AppointmentId}'?");
+        if (confirmed)
+        {
+            try
+            {
+                var success = await AppointmentApiService.DeleteAsync(appointmentId);
+                if (success)
+                {
+                    Console.WriteLine($"Appointment '{appointmentToDelete.AppointmentId}' deleted successfully.");
+                    validationMessage = string.Empty; // Clear message on success
+
+                    // Re-fetch appointments to update UI (appointments is now AppointmentDTO)
+                    appointments = await AppointmentApiService.GetAllAsync();
+                    FilterAndSortAppointments();
+                    GoToPage(1);
+
+                    // Close edit form if the deleted appointment was being edited
+                    if (appointmentToEdit.AppointmentId == appointmentId)
+                    {
+                        CancelEdit(); // This will reset appointmentToEdit and hide the form
+                    }
+                }
+                else
+                {
+                    validationMessage = $"Failed to delete appointment '{appointmentToDelete.AppointmentId}'.";
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting appointment: {ex.Message}");
+                validationMessage = $"Error deleting appointment: {ex.Message}";
+            }
+        }
+    }
+}

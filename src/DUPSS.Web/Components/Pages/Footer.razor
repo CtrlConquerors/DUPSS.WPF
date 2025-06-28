@@ -1,0 +1,124 @@
+﻿<footer class="main-footer mt-10">
+    <canvas id="rainCanvas" class="rain-canvas"></canvas>
+
+    <div class="footer-content-wrapper">
+        <!-- About Section -->
+        <div class="footer-section footer-logo-section col-1">
+            <img src="images/logo.png" alt="Logo" class="footer-logo" />
+            <p class="footer-about">
+                ALPHA is dedicated to providing high-quality courses and resources to empower your learning journey. Join our community and stay ahead!
+            </p>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="footer-section footer-links-section col-2">
+            <h5 class="footer-heading">QUICK LINKS</h5>
+            <ul class="footer-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/Course">Courses</a></li>
+                <li><a href="/Blog">Blog</a></li>
+                <li><a href="/AboutUs">About Us</a></li>
+                <li><a href="/Login">Login</a></li>
+            </ul> 
+        </div>
+
+        <!-- Contact Info -->
+        <div class="footer-section footer-info-section col-3">
+            <h5 class="footer-heading">CONTACT</h5>
+            <p><i class="bi bi-geo-alt"></i> Phuoc Hiep</p>
+            <p><i class="bi bi-telephone"></i> 090 538 4233</p>
+            <p><i class="bi bi-envelope"></i> abcd@fgmail.com</p>
+        </div>
+
+        <!-- Social Media -->
+        <div class="footer-section footer-social-section col-4">
+            <h5 class="footer-heading">FOLLOW US</h5>
+            <div class="footer-social-icons">
+                <a href="https://facebook.com" target="_blank" title="Facebook"><i class="bi bi-facebook"></i></a>
+                <a href="https://twitter.com" target="_blank" title="Twitter"><i class="bi bi-twitter"></i></a>
+                <a href="https://instagram.com" target="_blank" title="Instagram"><i class="bi bi-instagram"></i></a>
+                <a href="https://linkedin.com" target="_blank" title="LinkedIn"><i class="bi bi-linkedin"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-bottom text-center mt-4">
+        <hr />
+        <p class="footer-copyright">
+            &copy; @DateTime.Now.Year ALPHA. All rights reserved.
+        </p>
+    </div>
+</footer>
+
+@* ---raining effect--- *@
+<script>
+    (function () {
+        function startRain() {
+            const canvas = document.getElementById('rainCanvas');
+            if (!canvas) return;
+
+            // Set fixed height for the canvas
+            canvas.width = canvas.offsetWidth || canvas.parentElement.offsetWidth;
+            canvas.height = 120;
+
+            const ctx = canvas.getContext('2d');
+            const raindropCount = Math.floor(canvas.width / 7);
+            let raindrops = [];
+
+            function createRaindrop() {
+                return {
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * -canvas.height,
+                    length: 10 + Math.random() * 15,
+                    speed: 2 + Math.random() * 4,
+                    opacity: 0.2 + Math.random() * 0.4
+                };
+            }
+
+            function initRaindrops() {
+                raindrops = [];
+                for (let i = 0; i < raindropCount; i++) {
+                    raindrops.push(createRaindrop());
+                }
+            }
+
+            function drawRain() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.strokeStyle = 'rgba(173,216,230,0.6)';
+                ctx.lineWidth = 1.2;
+
+                for (let drop of raindrops) {
+                    ctx.globalAlpha = drop.opacity;
+                    ctx.beginPath();
+                    ctx.moveTo(drop.x, drop.y);
+                    ctx.lineTo(drop.x, drop.y + drop.length);
+                    ctx.stroke();
+
+                    drop.y += drop.speed;
+                    if (drop.y > canvas.height) {
+                        Object.assign(drop, createRaindrop());
+                        drop.y = 0;
+                    }
+                }
+                ctx.globalAlpha = 1.0;
+                requestAnimationFrame(drawRain);
+            }
+
+            initRaindrops();
+            drawRain();
+
+            window.addEventListener('resize', () => {
+                canvas.width = canvas.offsetWidth || canvas.parentElement.offsetWidth;
+                canvas.height = 120;
+                initRaindrops();
+            });
+        }
+
+        // Use a small delay to ensure Blazor has rendered the DOM
+        setTimeout(startRain, 500);
+    })();
+</script>
+
+@code {
+
+}

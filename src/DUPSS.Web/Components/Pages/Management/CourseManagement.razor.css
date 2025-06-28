@@ -1,0 +1,440 @@
+﻿/* coursemanagement.razor.css */
+/* General page container styling */
+.course-management-container {
+    padding: 30px; /* Increased padding for more space */
+    background-color: #f8f9fa; /* Light background for the page */
+    min-height: 100vh; /* Ensure it takes full viewport height */
+    font-family: 'Inter', sans-serif; /* Consistent font */
+}
+
+/* Header section (Title and Add Button) */
+.header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    gap: 15px; /* Spacing between elements */
+}
+
+.page-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #343a40; /* Dark text for title */
+    margin: 0;
+    flex-grow: 1; /* Allow title to take available space */
+    text-align: center; /* Center the title */
+}
+
+.actions {
+    display: flex;
+    gap: 15px;
+}
+
+.add-course-button {
+    background-color: #007bff; /* Primary blue for the button */
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px; /* Rounded corners */
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease; /* Smooth hover effects */
+    box-shadow: 0 4px 10px rgba(0, 123, 255, 0.25); /* More prominent shadow */
+}
+
+    .add-course-button:hover {
+        background-color: #0056b3; /* Darker blue on hover */
+        transform: translateY(-2px); /* Slight lift effect */
+        box-shadow: 0 6px 15px rgba(0, 123, 255, 0.35); /* Enhanced shadow on hover */
+    }
+
+    .add-course-button i {
+        font-size: 1.2rem; /* Icon size */
+    }
+
+/* Filter and Sort Section */
+.filter-sort-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+.search-input-container {
+    flex-grow: 1; /* Allows search input to take available space */
+    min-width: 200px; /* Minimum width for responsiveness */
+}
+
+.filter-dropdown-container {
+    min-width: 150px; /* Minimum width for dropdowns */
+}
+
+.form-control, .form-select {
+    border-radius: 8px; /* Consistent rounded corners */
+    border: 1px solid #ced4da;
+    padding: 10px 15px;
+    font-size: 1rem;
+}
+
+/* Sort controls styling */
+.sort-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    min-width: 250px; /* Increased min-width for the sort controls container */
+}
+
+    .sort-controls .form-select {
+        flex-grow: 1; /* Allow the select to take available space */
+        min-width: 200px; /* Increased min-width for the select itself */
+    }
+
+.sort-direction-button {
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 50px; /* Ensure button has a minimum width */
+}
+
+    /* Style for the sort direction icon inside the button */
+    .sort-direction-button i {
+        font-size: 1.5rem; /* Made the icon bigger */
+    }
+
+
+/* Table Container Styling */
+.table-container {
+    background-color: #ffffff; /* White background for the table card */
+    border-radius: 16px; /* Rounded corners for the table container */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    overflow: hidden; /* Ensures border-radius applies to table content */
+    overflow-x: auto; /* Allows horizontal scrolling on small screens */
+    margin-bottom: 30px;
+}
+
+/* Table Styling */
+.course-table {
+    width: 100%;
+    border-collapse: collapse; /* Collapse borders between cells */
+    table-layout: auto;
+    min-width: 900px; /* Increased min-width to better accommodate content without squishing */
+}
+
+    .course-table th,
+    .course-table td {
+        padding: 12px 15px; /* Adjusted padding to match user table */
+        text-align: left;
+        border-bottom: 1px solid #e0e0e0; /* Light horizontal border between rows */
+        overflow: hidden; /* Still hide overflowed content by default */
+        border-right: 1px solid #e0e0e0; /* Vertical column separator line */
+    }
+
+        /* Specific styles for 'No' column */
+        .course-table th:first-child,
+        .course-table td:first-child {
+            width: 50px; /* Fixed width for the 'No' column */
+            text-align: center; /* Center align 'No' column content */
+        }
+
+        /* Specific styles for 'Course Type' column */
+        .course-table th:nth-child(4),
+        .course-table td:nth-child(4) {
+            width: 120px; /* Shorter width for Course Type */
+            text-align: center; /* Center align Course Type content */
+        }
+
+        /* Specific styles for 'Staff Name' column */
+        .course-table th:nth-child(6),
+        .course-table td:nth-child(6) {
+            width: 120px; /* Shorter width for Staff Name */
+        }
+
+        /* Specific styles for 'Action' column */
+        .course-table th:last-child,
+        .course-table td:last-child {
+            width: 100px; /* Shorter width for Action column */
+            border-right: none; /* Remove vertical border from the last column */
+        }
+
+        /* Allow Course Name and Topic Name to wrap and take available space */
+        .course-table th:nth-child(3), /* Course Name header */
+        .course-table td:nth-child(3), /* Course Name cell */
+        .course-table th:nth-child(5), /* Topic Name header */
+        .course-table td:nth-child(5) /* Topic Name cell */ {
+            white-space: normal; /* Allow text to wrap */
+            text-overflow: clip; /* Prevent ellipsis, show full text */
+            word-wrap: break-word; /* Ensure long words break */
+        }
+
+        /* Specific styles for 'Description' column - NEW/UPDATED */
+        .course-table td:nth-child(8) {
+            word-break: break-all; /* Breaks long words at any character */
+            overflow-wrap: break-word; /* Handles general long words */
+            white-space: normal; /* Ensures normal text wrapping */
+        }
+
+
+    .course-table thead th {
+        background-color: #f2f4f7; /* Light grey background for headers */
+        font-weight: bold; /* Bold text for headers */
+        color: black; /* Black text for headers as in user table */
+        text-transform: none; /* No uppercase for headers */
+        font-size: 1rem; /* Standard font size for headers */
+        text-align: center; /* Center align all header text */
+    }
+
+        /* Specific alignment for the "Course ID", "Course Name" column headers */
+        .course-table thead th:nth-child(2), /* Course ID column */
+        .course-table thead th:nth-child(3) /* Course Name column */ {
+            text-align: left; /* Keep these left-aligned */
+        }
+
+
+    .course-table tbody tr:hover {
+        background-color: #f5f5f5; /* Subtle hover effect for rows */
+    }
+
+    .course-table tbody tr:last-child td {
+        border-bottom: none; /* No border for the last row */
+    }
+
+/* Action buttons in table cells */
+.action-buttons {
+    display: flex;
+    justify-content: center; /* Center the action buttons */
+    gap: 5px; /* Small gap between buttons */
+}
+
+.btn {
+    padding: 8px 12px; /* Adjusted padding for action buttons */
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+/* Updated styling for primary action buttons (e.g., Edit) */
+.btn-primary {
+    background-color: white;
+    border-color: white;
+    color: #007bff; /* Primary blue for edit icon */
+    font-size: 15px;
+}
+
+    .btn-primary:hover {
+        background-color: #cceeff; /* Slightly darker blue on hover */
+        border-color: #80bfff;
+        transform: translateY(-1px);
+    }
+
+/* Updated styling for danger action buttons (e.g., Delete) */
+.btn-danger {
+    background-color: white;
+    border-color: white;
+    color: red;
+}
+
+    .btn-danger:hover {
+        background-color: #ffcccc; /* Slightly darker red on hover */
+        border-color: #ff8080;
+        transform: translateY(-1px);
+    }
+
+/* Pagination buttons */
+.d-flex.justify-content-center.mt-3 .btn {
+    background-color: #007bff; /* Blue for active pagination button */
+    color: white;
+    border: 1px solid #007bff;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-weight: 600;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+
+    .d-flex.justify-content-center.mt-3 .btn.active {
+        background-color: #0056b3; /* Darker blue for active state */
+        border-color: #0056b3;
+    }
+
+.d-flex.justify-content-center.mt-3 .btn-outline-primary {
+    background-color: white !important;
+    color: black;
+    border-color: white !important;
+    border-radius: 50px;
+}
+
+    .d-flex.justify-content-center.mt-3 .btn-outline-primary:hover {
+        background-color: #e9f2ff; /* Light blue on hover */
+        color: #0056b3;
+        border-color: white;
+        border-radius: 50px;
+    }
+
+.btn-outline-primary {
+    background-color: white;
+    color: black; /* Info blue */
+    border-color: #17a2b8;
+}
+
+    .btn-outline-primary:hover {
+        background-color: #e9f2ff; /* Light blue on hover */
+        color: #0056b3;
+        border-color: #0056b3;
+    }
+
+.d-flex.justify-content-center.mt-3 .btn.active {
+    background-color: white; /* Primary blue for active page */
+    border-color: gray;
+    color: black; /* White text for active page */
+}
+
+
+/* Inline Edit/Add Form */
+.edit-form-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    padding: 25px;
+    margin-top: 30px;
+}
+
+    .edit-form-card h5 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #343a40;
+        margin-bottom: 20px;
+    }
+
+    .edit-form-card .form-label {
+        font-weight: 500;
+        color: #495057;
+        margin-bottom: 5px;
+    }
+
+    .edit-form-card .form-control,
+    .edit-form-card .form-select {
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+        padding: 10px 15px;
+        font-size: 1rem;
+    }
+
+    .edit-form-card .btn-success {
+        background-color: #28a745;
+        border-color: #28a745;
+        color: white;
+    }
+
+        .edit-form-card .btn-success:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+        }
+
+    .edit-form-card .btn-secondary {
+        background-color: #6c757d;
+        border-color: #6c757d;
+        color: white;
+    }
+
+        .edit-form-card .btn-secondary:hover {
+            background-color: #5a6268;
+            border-color: #545b62;
+        }
+
+/* Course Type Indicators - IMPROVED */
+.online-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background-color: #28a745; /* Green */
+    border-radius: 50%;
+    margin-right: 5px;
+    vertical-align: middle;
+    box-shadow: 0 0 5px rgba(40, 167, 69, 0.5); /* Green glow */
+}
+
+.offline-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background-color: #6c757d; /* Grey */
+    border-radius: 50%;
+    margin-right: 5px;
+    vertical-align: middle;
+    box-shadow: 0 0 5px rgba(108, 117, 125, 0.5); /* Grey glow */
+}
+
+.hybrid-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background-color: #007bff; /* Blue */
+    border-radius: 50%;
+    margin-right: 5px;
+    vertical-align: middle;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Blue glow */
+}
+
+
+/* Loading, Error, and No Data States */
+.loading-indicator,
+.error-message,
+.no-data-message {
+    text-align: center;
+    padding: 50px;
+    font-size: 1.2rem;
+    color: #6c757d;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    margin-top: 20px; /* Add some space from header */
+}
+
+.error-message {
+    color: #dc3545; /* Red for error messages */
+}
+
+.loading-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .page-title {
+        font-size: 2rem;
+    }
+
+    .add-course-button {
+        width: 100%; /* Full width button on small screens */
+        justify-content: center;
+    }
+
+    .header-section {
+        flex-direction: column; /* Stack header elements vertically */
+        align-items: flex-start; /* Align to the start */
+    }
+
+    .filter-sort-section {
+        flex-direction: column; /* Stack filters/sort vertically */
+        align-items: stretch; /* Stretch items to fill width */
+    }
+
+    .search-input-container,
+    .filter-dropdown-container,
+    .sort-controls {
+        width: 100%; /* Full width for filter/sort elements */
+        min-width: unset; /* Remove minimum width constraints */
+    }
+}

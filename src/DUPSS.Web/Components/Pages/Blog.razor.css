@@ -1,0 +1,132 @@
+﻿/* === CAMPAIGN PAGE STYLES === */
+
+.blog-page-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 60px 20px;
+    font-family: 'Segoe UI', sans-serif;
+    color: #333;
+    background-color: #f7f9fc;
+    background: url('/images/blog13.jpg') no-repeat top center;
+    background-size:cover;
+}
+
+.page-title {
+    font-size: 2.8rem;
+    font-weight: 800;
+    text-align: center;
+    color: lightblue;
+    margin-bottom: 10px;
+}
+
+.page-subtitle {
+    text-align: center;
+    color: #7f8c8d;
+    font-size: 1.2rem;
+    margin-bottom: 40px;
+}
+
+.loading-indicator,
+.error-message,
+.no-blog-message {
+    text-align: center;
+    color: #555;
+    padding: 40px;
+    font-size: 1.1rem;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 5px solid rgba(0, 0, 0, 0.1);
+    border-top: 5px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.blog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 30px;
+    padding: 20px 0;
+}
+
+.blog-card {
+    background-color: #fff;
+    border-radius: 15px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+    .blog-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 20px rgba(0, 0, 0, 0.12);
+    }
+
+.card-image img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.card-content {
+    padding: 20px;
+}
+
+.blog-name {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.blog-type {
+    font-size: 0.95rem;
+    color: #888;
+    margin-bottom: 10px;
+}
+
+.card-content p {
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #555;
+}
+
+.main-explore-button-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 40px;
+}
+
+.main-explore-button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    padding: 12px 30px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+    .main-explore-button:hover:enabled {
+        background-color: #2980b9;
+    }
+
+    .main-explore-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }

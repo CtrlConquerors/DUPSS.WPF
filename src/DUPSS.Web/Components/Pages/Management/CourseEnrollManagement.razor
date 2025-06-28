@@ -1,0 +1,615 @@
+﻿@page "/Management/CourseEnroll"
+@using DUPSS.API.Models.DTOs
+@using DUPSS.Web.Components.Layout
+@using DUPSS.Web.Components.Service
+@inject CourseEnrollApiService CourseEnrollApiService
+@inject UserApiService UserApiService
+@inject CourseApiService CourseApiService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
+@layout ManagementLayout
+
+<div class="enroll-management-container">
+    <div class="header-section">
+        <h1 class="page-title">Course Enrollment Management</h1>
+        <div class="actions">
+            <button class="add-enrollment-button" @onclick="AddEnrollment">
+                <i class="bi bi-plus-circle"></i> ADD ENROLLMENT
+            </button>
+        </div>
+    </div>
+
+    <div class="filter-sort-section">
+        <div class="search-input-container">
+            <input type="text" class="form-control" placeholder="Search by Enroll ID, Member, Course, Status"
+                   @bind="searchTerm" @bind:event="oninput" @onkeyup="FilterAndSortEnrollments"/>
+        </div>
+
+        <div class="filter-dropdown-container">
+            <select class="form-select" @onchange="OnStatusFilterChanged">
+                <option value="">All Statuses</option>
+                <option value="Enrolled">Enrolled</option>
+                <option value="Completed">Completed</option>
+                <option value="Dropped">Dropped</option>
+            </select>
+        </div>
+
+        <div class="filter-dropdown-container">
+            <select class="form-select" @onchange="OnMemberFilterChanged">
+                <option value="">All Members</option>
+                @if (members != null)
+                {
+                    @foreach (var member in members)
+                    {
+                        <option value="@member.UserId">@member.Username</option>
+                    }
+                }
+            </select>
+        </div>
+
+        <div class="filter-dropdown-container">
+            <select class="form-select" @onchange="OnCourseFilterChanged">
+                <option value="">All Courses</option>
+                @if (courses != null)
+                {
+                    @foreach (var course in courses)
+                    {
+                        <option value="@course.CourseId">@course.CourseName</option>
+                    }
+                }
+            </select>
+        </div>
+
+        <div class="sort-controls">
+            <select class="form-select" @bind="sortBy" @bind:after="FilterAndSortEnrollments">
+                <option value="EnrollId">Sort by Enroll ID</option>
+                <option value="EnrollDate">Sort by Enroll Date</option>
+                <option value="CompleteDate">Sort by Complete Date</option>
+                <option value="MemberName">Sort by Member Name</option>
+                <option value="CourseName">Sort by Course Name</option>
+                <option value="Status">Sort by Status</option>
+            </select>
+            <button class="btn btn-outline-primary sort-direction-button" @onclick="ToggleSortDirection">
+                @if (sortDirection == SortDirection.Ascending)
+                {
+                    <i class="bi bi-sort-alpha-down"></i>
+                }
+                else
+                {
+                    <i class="bi bi-sort-alpha-down-alt"></i>
+                }
+            </button>
+        </div>
+    </div>
+
+    @if (enrollments == null || members == null || courses == null)
+    {
+        <div class="loading-indicator">Loading enrollments and related data...</div>
+    }
+    else if (hasError)
+    {
+        <div class="error-message">Error loading data. Please try again later.</div>
+    }
+    else if (!filteredEnrollments.Any())
+    {
+        <div class="no-data-message">No enrollments found matching your criteria.</div>
+    }
+    else
+    {
+        <div class="table-container">
+            <table class="enrollment-table">
+                <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Enroll ID</th>
+                    <th>Member Name</th>
+                    <th>Course Name</th>
+                    <th>Status</th>
+                    <th>Enroll Date</th>
+                    <th>Complete Date</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                @{
+                    var index = (currentPage - 1) * itemsPerPage + 1;
+                }
+                @foreach (var enroll in PaginatedEnrollments)
+                {
+                    <tr>
+                        <td>@index</td>
+                        <td>@enroll.EnrollId</td> 
+                        <td>@enroll.Member?.Username</td>
+                        <td>@enroll.Course?.CourseName</td>
+                        <td>
+                            <span class="status-badge @GetStatusClass(enroll.Status)">
+                                @enroll.Status
+                            </span>
+                        </td>
+                        <td>@enroll.EnrollDate.ToString("yyyy-MM-dd")</td>
+                        <td>@(enroll.CompleteDate?.ToString("yyyy-MM-dd") ?? "-")</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-sm btn-primary me-2"
+                                        @onclick="() => EditEnrollment(enroll.EnrollId)">
+                                    <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger"
+                                        @onclick="() => DeleteEnrollment(enroll.EnrollId)">
+                                    <i class="bi bi-trash3-fill"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    index++;
+                }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-center mt-3">
+            @for (var i = 1; i <= TotalPages; i++)
+            {
+                var pageIndex = i;
+                <button class="btn btn-outline-primary mx-1 @(pageIndex == currentPage ? "active" : "")"
+                        @onclick="() => GoToPage(pageIndex)">
+                    @pageIndex
+                </button>
+            }
+        </div>
+    }
+
+    @if (showEditForm)
+    {
+        <div class="card p-3 my-4 edit-form-card">
+            <h5>@(isNewEnrollment ? "Add New Enrollment" : "Edit Enrollment: " + enrollmentToEdit.EnrollId)</h5>
+
+            @if (!string.IsNullOrEmpty(validationMessage))
+            {
+                <div class="alert alert-danger" role="alert">
+                    @validationMessage
+                </div>
+            }
+
+            <div class="mb-3">
+                <label class="form-label">Enroll ID</label>
+                @* UPDATED: Always disable the EnrollId input field *@
+                <input class="form-control" @bind="enrollmentToEdit.EnrollId" disabled="true"/>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Member</label>
+                <select class="form-select" @bind="enrollmentToEdit.MemberId">
+                    <option value="">Select Member</option>
+                    @if (members != null)
+                    {
+                        @foreach (var member in members)
+                        {
+                            <option value="@member.UserId">@member.Username</option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Course</label>
+                <select class="form-select" @bind="enrollmentToEdit.CourseId">
+                    <option value="">Select Course</option>
+                    @if (courses != null)
+                    {
+                        @foreach (var course in courses)
+                        {
+                            <option value="@course.CourseId">@course.CourseName</option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Status</label>
+                <select class="form-select" @bind="enrollmentToEdit.Status">
+                    <option value="">Select Status</option>
+                    <option value="Enrolled">Enrolled</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Dropped">Dropped</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Enroll Date</label>
+                <input type="date" class="form-control" @bind="enrollmentToEdit.EnrollDate"/>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Complete Date</label>
+                <input type="date" class="form-control" @bind="enrollmentToEdit.CompleteDate"/>
+            </div>
+
+            <div>
+                <button class="btn btn-success me-2" @onclick="SaveEnrollment">Save</button>
+                <button class="btn btn-secondary" @onclick="CancelEdit">Cancel</button>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<CourseEnrollDTO>? enrollments;
+    private List<CourseEnrollDTO> filteredEnrollments = new List<CourseEnrollDTO>();
+    private List<UserDTO>? members; 
+    private List<CourseDTO>? courses;
+    private bool hasError = false;
+    private int currentPage = 1;
+    private int itemsPerPage = 8;
+    private string validationMessage = string.Empty;
+
+    // Search, Sort, Filter state
+    private string searchTerm = string.Empty;
+    private string selectedStatus = string.Empty;
+    private string selectedMemberId = string.Empty;
+    private string selectedCourseId = string.Empty;
+    private string sortBy = "EnrollId";
+    private SortDirection sortDirection = SortDirection.Ascending;
+
+    private enum SortDirection { Ascending, Descending }
+
+    // For Add/Edit Form
+    private CourseEnrollDTO enrollmentToEdit = new CourseEnrollDTO
+    {
+        EnrollId = "",
+        MemberId = "",
+        CourseId = "",
+        Status = "Enrolled", // Default status
+        EnrollDate = DateOnly.FromDateTime(DateTime.Today),
+        CompleteDate = null
+    };
+    private bool showEditForm = false;
+    private bool isNewEnrollment = false;
+
+    private IEnumerable<CourseEnrollDTO> PaginatedEnrollments =>
+        filteredEnrollments?
+            .Skip((currentPage - 1) * itemsPerPage)
+            .Take(itemsPerPage) ?? Enumerable.Empty<CourseEnrollDTO>();
+
+    private int TotalPages => (int)Math.Ceiling((filteredEnrollments?.Count ?? 0) / (double)itemsPerPage);
+
+    private void GoToPage(int page)
+    {
+        if (page < 1) page = 1;
+        if (page > TotalPages) page = TotalPages;
+
+        if (currentPage != page)
+        {
+            currentPage = page;
+            StateHasChanged();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Fetch all data concurrently
+            var enrollmentsTask = CourseEnrollApiService.GetAllAsync();
+            var usersTask = UserApiService.GetAllAsync();
+            var coursesTask = CourseApiService.GetAllAsync();
+
+            await Task.WhenAll(enrollmentsTask, usersTask, coursesTask);
+
+            enrollments = enrollmentsTask.Result;
+            var allUsers = usersTask.Result;
+            courses = coursesTask.Result;
+
+            // Assuming members have RoleId starting with "ME"
+            // Note: If "ME" is not the correct prefix for Members, adjust this.
+            // In earlier conversations, "MB" was sometimes used.
+            members = allUsers?.Where(u => u.RoleId.StartsWith("ME", StringComparison.OrdinalIgnoreCase)).ToList();
+
+            hasError = false;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching data: {ex.Message}");
+            hasError = true;
+        }
+        finally
+        {
+            // Ensure lists are initialized
+            enrollments ??= new List<CourseEnrollDTO>();
+            members ??= new List<UserDTO>();
+            courses ??= new List<CourseDTO>();
+
+            FilterAndSortEnrollments();
+        }
+    }
+
+    private void FilterAndSortEnrollments()
+    {
+        if (enrollments == null)
+        {
+            filteredEnrollments = new List<CourseEnrollDTO>();
+            return;
+        }
+
+        IEnumerable<CourseEnrollDTO> query = enrollments;
+
+        // Apply Search Term
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var lowerSearchTerm = searchTerm.ToLower();
+            query = query.Where(e =>
+                (e.EnrollId?.ToLower().Contains(lowerSearchTerm) ?? false) ||
+                (e.Member?.Username?.ToLower().Contains(lowerSearchTerm) ?? false) ||
+                (e.Course?.CourseName?.ToLower().Contains(lowerSearchTerm) ?? false) ||
+                (e.Status?.ToLower().Contains(lowerSearchTerm) ?? false)
+            );
+        }
+
+        // Apply Status Filter
+        if (!string.IsNullOrWhiteSpace(selectedStatus))
+        {
+            query = query.Where(e => e.Status == selectedStatus);
+        }
+
+        // Apply Member Filter
+        if (!string.IsNullOrWhiteSpace(selectedMemberId))
+        {
+            query = query.Where(e => e.MemberId == selectedMemberId);
+        }
+
+        // Apply Course Filter
+        if (!string.IsNullOrWhiteSpace(selectedCourseId))
+        {
+            query = query.Where(e => e.CourseId == selectedCourseId);
+        }
+
+        // Apply Sorting
+        switch (sortBy)
+        {
+            case "EnrollId":
+                query = sortDirection == SortDirection.Ascending ?
+                    query.OrderBy(e => e.EnrollId) :
+                    query.OrderByDescending(e => e.EnrollId);
+                break;
+            case "EnrollDate":
+                query = sortDirection == SortDirection.Ascending ?
+                    query.OrderBy(e => e.EnrollDate) :
+                    query.OrderByDescending(e => e.EnrollDate);
+                break;
+            case "CompleteDate":
+                query = sortDirection == SortDirection.Ascending ?
+                    query.OrderBy(e => e.CompleteDate) :
+                    query.OrderByDescending(e => e.CompleteDate);
+                break;
+            case "MemberName":
+                query = sortDirection == SortDirection.Ascending ?
+                    query.OrderBy(e => e.Member?.Username, StringComparer.OrdinalIgnoreCase) :
+                    query.OrderByDescending(e => e.Member?.Username, StringComparer.OrdinalIgnoreCase);
+                break;
+            case "CourseName":
+                query = sortDirection == SortDirection.Ascending ?
+                    query.OrderBy(e => e.Course?.CourseName, StringComparer.OrdinalIgnoreCase) :
+                    query.OrderByDescending(e => e.Course?.CourseName, StringComparer.OrdinalIgnoreCase);
+                break;
+            case "Status":
+                query = sortDirection == SortDirection.Ascending ?
+                    query.OrderBy(e => e.Status, StringComparer.OrdinalIgnoreCase) :
+                    query.OrderByDescending(e => e.Status, StringComparer.OrdinalIgnoreCase);
+                break;
+            default:
+                query = query.OrderBy(e => e.EnrollId);
+                break;
+        }
+
+        filteredEnrollments = query.ToList();
+        currentPage = 1; // Reset to first page after filtering/sorting
+    }
+
+    private void OnStatusFilterChanged(ChangeEventArgs e)
+    {
+        selectedStatus = e.Value?.ToString() ?? string.Empty;
+        FilterAndSortEnrollments();
+    }
+
+    private void OnMemberFilterChanged(ChangeEventArgs e)
+    {
+        selectedMemberId = e.Value?.ToString() ?? string.Empty;
+        FilterAndSortEnrollments();
+    }
+
+    private void OnCourseFilterChanged(ChangeEventArgs e)
+    {
+        selectedCourseId = e.Value?.ToString() ?? string.Empty;
+        FilterAndSortEnrollments();
+    }
+
+    private void ToggleSortDirection()
+    {
+        sortDirection = sortDirection == SortDirection.Ascending ? SortDirection.Descending : SortDirection.Ascending;
+        FilterAndSortEnrollments();
+    }
+
+    private string GenerateNextEnrollmentId()
+    {
+        var maxIdNum = 0;
+        if (enrollments != null && enrollments.Any())
+        {
+            maxIdNum = enrollments
+                .Select(e => {
+                    if (e.EnrollId != null && e.EnrollId.StartsWith("CE") && int.TryParse(e.EnrollId.Substring(2), out var num))
+                    {
+                        return num;
+                    }
+                    return 0;
+                })
+                .DefaultIfEmpty(0)
+                .Max();
+        }
+        return $"CE{maxIdNum + 1:D4}"; // Format as CE0001, CE0010, CE0100, CE1000
+    }
+
+    private void AddEnrollment()
+    {
+        validationMessage = string.Empty;
+        enrollmentToEdit = new CourseEnrollDTO
+        {
+            EnrollId = GenerateNextEnrollmentId(),
+            MemberId = "",
+            CourseId = "",
+            Status = "Enrolled",
+            EnrollDate = DateOnly.FromDateTime(DateTime.Today),
+            CompleteDate = null
+        };
+        isNewEnrollment = true;
+        showEditForm = true;
+    }
+
+    private void EditEnrollment(string enrollId)
+    {
+        validationMessage = string.Empty;
+        var enrollment = enrollments?.FirstOrDefault(e => e.EnrollId == enrollId);
+        if (enrollment != null)
+        {
+            enrollmentToEdit = new CourseEnrollDTO
+            {
+                EnrollId = enrollment.EnrollId,
+                MemberId = enrollment.MemberId,
+                CourseId = enrollment.CourseId,
+                Status = enrollment.Status,
+                EnrollDate = enrollment.EnrollDate,
+                CompleteDate = enrollment.CompleteDate
+            };
+            isNewEnrollment = false;
+            showEditForm = true;
+        }
+    }
+
+    private async Task SaveEnrollment()
+    {
+        // Validation checks
+        if (string.IsNullOrWhiteSpace(enrollmentToEdit.MemberId))
+        {
+            validationMessage = "Please select a Member.";
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(enrollmentToEdit.CourseId))
+        {
+            validationMessage = "Please select a Course.";
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(enrollmentToEdit.Status))
+        {
+            validationMessage = "Please select a Status.";
+            return;
+        }
+        if (enrollmentToEdit.EnrollDate == default(DateOnly))
+        {
+            validationMessage = "Please select an Enroll Date.";
+            return;
+        }
+
+        // Check if CompleteDate is before EnrollDate if both are set
+        if (enrollmentToEdit.CompleteDate.HasValue && enrollmentToEdit.EnrollDate > enrollmentToEdit.CompleteDate.Value)
+        {
+            validationMessage = "Complete Date cannot be before Enroll Date.";
+            return;
+        }
+
+        validationMessage = string.Empty;
+
+        try
+        {
+            if (isNewEnrollment)
+            {
+                // Check for duplicate enrollment (member-course pair) before creating
+                var existingEnroll = await CourseEnrollApiService.GetEnrollmentsByMemberAndCourse(enrollmentToEdit.MemberId, enrollmentToEdit.CourseId);
+                if (existingEnroll != null && existingEnroll.Any())
+                {
+                    validationMessage = "This member is already enrolled in this course.";
+                    return;
+                }
+
+                await CourseEnrollApiService.CreateAsync(enrollmentToEdit);
+                Console.WriteLine($"Enrollment '{enrollmentToEdit.EnrollId}' created.");
+            }
+            else
+            {
+                await CourseEnrollApiService.UpdateAsync(enrollmentToEdit);
+                Console.WriteLine($"Enrollment '{enrollmentToEdit.EnrollId}' updated.");
+            }
+
+            // Re-fetch all data after successful operation
+            enrollments = await CourseEnrollApiService.GetAllAsync();
+            FilterAndSortEnrollments();
+            showEditForm = false;
+            GoToPage(1);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving enrollment: {ex.Message}");
+            validationMessage = $"Error saving enrollment: {ex.Message}";
+        }
+    }
+
+    private void CancelEdit()
+    {
+        validationMessage = string.Empty;
+        enrollmentToEdit = new CourseEnrollDTO
+        {
+            EnrollId = "",
+            MemberId = "",
+            CourseId = "",
+            Status = "Enrolled",
+            EnrollDate = DateOnly.FromDateTime(DateTime.Today),
+            CompleteDate = null
+        };
+        showEditForm = false;
+        isNewEnrollment = false;
+    }
+
+    private async Task DeleteEnrollment(string enrollId)
+    {
+        var enrollmentToDelete = enrollments?.FirstOrDefault(e => e.EnrollId == enrollId);
+        if (enrollmentToDelete == null)
+        {
+            Console.WriteLine($"Enrollment with ID {enrollId} not found for deletion.");
+            return;
+        }
+
+        var confirmed = await JS.InvokeAsync<bool>("confirm", $"Are you sure you want to delete enrollment '{enrollmentToDelete.EnrollId}' for member '{enrollmentToDelete.Member?.Username}' in course '{enrollmentToDelete.Course?.CourseName}'?");
+        if (confirmed)
+        {
+            try
+            {
+                var success = await CourseEnrollApiService.DeleteAsync(enrollId);
+                if (success)
+                {
+                    Console.WriteLine($"Enrollment '{enrollId}' deleted successfully.");
+                    enrollments = await CourseEnrollApiService.GetAllAsync(); // Re-fetch
+                    FilterAndSortEnrollments();
+                    GoToPage(1);
+                }
+                else
+                {
+                    Console.WriteLine($"Failed to delete enrollment '{enrollId}'.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting enrollment: {ex.Message}");
+            }
+        }
+    }
+
+    // Helper to get CSS class for enrollment status
+    private string GetStatusClass(string status)
+    {
+        return status switch
+        {
+            "Enrolled" => "status-enrolled",
+            "Completed" => "status-completed",
+            "Dropped" => "status-dropped",
+            _ => ""
+        };
+    }
+}

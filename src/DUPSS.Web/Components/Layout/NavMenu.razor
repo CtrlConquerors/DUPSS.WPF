@@ -1,0 +1,151 @@
+﻿@inject NavigationManager NavigationManager
+@using Microsoft.AspNetCore.Components.Authorization
+
+<nav class="navbar navbar-expand-lg @NavMenuBackgroundClass">
+    <div class="container-fluid">
+        <a href="/" class="navbar-brand d-flex align-items-center" style="gap: 5px;">
+            <img src="images/logo.png" alt="Logo" class="navbar-brand-logo" style="width: 70px; height: 70px;"/>
+            <span style="font-size: 24px;">ALPHA</span>
+        </a>
+
+        <form class="search-bar" role="search">
+            <input type="search" placeholder=" Search" aria-label="Search" required/>
+            <button class="search-btn" type="submit">
+                <span>Search</span>
+            </button>
+        </form>
+
+        <input type="checkbox" id="nav-toggle" class="nav-toggle-checkbox" hidden>
+        <label for="nav-toggle" class="navbar-toggler" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </label>
+
+        <div class="collapse navbar-collapse" id="topNavbar">
+            <ul class="navbar-nav ms-auto mb-2 mb-lg-0 gap-4">
+                <AuthorizeView Roles="AD,MA,ST">
+                    <Authorized>
+                        <li class="nav-item">
+                            <NavLink class="nav-link" href="/Management/Dashboard">Management</NavLink>
+                        </li>
+                    </Authorized>
+                </AuthorizeView>
+
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="/aboutUs">About Us</NavLink>
+                </li>
+
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="/Course">Course</NavLink>
+                </li>
+
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="/Blog">Blog</NavLink>
+                </li>
+
+                <AuthorizeView Roles="ME,AD,ST,MA">
+                    <Authorized>
+                       
+
+                        <li class="nav-item">
+                            <NavLink class="nav-link" href="/AppointmentHome">Appointment</NavLink>
+                        </li>
+              
+                    </Authorized>
+
+                </AuthorizeView>
+
+
+                <AuthorizeView Roles="CO">
+                    <Authorized>
+
+                        <li class="nav-item">
+                            <NavLink class="nav-link" href="/ConsultantDashboard">Dashboard</NavLink>
+                        </li>
+
+                    </Authorized>
+
+                </AuthorizeView>
+
+
+                <li class="nav-item ">
+                    <NavLink class="nav-link d-flex align-items-center gap-0" href="/Campaign">
+                        Campaign
+                      
+                    </NavLink>
+                </li>
+
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="/Assessment">Assessment</NavLink>
+                </li>
+
+                <AuthorizeView>
+                    <Authorized>
+                        <li class="nav-item d-flex align-items-center position-relative">
+                            <img src="images/avatar2.png" class="avatar-img" alt="User Avatar"
+                                 title="@context.User.Identity.Name" @onclick="ToggleOverlay"/>
+                            <div class="avatar-overlay @(showOverlay ? "show" : "")" @onclick:stopPropagation>
+                                <div class="avatar-overlay-content">
+                                    <div class="avatar-overlay-header">
+                                        <span>@context.User.Identity.Name</span>
+                                    </div>
+                                    <NavLink class="avatar-overlay2-btn" @onclick="ToggleOverlay">
+                                        <i class="bi bi-person-circle"></i>Your Profile
+                                    </NavLink>
+                                    <NavLink class="avatar-overlay-btn" href="/logout" @onclick="ToggleOverlay">
+                                        <i class="bi bi-box-arrow-right"></i>Logout
+                                    </NavLink>
+                                </div>
+                            </div>
+                        </li>
+                    </Authorized>
+                    <NotAuthorized>                     
+                        <li class="nav-item">
+                            <NavLink class="get-started-btn" href="/login">
+                                <span class="get-started-text">Get Started</span>
+                                <span class="arrow-box">
+                                    <i class="bi bi-arrow-right"></i>
+                                </span>
+                            </NavLink>
+                        </li>
+                    </NotAuthorized>
+                </AuthorizeView>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+@code {
+    private bool showOverlay = false;
+    private string? currentUri;
+
+    protected override void OnInitialized()
+    {
+        currentUri = NavigationManager.Uri;
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        currentUri = e.Location;
+        StateHasChanged();
+    }
+
+    private string NavMenuBackgroundClass =>
+        currentUri?.Contains("/login", StringComparison.OrdinalIgnoreCase) == true ? "navmenu-login-bg"
+        : currentUri?.Contains("/CourseManagement", StringComparison.OrdinalIgnoreCase) == true ? "navmenu-course-bg"
+        : currentUri?.Contains("/CampaignManagement", StringComparison.OrdinalIgnoreCase) == true ? "navmenu-campaign-bg"
+        : currentUri?.Contains("/Management", StringComparison.OrdinalIgnoreCase) == true ? "navmenu-management-bg"
+        : currentUri?.Contains("/Blog", StringComparison.OrdinalIgnoreCase) == true ? "navmenu-blog-bg"    
+        : currentUri?.Contains("/register", StringComparison.OrdinalIgnoreCase) == true ? "navmenu-register-bg"
+        : "navmenu-default-bg";
+
+    private void ToggleOverlay()
+    {
+        showOverlay = !showOverlay;
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+}

@@ -1,0 +1,189 @@
+﻿@page "/AppointmentForConsultant"
+@using DUPSS.API.Models.DTOs
+@using DUPSS.Web.Components.Service
+@inject AuthenticationStateProvider AuthProvider
+@inject IJSRuntime JS
+@inject AppointmentApiService AppointmentService
+
+<h3>My Appointments</h3>
+
+@if (appointments == null)
+{
+    <p>Loading appointments...</p>
+}
+else if (!appointments.Any())
+{
+    <p>No appointments available at the moment.</p>
+}
+else
+{
+    <div class="mb-4">
+        <div class="row g-3 align-items-center">
+            <div class="col-auto">
+                <input class="form-control" @bind="searchKeyword" placeholder="🔍 Search by member or topic" />
+            </div>
+            <div class="col-auto">
+                <input type="date" class="form-control" @bind="fromDate" />
+            </div>
+            <div class="col-auto">
+                <input type="date" class="form-control" @bind="toDate" />
+            </div>
+            <div class="col-auto">
+                <select class="form-select" @bind="selectedStatus">
+                    <option value="">-- Status --</option>
+                    <option>Pending</option>
+                    <option>Accepted</option>
+                    <option>Declined</option>
+                    <option>Finished</option>
+                    <option>Cancel</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-primary" @onclick="ApplyFilter">Apply Filter</button>
+                <button class="btn btn-secondary" @onclick="ResetFilter">Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Member</th>
+                <th>Topic</th>
+                <th>Note</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var appt in filteredAppointments)
+            {
+                <tr>
+                    <td>@appt.AppointmentDate.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>@appt.Member?.Username</td>
+                    <td>@appt.Topic</td>
+                    <td>
+                        <InputTextArea class="form-control" @bind-Value="appt.Notes" />
+                        <button class="btn btn-sm btn-outline-primary mt-1"
+                                @onclick="@(() => SaveNotes(appt))">
+                            💾 Save Notes
+                        </button>
+                    </td>
+                    <td>
+                        <span class="status-badge @appt.Status.ToLowerInvariant()">@appt.Status</span>
+                    </td>
+                    <td>
+                        @if (appt.Status == "Pending")
+                        {
+                            <button class="btn btn-success btn-sm me-1" @onclick="@(() => UpdateStatus(appt.AppointmentId, "Accepted"))">✅ Accept</button>
+                            <button class="btn btn-danger btn-sm" @onclick="@(() => UpdateStatus(appt.AppointmentId, "Declined"))">❌ Decline</button>
+                        }
+                        else if (appt.Status == "Accepted" )
+                        {
+                            <button class="btn btn-danger btn-sm" @onclick="@(() => UpdateStatus(appt.AppointmentId, "Finished"))">✔️ Mark as Finished</button>
+                        }
+                        else if (appt.Status == "Declined")
+                        {
+                            <span class="text-muted declined">This Appointment has been declined</span>
+                        }
+                        else if (appt.Status == "Cancel")
+                        {
+                            <span class="text-muted cancel">This Appointment has been cancelled by user.</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted finished">This Appointment has been finished</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<AppointmentDTO>? appointments;
+    private List<AppointmentDTO> filteredAppointments = new();
+
+    private string searchKeyword = "";
+    private DateTime? fromDate = null;
+    private DateTime? toDate = null;
+    private string selectedStatus = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthProvider.GetAuthenticationStateAsync();
+        var userId = authState.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            appointments = new List<AppointmentDTO>();
+            return;
+        }
+
+        appointments = await AppointmentService.GetAppointmentsForConsultantAsync(userId);
+        filteredAppointments = appointments.ToList(); // copy ban đầu
+    }
+
+    private async Task UpdateStatus(string appointmentId, string newStatus)
+    {
+        var confirmed = await JS.InvokeAsync<bool>("confirm", $"Are you sure to mark this appointment as {newStatus}?");
+        if (!confirmed) return;
+
+        var success = await AppointmentService.UpdateAppointmentStatusAsync(appointmentId, newStatus);
+
+        if (success)
+        {
+            var appt = appointments.FirstOrDefault(a => a.AppointmentId == appointmentId);
+            if (appt != null)
+                appt.Status = newStatus;
+
+            ApplyFilter();
+
+            await JS.InvokeVoidAsync("alert", $"Appointment marked as {newStatus}.");
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("alert", $"Failed to update appointment status.");
+        }
+    }
+
+    private async Task SaveNotes(AppointmentDTO appt)
+    {
+        var confirmed = await JS.InvokeAsync<bool>("confirm", "Send this note to user?");
+        if (!confirmed) return;
+
+        var success = await AppointmentService.UpdateAppointmentNotesAsync(appt.AppointmentId, appt.Notes);
+
+        if (success)
+        {
+            await JS.InvokeVoidAsync("alert", "Note saved successfully.");
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("alert", "Failed to save note.");
+        }
+    }
+
+    private void ApplyFilter()
+    {
+        filteredAppointments = appointments
+            .Where(a =>
+                (string.IsNullOrEmpty(searchKeyword) ||
+                 a.Member?.Username?.Contains(searchKeyword, StringComparison.OrdinalIgnoreCase) == true ||
+                 a.Topic?.Contains(searchKeyword, StringComparison.OrdinalIgnoreCase) == true) &&
+                (!fromDate.HasValue || a.AppointmentDate.Date >= fromDate.Value.Date) &&
+                (!toDate.HasValue || a.AppointmentDate.Date <= toDate.Value.Date) &&
+                (string.IsNullOrEmpty(selectedStatus) || a.Status == selectedStatus)
+            ).ToList();
+    }
+
+    private void ResetFilter()
+    {
+        searchKeyword = "";
+        fromDate = null;
+        toDate = null;
+        selectedStatus = "";
+        filteredAppointments = appointments.ToList();
+    }
+}

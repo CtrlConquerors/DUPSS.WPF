@@ -1,0 +1,104 @@
+﻿/* --- Main Footer Styling --- */
+.main-footer {
+    background-color: #3766ff;
+    color: #f0f2f5;
+    padding: 40px 0;
+    margin-top: 60px;
+    margin-bottom: -30px;
+    font-family: 'Open Sans', sans-serif;
+    border-radius: 50px;
+    position: relative;
+    overflow: hidden;
+}
+
+    .main-footer .footer-content-wrapper {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 30px;
+    }
+
+    .main-footer .footer-section {
+        flex: 1;
+        min-width: 280px;
+        padding: 15px;
+        text-align: left;
+    }
+
+.rain-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 120px;
+    width: 100%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/*.main-footer .footer-content-wrapper {
+    position: relative;
+    z-index: 1 ;
+}*/
+
+/* Logo Section */
+.main-footer .footer-logo-section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    background-color: none;
+    padding-top: 50px;
+    margin-left: 20px;
+}
+
+.main-footer .footer-logo {
+    width: 130px;
+    height: 130px;
+    background-color: #fff;
+    padding: 7px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.main-footer .footer-copyright {
+    font-size: 0.9em;
+    opacity: 0.8;
+}
+
+/* Information Section */
+.main-footer .footer-info-section {
+    text-align: center;
+    padding-top: 50px;
+    padding-right: 9px;
+    background-color: none;
+}
+
+    .main-footer .footer-info-section p {
+        margin-bottom: 8px;
+        font-size: 0.95em;
+    }
+
+/* Headings in Footer */
+.main-footer .footer-heading {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.3em;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #ffd700;
+    position: relative;
+    padding-bottom: 5px;
+}
+
+    .main-footer .footer-heading::after {
+        content: '';
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: 0;
+        width: 60px;
+        height: 3px;
+        background-color: #ffd700;
+        border-radius: 2px;
+    }

@@ -1,0 +1,434 @@
+﻿/* Appointment Home - Artistic, Eye-Pleasing, Only Card/Button Hover */
+
+/* Main container: glassmorphism, soft shadow, and subtle border */
+.appointment-home-container {
+    position: relative;
+    width: 98vw;
+    margin-left: -7px;
+    margin-right: -7px;
+    left: 50%;
+    right: 50%;
+    transform: translateX(-50%);
+    margin: 4rem auto 3rem auto;
+    padding: 3.5rem 3.5rem 2.5rem 3.5rem;
+    background: rgba(255,255,255,0.88);
+    border-radius: 2.7rem;
+    box-shadow: 0 16px 64px 0 #3554d133, 0 2px 8px #0000000d;
+    backdrop-filter: blur(10px);
+    border: 1.5px solid #eaf0ff;
+    min-height: 80vh;
+    overflow: hidden;
+    transition: box-shadow 0.5s cubic-bezier(.4,2,.6,1), background 0.5s cubic-bezier(.4,2,.6,1);
+}
+
+    /* Decorative floating shapes */
+    .appointment-home-container::before,
+
+    .appointment-home-container::after {
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        z-index: 0;
+        opacity: 0.16;
+        pointer-events: none;
+    }
+
+    .appointment-home-container::before {
+        width: 220px;
+        height: 220px;
+        background: radial-gradient(circle at 30% 30%, #6e8efb 0%, #3554d1 100%);
+        top: -80px;
+        left: -80px;
+    }
+
+    .appointment-home-container::after {
+        width: 180px;
+        height: 180px;
+        background: radial-gradient(circle at 70% 70%, #f5f8ff 0%, #6e8efb 100%);
+        bottom: -60px;
+        right: -60px;
+    }
+
+/* Decorative icon or illustration */
+.appointment-home-icon {
+    font-size: 4.5rem;
+    color: #3554d1;
+    margin-bottom: 1.7rem;
+    filter: drop-shadow(0 2px 18px #3554d133);
+    display: block;
+    text-align: center;
+    z-index: 1;
+    position: relative;
+    transition: filter 0.5s cubic-bezier(.4,2,.6,1);
+}
+
+/* Title styling: bold, gradient, shadow */
+.appointment-home-title {
+    font-size: 3.1rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    margin-bottom: 0.8rem;
+    background: linear-gradient(90deg, #3554d1 0%, #6e8efb 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 10px 40px #3554d133;
+    text-align: center;
+    z-index: 1;
+    position: relative;
+}
+
+/* Subtitle or tagline: soft, modern */
+.appointment-home-subtitle {
+    font-size: 1.45rem;
+    font-weight: 600;
+    color: #3554d1;
+    margin-bottom: 2.5rem;
+    opacity: 0.92;
+    text-align: center;
+    z-index: 1;
+    position: relative;
+}
+
+/* --- ENHANCED APPOINTMENT INFO SECTION --- */
+.appointment-home-info {
+    font-size: 1.18rem;
+    color: #1a2340;
+    margin-bottom: 2.7rem;
+    line-height: 1.85;
+    background: linear-gradient(120deg, #f5f8ff 80%, #eaf0ff 100%);
+    border-radius: 2.2rem;
+    box-shadow: 0 8px 40px #3554d122, 0 2px 8px #6e8efb22;
+    padding: 2.5rem 3rem 2.2rem 3rem;
+    border-left: 10px solid #6e8efb;
+    border-right: 10px solid #eaf0ff;
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+    transition: box-shadow 0.4s cubic-bezier(.4,2,.6,1), border-color 0.3s, background 0.4s, transform 0.3s;
+}
+
+.appointment-home-info:hover {
+    box-shadow: 0 24px 64px #3554d144, 0 0 0 12px #6e8efb22;
+    border-left: 10px solid #3554d1;
+    border-right: 10px solid #6e8efb;
+    background: linear-gradient(120deg, #eaf0ff 60%, #f5f8ff 100%);
+    transform: translateY(-8px) scale(1.025);
+}
+
+.appointment-home-info::before {
+    content: "";
+    position: absolute;
+    left: -60px;
+    top: -60px;
+    width: 160px;
+    height: 160px;
+    background: radial-gradient(circle, #6e8efb33 0%, #fff0 80%);
+    border-radius: 50%;
+    z-index: 0;
+    opacity: 0.18;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+.appointment-home-info::after {
+    content: "";
+    position: absolute;
+    right: -60px;
+    bottom: -60px;
+    width: 120px;
+    height: 120px;
+    background: radial-gradient(circle, #3554d133 0%, #fff0 80%);
+    border-radius: 50%;
+    z-index: 0;
+    opacity: 0.13;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+.appointment-home-info h4 {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: #3554d1;
+    margin-bottom: 1.2rem;
+    letter-spacing: 1px;
+    position: relative;
+    z-index: 1;
+    text-shadow: 0 2px 12px #6e8efb11;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+}
+
+.appointment-home-info h4::before {
+    content: "💡";
+    font-size: 1.7rem;
+    margin-right: 0.7rem;
+    filter: drop-shadow(0 2px 8px #3554d133);
+}
+
+.appointment-home-info ul {
+    margin-left: 1.5rem;
+    margin-bottom: 1.1rem;
+    padding-left: 0.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.appointment-home-info li {
+    margin-bottom: 0.6rem;
+    font-size: 1.15rem;
+    line-height: 1.7;
+    position: relative;
+    padding-left: 1.5em;
+    font-weight: 500;
+    color: #3554d1;
+    border-radius: 0.7em;
+    transition: background 0.2s;
+}
+    /* Stylish h3 for section subheadings */
+    .appointment-home-info h3 {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-top: 1.7rem;
+        margin-bottom: 1rem;
+        letter-spacing: 0.7px;
+        text-shadow: 0 2px 12px #6e8efb22;
+        padding-left: 0.8em;
+        border-radius: 0.4em;
+        transition: box-shadow 0.4s cubic-bezier(.4,2,.6,1), border-color 0.3s cubic-bezier(.4,0,.2,1), background 0.4s cubic-bezier(.4,2,.6,1), transform 0.3s cubic-bezier(.4,0,.2,1);
+        position: relative;
+        z-index: 1;
+    }
+
+        .appointment-home-info h3:hover {
+            border-left: 4px solid #3554d1;
+            text-shadow: 0 4px 24px #3554d144;
+            transform: translateX(4px) scale(1.03);
+            transition: box-shadow 0.4s cubic-bezier(.4,0,.2,1), border-color 0.3s cubic-bezier(.4,2,.6,1), background 0.4s cubic-bezier(.4,0,.2,1), transform 0.3s cubic-bezier(.4,2,.6,1);
+            cursor: pointer;
+        }
+.appointment-home-info li::before {
+    color: #6e8efb;
+    font-size: 1.2em;
+    position: absolute;
+    left: 0.2em;
+    top: 0;
+    line-height: 1.2;
+}
+
+.appointment-home-info p {
+    margin-bottom: 1.1rem;
+    position: relative;
+    z-index: 1;
+    color: #1a2340;
+    font-weight: 400;
+}
+
+.appointment-home-info strong {
+    color: #3554d1;
+    font-weight: 700;
+    background: linear-gradient(90deg, #eaf0ff 60%, #6e8efb 100%);
+    border-radius: 0.4em;
+    padding: 0.1em 0.4em;
+}
+
+/* Consultant cards grid: floating, soft, interactive, artistic */
+.row-cols-md-2 .col, .row-cols-lg-3 .col, .row-cols-lg-4 .col {
+    display: flex;
+    align-items: stretch;
+}
+
+.card.h-100 {
+    border-radius: 2.1rem !important;
+    border: none;
+    background: linear-gradient(120deg, #f5f8ff 80%, #eaf0ff 100%);
+    box-shadow: 0 8px 32px #3554d122, 0 1.5px 6px #6e8efb22;
+    transition: box-shadow 0.38s cubic-bezier(.4,2,.6,1), transform 0.32s cubic-bezier(.4,2,.6,1), background 0.32s;
+    margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 1;
+    padding: 0;
+    overflow: visible;
+    min-width: 220px;
+    min-height: 140px;
+    display: flex;
+    align-items: stretch;
+    justify-content: stretch;
+    filter: drop-shadow(0 2px 8px #6e8efb11);
+    will-change: transform, box-shadow;
+}
+
+    .card.h-100:hover {
+        box-shadow: 0 32px 80px #3554d188, 0 0 0 12px #6e8efb33;
+        background: linear-gradient(120deg, #eaf0ff 60%, #f5f8ff 100%);
+        transform: translateY(-16px) scale(1.06) rotate(-1.5deg);
+        z-index: 3;
+        filter: drop-shadow(0 8px 32px #6e8efb33);
+    }
+
+    .card.h-100::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: 2.1rem;
+        pointer-events: none;
+        background: linear-gradient(120deg, #6e8efb22 0%, #fff0 100%);
+        opacity: 0;
+        transition: opacity 0.4s;
+        z-index: 1;
+    }
+
+    .card.h-100:hover::before {
+        opacity: 1;
+    }
+
+    .card.h-100::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 0;
+        height: 0;
+        background: radial-gradient(circle, #6e8efb44 0%, #fff0 80%);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        opacity: 0;
+        transition: width 0.5s, height 0.5s, opacity 0.5s;
+        z-index: 2;
+    }
+
+    .card.h-100:hover::after {
+        width: 180%;
+        height: 180%;
+        opacity: 0.18;
+    }
+
+.card-body {
+    border-radius: 1.5rem;
+    padding: 1.6rem 1.5rem 1.3rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    background: transparent;
+    box-shadow: none;
+    position: relative;
+    z-index: 3;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    transition: background 0.32s;
+}
+
+.card.h-100:hover .card-body {
+    background: rgba(245, 248, 255, 0.85);
+    box-shadow: 0 2px 18px #6e8efb22;
+}
+
+.card-title {
+    font-size: 1.32rem;
+    font-weight: 900;
+    margin-bottom: 0.7rem;
+    color: #3554d1;
+    letter-spacing: 0.8px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-shadow: 0 2px 12px #6e8efb22;
+    transition: color 0.3s;
+}
+
+.card.h-100:hover .card-title {
+    color: #1e2a78;
+}
+
+.card-title::before {
+    content: "👤";
+    font-size: 1.5rem;
+    margin-right: 0.5rem;
+    filter: drop-shadow(0 2px 8px #3554d133);
+}
+
+.card-text {
+    font-size: 1.12rem;
+    color: #222;
+    opacity: 0.97;
+    margin-bottom: 0.2rem;
+    line-height: 1.6;
+    transition: color 0.3s;
+}
+
+.card.h-100:hover .card-text {
+    color: #3554d1;
+    opacity: 1;
+}
+
+.card-text strong {
+    color: #3554d1;
+    font-weight: 700;
+}
+
+/* Make the consultant cards grid more spacious */
+.row.row-cols-1 .col,
+.row.row-cols-md-2 .col,
+.row.row-cols-lg-3 .col,
+.row.row-cols-lg-4 .col {
+    padding-bottom: 1.7rem;
+}
+
+/* Call to action button: bold, glassy, animated */
+.appointment-home-cta {
+    display: inline-block;
+    padding: 1.1rem 2.7rem;
+    font-size: 1.22rem;
+    font-weight: 900;
+    color: #fff;
+    background: linear-gradient(90deg, #3554d1 60%, #6e8efb 100%);
+    border: none;
+    border-radius: 2rem;
+    box-shadow: 0 4px 18px #3554d122;
+    letter-spacing: 1px;
+    margin-top: 1.5rem;
+    margin-bottom: 0.7rem;
+    margin-right: 1.5rem;
+    transition: background 0.22s, transform 0.18s, box-shadow 0.22s;
+    cursor: pointer;
+    text-decoration: none;
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+}
+
+    .appointment-home-cta:last-child {
+        margin-right: 0;
+    }
+
+    .appointment-home-cta::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 0;
+        height: 0;
+        background: rgba(255,255,255,0.18);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        transition: width 0.3s, height 0.3s;
+        z-index: 0;
+    }
+
+    .appointment-home-cta:hover::after {
+        width: 220%;
+        height: 220%;
+    }
+
+    .appointment-home-cta:hover, .appointment-home-cta:focus {
+        background: linear-gradient(90deg, #6e8efb 60%, #3554d1 100%);
+        transform: translateY(-3px) scale(1.055);
+        box-shadow: 0 12px 36px #3554d144;
+        color: #fff;
+        text-decoration: none;
+    }
+
+/* Section spacing for desktop */
+.mb-5 {
+    margin-bottom: 2.9rem !important;
+}

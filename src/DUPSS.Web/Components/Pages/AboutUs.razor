@@ -1,0 +1,173 @@
+﻿@page "/aboutUs"
+@inject IJSRuntime JS
+
+<div class="animated-bg-shapes">
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+</div>
+
+<div class="aboutus-sticky-slides">
+    <section class="aboutus-slide slide1">
+        <div class="hero-content">
+            <h1>
+                <span id="typewriter-text"></span><span class="typewriter-caret">|</span>
+            </h1>
+            <p>Empowering communities. Transforming lives. Fighting drug abuse through compassion, education, and united action.</p>
+        </div>
+    </section>
+    <section class="aboutus-slide slide2">
+        <div class="about-section animated-section">
+            <h2>Who We Are</h2>
+            <p>
+                ALPHA is a volunteer-powered charity driven by hope and humanity. We uplift individuals and families affected by drug-related challenges through prevention, support, and education. Our team unites under one purpose — building healthier futures together.
+            </p>
+        </div>
+
+        <div class="about-section split-section">
+            <div class="text">
+                <h2>Mission & Vision</h2>
+                <p>
+                    <strong>Mission:</strong> To educate, advocate, and guide people toward drug-free lives.<br>
+                    <strong>Vision:</strong> A society where every person has access to the support they need to overcome and prevent substance abuse.
+                </p>
+            </div>
+            <div class="image">
+                <img src="/images/blog1.gif" alt="Mission Vision">
+            </div>
+        </div>
+
+        <div class="about-section icon-grid">
+            <h2>What We Do</h2>
+            <div class="grid">
+                <div class="card">
+                    <i class="fa-solid fa-bullhorn"></i>
+                    <h3>Campaigns</h3>
+                    <p>We organize school and community workshops to raise awareness and knowledge about drug prevention.</p>
+                </div>
+                <div class="card">
+                    <i class="fa-solid fa-hands-helping"></i>
+                    <h3>Support</h3>
+                    <p>Professional guidance and emotional support offered to those who need someone to talk to.</p>
+                </div>
+                <div class="card">
+                    <i class="fa-solid fa-chalkboard-teacher"></i>
+                    <h3>Education</h3>
+                    <p>Interactive training programs tailored to students, parents, and leaders to drive awareness and action.</p>
+                </div>
+                <div class="card">
+                    <i class="fa-solid fa-users"></i>
+                    <h3>Community</h3>
+                    <p>Building a united network that collaborates with local organizations to create real change.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="about-section timeline">
+            <h2>Our Journey</h2>
+            <ul>
+                <li>
+                    <div class="dot"></div>
+                    <div class="content">
+                        <h4>2019</h4>
+                        <p>Founded by a group of passionate youth aiming to make a difference in drug prevention.</p>
+                    </div>
+                </li>
+                <li>
+                    <div class="dot"></div>
+                    <div class="content">
+                        <h4>2021</h4>
+                        <p>Reached 10,000+ students and held 100+ awareness events in schools and communities.</p>
+                    </div>
+                </li>
+                <li>
+                    <div class="dot"></div>
+                    <div class="content">
+                        <h4>2024</h4>
+                        <p>Launched nationwide peer-support networks to foster ongoing connections and care.</p>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+
+        <div class="about-section core-values">
+            <h2>The Meaning of "ALPHA"</h2>
+            <div class="value-list">
+                <div><strong>A</strong> - Advocating for change and health</div>
+                <div><strong>L</strong> - Love and compassion for all</div>
+                <div><strong>P</strong> - Providing support and education</div>
+                <div><strong>H</strong> - Hope for a better future</div>
+                <div><strong>A</strong> - Awakening awareness and action</div>
+            </div>
+        </div>
+
+        
+    </section>
+
+</div>
+<div class="about-section team">
+    <h2>Meet Our Team</h2>
+    <div class="team-grid">
+        <div class="member">
+            <img src="/images/1.jpg" alt="Volunteer">
+            <h4>Linh Tran</h4>
+            <p>Head of Volunteer Programs</p>
+        </div>
+        <div class="member">
+            <img src="/images/2.jpg" alt="Counselor">
+            <h4>Minh Pham</h4>
+            <p>Senior Consultant</p>
+        </div>
+        <div class="member">
+            <img src="/images/3.jpg" alt="Manager">
+            <h4>Sarah Nguyen</h4>
+            <p>Operations Manager</p>
+        </div>
+    </div>
+</div>
+
+
+<Footer />
+
+<script>
+    window.typeWriterEffect = (text, speed = 120) => {
+        const el = document.getElementById('typewriter-text');
+        const caret = document.querySelector('.typewriter-caret');
+        if (!el) return;
+        el.textContent = '';
+        if (caret) caret.classList.remove('hide-caret');
+        let i = 0;
+        function type() {
+            if (i < text.length) {
+                el.textContent += text.charAt(i);
+                i++;
+                setTimeout(type, speed);
+            }
+        }
+        type();
+        // Hide caret after x seconds
+        if (caret) {
+            setTimeout(() => {
+                caret.classList.add('hide-caret');
+            }, 3000);
+        }
+    };
+</script>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JS.InvokeVoidAsync("typeWriterEffect", "We Are ALPHA");
+        }
+    }
+}

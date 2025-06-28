@@ -1,0 +1,19 @@
+﻿@page "/logout"
+@using DUPSS.Web.Components.Service
+@inject JwtAuthenticationStateProvider AuthProvider
+@inject NavigationManager NavigationManager
+
+<div class="logout-container">
+    <div class="logout-message">
+        <h2>Logging out...</h2>
+        <p>You will be redirected to the home page.</p>
+    </div>
+</div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        AuthProvider.Logout();
+        NavigationManager.NavigateTo("/", forceLoad: true);
+    }
+}

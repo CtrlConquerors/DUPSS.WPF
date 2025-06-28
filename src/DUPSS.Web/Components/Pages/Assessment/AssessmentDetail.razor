@@ -1,0 +1,242 @@
+﻿@page "/Assessment/Info/{AssessmentId}"
+@using DUPSS.API.Models.DTOs
+@using DUPSS.Web.Components.Service
+@inject AssessmentApiService AssessmentApiService
+@inject NavigationManager NavigationManager
+
+<div class="assessment-info-container">
+    @if (isLoading)
+    {
+        <div class="loading-indicator">
+            <p>Loading assessment information...</p>
+            <div class="spinner"></div>
+        </div>
+    }
+    else if (hasError)
+    {
+        <div class="error-message">
+            <p>Could not load assessment information. Please try again.</p>
+            <button class="retry-button" @onclick="RetryLoadAssessment">Retry</button>
+            <button class="back-button" @onclick="GoBack">Back to Assessments</button>
+        </div>
+    }
+    else if (assessment == null)
+    {
+        <div class="no-assessment-message">
+            <p>Assessment not found.</p>
+            <button class="back-button" @onclick="GoBack">Back to Assessments</button>
+        </div>
+    }
+    else
+    {
+        <div class="assessment-info-header">
+            <h1 class="assessment-title">@assessment.AssessmentType Assessment</h1>
+            <div class="assessment-meta">
+                <span class="version-badge">Version @assessment.Version</span>
+                <span class="language-badge">@GetLanguageDisplay(assessment.Language)</span>
+                <span class="duration-badge">@GetEstimatedDuration(assessment.AssessmentType)</span>
+            </div>
+        </div>
+
+        <div class="assessment-info-content">
+            <div class="info-section">
+                <h2>About This Assessment</h2>
+                <p class="assessment-description">
+                    @(assessment.Description ?? GetDetailedDescription(assessment.AssessmentType))
+                </p>
+            </div>
+
+            <div class="info-section">
+                <h2>What to Expect</h2>
+                <div class="expectation-grid">
+                    <div class="expectation-item">
+                        <i class="icon-clock"></i>
+                        <h3>Duration</h3>
+                        <p>This assessment typically takes @GetEstimatedDuration(assessment.AssessmentType) to complete.</p>
+                    </div>
+                    <div class="expectation-item">
+                        <i class="icon-questions"></i>
+                        <h3>Questions</h3>
+                        <p>@GetQuestionCount(assessment.AssessmentType) questions about your experiences and behaviors.</p>
+                    </div>
+                    <div class="expectation-item">
+                        <i class="icon-privacy"></i>
+                        <h3>Privacy</h3>
+                        <p>Your responses are confidential and used only for assessment purposes.</p>
+                    </div>
+                    <div class="expectation-item">
+                        <i class="icon-results"></i>
+                        <h3>Results</h3>
+                        <p>Receive immediate feedback and personalized recommendations.</p>
+                    </div>
+                </div>
+            </div>
+
+            @if (assessment.AssessmentType == "CRAFFT")
+            {
+                <div class="info-section">
+                    <h2>About CRAFFT</h2>
+                    <p>The CRAFFT is a validated screening tool designed to identify adolescents and young adults who may have a substance use disorder or are at risk of developing one.</p>
+                    
+                    <h3>What CRAFFT Stands For:</h3>
+                    <ul class="crafft-acronym">
+                        <li><strong>C</strong> - Have you ever ridden in a CAR driven by someone (including yourself) who was "high" or had been using alcohol or drugs?</li>
+                        <li><strong>R</strong> - Do you ever use alcohol or drugs to RELAX, feel better about yourself, or fit in?</li>
+                        <li><strong>A</strong> - Do you ever use alcohol/drugs while you are by yourself, ALONE?</li>
+                        <li><strong>F</strong> - Do you ever FORGET things you did while using alcohol or drugs?</li>
+                        <li><strong>F</strong> - Do your family or FRIENDS ever tell you that you should cut down on your drinking or drug use?</li>
+                        <li><strong>T</strong> - Have you gotten into TROUBLE while you were using alcohol or drugs?</li>
+                    </ul>
+                </div>
+            }
+            else if (assessment.AssessmentType == "ASSIST")
+            {
+                <div class="info-section">
+                    <h2>About ASSIST</h2>
+                    <p>The Alcohol, Smoking and Substance Involvement Screening Test (ASSIST) was developed by the World Health Organization (WHO) to detect and manage substance use and related problems in primary and general medical care settings.</p>
+                    
+                    <h3>What ASSIST Covers:</h3>
+                    <ul class="assist-substances">
+                        <li>Tobacco products</li>
+                        <li>Alcoholic beverages</li>
+                        <li>Cannabis (marijuana, pot, grass, hash, etc.)</li>
+                        <li>Cocaine (coke, crack, etc.)</li>
+                        <li>Amphetamine type stimulants</li>
+                        <li>Inhalants (nitrous, glue, petrol, paint thinner, etc.)</li>
+                        <li>Sedatives or sleeping pills</li>
+                        <li>Hallucinogens</li>
+                        <li>Opioids</li>
+                        <li>Other drugs</li>
+                    </ul>
+                </div>
+            }
+
+            <div class="info-section">
+                <h2>Important Notes</h2>
+                <div class="important-notes">
+                    <div class="note-item warning">
+                        <i class="icon-warning"></i>
+                        <p><strong>Not a Diagnosis:</strong> This screening tool is not a substitute for professional medical advice, diagnosis, or treatment.</p>
+                    </div>
+                    <div class="note-item info">
+                        <i class="icon-info"></i>
+                        <p><strong>Seek Professional Help:</strong> If you're concerned about your substance use, please consult with a healthcare professional.</p>
+                    </div>
+                    <div class="note-item success">
+                        <i class="icon-check"></i>
+                        <p><strong>Confidential:</strong> Your responses are private and will not be shared without your consent.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="assessment-actions">
+            <button class="btn-primary start-assessment" @onclick="StartAssessment">
+                <i class="icon-play"></i>
+                Start Assessment
+            </button>
+            <button class="btn-secondary back-button" @onclick="GoBack">
+                <i class="icon-arrow-left"></i>
+                Back to Assessments
+            </button>
+        </div>
+    }
+</div>
+
+<Footer />
+
+@code {
+    [Parameter]
+    public string AssessmentId { get; set; } = string.Empty;
+
+    private AssessmentDTO? assessment;
+    private bool isLoading = true;
+    private bool hasError = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAssessmentAsync();
+    }
+
+    private async Task LoadAssessmentAsync()
+    {
+        isLoading = true;
+        hasError = false;
+        try
+        {
+            Console.WriteLine($"Loading assessment info for AssessmentId: {AssessmentId}");
+            assessment = await AssessmentApiService.GetByIdAsync(AssessmentId);
+            if (assessment == null)
+            {
+                Console.WriteLine($"Assessment not found for AssessmentId: {AssessmentId}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading assessment info: {ex.Message}");
+            hasError = true;
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task RetryLoadAssessment()
+    {
+        await LoadAssessmentAsync();
+    }
+
+    private void StartAssessment()
+    {
+        Console.WriteLine($"Starting assessment: AssessmentId={AssessmentId}");
+        NavigationManager.NavigateTo($"/Assessment/Take/{AssessmentId}", forceLoad: true);
+    }
+
+    private void GoBack()
+    {
+        Console.WriteLine("Navigating back to /Assessment");
+        NavigationManager.NavigateTo("/Assessment", forceLoad: true);
+    }
+
+    private string GetLanguageDisplay(string language)
+    {
+        return language switch
+        {
+            "eng" => "English",
+            "vie" => "Tiếng Việt",
+            _ => language.ToUpper()
+        };
+    }
+
+    private string GetEstimatedDuration(string assessmentType)
+    {
+        return assessmentType switch
+        {
+            "CRAFFT" => "2-3 minutes",
+            "ASSIST" => "5-10 minutes",
+            _ => "3-5 minutes"
+        };
+    }
+
+    private string GetDetailedDescription(string assessmentType)
+    {
+        return assessmentType switch
+        {
+            "CRAFFT" => "The CRAFFT is a validated screening instrument designed for use with adolescents and young adults to identify those who may have problematic substance use. It consists of six questions that cover various aspects of substance use behavior and its consequences. The tool is widely used in healthcare settings to help identify individuals who may benefit from further assessment or intervention.",
+            "ASSIST" => "The Alcohol, Smoking and Substance Involvement Screening Test (ASSIST) is a comprehensive screening tool developed by the World Health Organization to identify people who may be at risk of developing problems related to their substance use. It covers a wide range of substances and provides risk levels to guide appropriate interventions. The ASSIST is designed for use in primary healthcare settings and has been validated across different cultures and populations.",
+            _ => "This is a validated screening tool designed to assess patterns of substance use and identify individuals who may benefit from further evaluation or intervention. The assessment provides valuable insights into risk levels and offers personalized recommendations based on responses."
+        };
+    }
+
+    private string GetQuestionCount(string assessmentType)
+    {
+        return assessmentType switch
+        {
+            "CRAFFT" => "6",
+            "ASSIST" => "8-10",
+            _ => "Multiple"
+        };
+    }
+}
