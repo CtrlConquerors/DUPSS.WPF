@@ -1,8 +1,7 @@
-﻿using DUPSS.API.Models.AccessLayer;
-using DUPSS.API.Models.AccessLayer.DAOs;
-using DUPSS.API.Models.AccessLayer.Interfaces;
-using DUPSS.API.Models.DTOs;
-using DUPSS.API.Models.Objects;
+﻿using DUPSS.DB;
+using DUPSS.DAO.DAOs;
+using DUPSS.DTO.DTOs;
+using DUPSS.Objects;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DUPSS.API.Controllers
@@ -11,14 +10,11 @@ namespace DUPSS.API.Controllers
     public class AssessmentsController : ControllerBase
     {
         private readonly AssessmentDAO _assessmentDAO;
-        private readonly IAssessmentResultDAO _assessmentResultDAO;
 
         public AssessmentsController(AppDbContext context)
         {
             _assessmentDAO = new AssessmentDAO(context);
-            _assessmentResultDAO = new AssessmentResultDAO(context);
         }
-
 
         [HttpGet("GetAll")]
         public async Task<ActionResult<IEnumerable<AssessmentDTO>>> GetAll()
@@ -112,75 +108,6 @@ namespace DUPSS.API.Controllers
             {
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
-        }
-        [HttpPost("{assessmentId}/submit")]
-        public async Task<ActionResult<AssessmentResultDTO>> SubmitAssessment(string assessmentId, [FromBody] AssessmentSubmissionDTO submission)
-        {
-            try
-            {
-                // Fetch the assessment with questions and answers
-                var assessment = await _assessmentDAO.GetByIdAsync(assessmentId, includeQuestions: true, includeAnswers: true);
-                if (assessment == null)
-                    return NotFound($"Assessment with ID {assessmentId} not found.");
-
-                // Calculate total score and score details
-                int totalScore = 0;
-                var scoreDetails = new List<string>();
-
-                foreach (var answer in submission.Answers)
-                {
-                    var selectedAnswer = assessment.Questions
-                        .SelectMany(q => q.Answers)
-                        .FirstOrDefault(a => a.AnswerId == answer.AnswerId);
-
-                    if (selectedAnswer == null)
-                        return BadRequest($"Invalid answer ID: {answer.AnswerId}");
-
-                    totalScore += selectedAnswer.ScoreValue;
-                    scoreDetails.Add($"{selectedAnswer.QuestionId}: {selectedAnswer.ScoreDescription ?? selectedAnswer.Answer}");
-                }
-
-                // Generate recommendation based on score (customize for CRAFFT/ASSIST)
-                string recommendation = GenerateRecommendation(assessment.AssessmentType, totalScore);
-
-                // Create and save the result
-                var result = new AssessmentResult
-                {
-                    ResultId = Guid.NewGuid().ToString(),
-                    AssessmentId = assessmentId,
-                    MemberId = submission.MemberId,
-                    TotalScore = totalScore,
-                    ScoreDetails = string.Join("; ", scoreDetails),
-                    Recommendation = recommendation,
-                    CompletedOn = DateOnly.FromDateTime(DateTime.Now)
-                };
-
-                var createdResult = await _assessmentResultDAO.CreateAsync(result);
-                return CreatedAtAction(nameof(AssessmentResultsController.GetById), "AssessmentResults", new { resultId = createdResult.ResultId }, createdResult);
-            }
-            catch (Npgsql.NpgsqlException ex)
-            {
-                return StatusCode(500, $"Database error: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
-        }
-
-        private string GenerateRecommendation(string assessmentType, int totalScore)
-        {
-            if (assessmentType == "CRAFFT")
-            {
-                return totalScore >= 2 ? "Further evaluation recommended due to potential substance use issues." : "Low risk of substance use issues.";
-            }
-            else if (assessmentType == "ASSIST")
-            {
-                if (totalScore <= 10) return "Low risk: No intervention needed.";
-                else if (totalScore <= 26) return "Moderate risk: Brief intervention recommended.";
-                else return "High risk: Referral to specialist treatment recommended.";
-            }
-            return "No recommendation available.";
         }
     }
 }

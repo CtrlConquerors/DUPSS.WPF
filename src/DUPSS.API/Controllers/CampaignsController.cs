@@ -1,8 +1,8 @@
-﻿using DUPSS.API.Models.AccessLayer;
-using DUPSS.API.Models.AccessLayer.DAOs;
-using DUPSS.API.Models.AccessLayer.Interfaces;
-using DUPSS.API.Models.DTOs;
-using DUPSS.API.Models.Objects;
+﻿using DUPSS.DB;
+using DUPSS.DAO.DAOs;
+using DUPSS.DAO.Interfaces;
+using DUPSS.DTO.DTOs;
+using DUPSS.Objects;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Internal;
 

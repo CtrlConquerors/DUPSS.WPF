@@ -1,0 +1,248 @@
+﻿<Page x:Class="DUPSS.WPF.Views.Home"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d"
+      d:DesignHeight="1200" d:DesignWidth="1000"
+      Title="Home">
+
+    <Page.Resources>
+        <!-- Styles for mimicking the CSS -->
+        <Style x:Key="HeroButton" TargetType="Button">
+            <Setter Property="Background">
+                <Setter.Value>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Color="#1e68ff" Offset="0"/>
+                        <GradientStop Color="#7fbcff" Offset="1"/>
+                    </LinearGradientBrush>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="12 25"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="5">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="BlogTopicTitle" TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="Foreground" Value="#FF1B6EC2"/>
+            <!-- Matches #1b6ec2 -->
+            <Setter Property="Margin" Value="0,0,0,20"/>
+        </Style>
+
+        <Style x:Key="BlogTopicItem" TargetType="Border">
+            <Setter Property="Background" Value="#F8FAFC"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Margin" Value="0,0,0,5"/>
+            <Setter Property="Padding" Value="7 11"/>
+        </Style>
+
+        <Style x:Key="BlogCardShadow" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect ShadowDepth="2" Direction="270" Color="Black" Opacity="0.1" BlurRadius="5"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Page.Resources>
+
+    <Grid Background="#F0F2F5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Hero Section -->
+        <Grid Grid.Row="0" Margin="20" Height="400"
+              HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Grid.Background>
+                <!-- This mimics the background image from CSS -->
+                <ImageBrush ImageSource="/DUPSS.WPF;component/Assets/Images/hero-background.jpg" Stretch="UniformToFill"/>
+            </Grid.Background>
+            <Border Background="#66000000" />
+            <!-- Overlay for text readability -->
+
+            <Border Width="400" Height="200" HorizontalAlignment="Right" VerticalAlignment="Center"
+                    Style="{StaticResource BlogCardShadow}" Margin="0,0,50,0">
+                <StackPanel Margin="20">
+                    <TextBlock Text="A Journey of Overcoming Temptation" FontSize="24" FontWeight="Bold" Foreground="#1B6EC2" TextWrapping="Wrap" Margin="0,0,0,10"/>
+                    <TextBlock Text="&quot;I didn’t think one small decision could change everything—until it did.&quot;"
+                               FontStyle="Italic" Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,20"/>
+                    <Button Content="READ THE STORY →" Style="{StaticResource HeroButton}"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Blog Topics and Blog Cards Section -->
+        <Grid Grid.Row="1" Margin="20,0,20,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <!-- blog-topics col-md-3 equivalent -->
+                <ColumnDefinition Width="*"/>
+                <!-- blog-card col-md-9 equivalent -->
+            </Grid.ColumnDefinitions>
+
+            <!-- Blog Topics -->
+            <StackPanel Grid.Column="0" Margin="0,0,20,0">
+                <TextBlock Text="Blog Topics" Style="{StaticResource BlogTopicTitle}"/>
+                <StackPanel>
+                    <Border Style="{StaticResource BlogTopicItem}">
+                        <TextBlock Text="Health & Wellness" Foreground="#333"/>
+                    </Border>
+                    <Border Style="{StaticResource BlogTopicItem}">
+                        <TextBlock Text="Education" Foreground="#333"/>
+                    </Border>
+                    <Border Style="{StaticResource BlogTopicItem}">
+                        <TextBlock Text="Science & Research" Foreground="#333"/>
+                    </Border>
+                    <Border Style="{StaticResource BlogTopicItem}">
+                        <TextBlock Text="Policy & Advocacy" Foreground="#333"/>
+                    </Border>
+                    <Border Style="{StaticResource BlogTopicItem}">
+                        <TextBlock Text="Events & Campaigns" Foreground="#333"/>
+                    </Border>
+                    <Border Style="{StaticResource BlogTopicItem}">
+                        <TextBlock Text="Social Life" Foreground="#333"/>
+                    </Border>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- Blog Cards -->
+            <StackPanel Grid.Column="1" Margin="20,0,0,0">
+                <TextBlock Text="Trending Topics" Foreground="#1B6EC2" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,15"/>
+                <StackPanel Orientation="Vertical" Spacing="20" Margin="0,0,0,20">
+                    <!-- Blog Card 1 -->
+                    <Border Width="700" HorizontalAlignment="Left" Style="{StaticResource BlogCardShadow}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="200"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Margin="20">
+                                <TextBlock Text="Know the Facts: How Education Can Prevent Drug Abuse" FontSize="18" FontWeight="Bold" TextWrapping="Wrap" Margin="0,0,0,5"/>
+                                <TextBlock Text="Misinformation fuels risky behavior. Learn how evidence-based drug education in schools and communities empowers young people to make informed, healthy choices."
+                                           TextWrapping="Wrap" Foreground="Gray" Margin="0,0,0,10"/>
+                                <Border Background="LightGray" CornerRadius="3" Padding="5,2" HorizontalAlignment="Left">
+                                    <TextBlock Text="Education" FontSize="12" Foreground="Black"/>
+                                </Border>
+                                <TextBlock Margin="0,5,0,0" FontSize="12" Foreground="Gray">
+                                    By Mark Tuchel • <Run Foreground="#0892ff">7 min read</Run>
+                                </TextBlock>
+                            </StackPanel>
+                            <Image Grid.Column="1" Source="/DUPSS.WPF;component/Assets/Images/1.jpg" Stretch="UniformToFill"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Blog Card 2 -->
+                    <Border Width="700" HorizontalAlignment="Left" Style="{StaticResource BlogCardShadow}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="200"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Margin="20">
+                                <TextBlock Text="Building Resilience: Protective Factors Against Substance Use" FontSize="18" FontWeight="Bold" TextWrapping="Wrap" Margin="0,0,0,5"/>
+                                <TextBlock Text="Strong family bonds, peer support, and extracurricular activities can shield teens from addiction. Discover practical ways to foster resilience in your community."
+                                           TextWrapping="Wrap" Foreground="Gray" Margin="0,0,0,10"/>
+                                <Border Background="LightGray" CornerRadius="3" Padding="5,2" HorizontalAlignment="Left">
+                                    <TextBlock Text="Health & Wellness" FontSize="12" Foreground="Black"/>
+                                </Border>
+                                <TextBlock Margin="0,5,0,0" FontSize="12" Foreground="Gray">
+                                    By Harry Duval • <Run Foreground="#0892ff">4 min read</Run>
+                                </TextBlock>
+                            </StackPanel>
+                            <Image Grid.Column="1" Source="/DUPSS.WPF;component/Assets/Images/1.jpg" Stretch="UniformToFill"/>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+
+        <!-- New Hero Section (Carousel Placeholder) -->
+        <Grid Grid.Row="2" Margin="20" Height="300" Background="#F0F2F5">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Row="0" Text="Every individual and community has the ability to protect themselves from the risks of drug use and plays a vital role in building a healthier, safer society."
+                       TextWrapping="Wrap" TextAlignment="Center" FontSize="24" FontWeight="SemiBold" Margin="50,0,50,20"/>
+
+            <!-- Simple Horizontal Carousel Placeholder -->
+            <Border Grid.Row="1" BorderBrush="LightGray" BorderThickness="1" CornerRadius="10" Background="White"
+                    HorizontalAlignment="Center" VerticalAlignment="Stretch" Width="800">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Button Grid.Column="0" Content="&lt;" FontSize="24" Margin="10,0" VerticalAlignment="Center" Style="{StaticResource CarouselArrowButton}"/>
+                    <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                        <StackPanel Orientation="Horizontal" Margin="10">
+                            <!-- Carousel Images - Static for now, would be bound to a collection -->
+                            <Image Source="/DUPSS.WPF;component/Assets/Images/1.jpg" Width="380" Height="250" Margin="5" Stretch="UniformToFill"/>
+                            <Image Source="/DUPSS.WPF;component/Assets/Images/2.jpg" Width="380" Height="250" Margin="5" Stretch="UniformToFill"/>
+                            <Image Source="/DUPSS.WPF;component/Assets/Images/3.jpg" Width="380" Height="250" Margin="5" Stretch="UniformToFill"/>
+                            <Image Source="/DUPSS.WPF;component/Assets/Images/4.jpg" Width="380" Height="250" Margin="5" Stretch="UniformToFill"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                    <Button Grid.Column="2" Content="&gt;" FontSize="24" Margin="10,0" VerticalAlignment="Center" Style="{StaticResource CarouselArrowButton}"/>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Subscribe Container -->
+        <Border Grid.Row="3" Margin="20" CornerRadius="10" Background="White">
+            <Border.Effect>
+                <DropShadowEffect ShadowDepth="4" Direction="270" Color="Black" Opacity="0.1" BlurRadius="10"/>
+            </Border.Effect>
+            <Grid Margin="40" Height="200">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="0.4*"/>
+                    <ColumnDefinition Width="0.6*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <TextBlock Text="Stay up to date" Foreground="#1e60ff" FontSize="18" Margin="0,0,0,5"/>
+                    <TextBlock Text="Get Started" FontSize="28" FontWeight="Bold" Margin="0,0,0,10"/>
+                    <Grid Margin="0,0,0,5">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Grid.Column="0" Text="Enter your email.." Padding="10" FontSize="14" VerticalContentAlignment="Center" CornerRadius="5"/>
+                        <Button Grid.Column="1" Content="Register now" Background="#1e60ff" Foreground="White" Padding="10 20" FontSize="14" BorderThickness="0" CornerRadius="5" Margin="10,0,0,0"/>
+                    </Grid>
+                    <TextBlock Text="*You can unsubscribe anytime" FontSize="12" Foreground="Gray"/>
+                </StackPanel>
+                <Border Grid.Column="1" Background="LightGray" CornerRadius="10" Margin="20,0,0,0"/>
+            </Grid>
+        </Border>
+
+        <!-- Footer will typically be a separate UserControl or custom component in WPF -->
+        <!-- For now, it's just conceptual: <local:Footer /> -->
+
+    </Grid>
+</Page>

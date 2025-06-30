@@ -1,7 +1,7 @@
-﻿using DUPSS.API.Models.Common;
-using DUPSS.API.Models.DTOs;
-using DUPSS.API.Models.Objects;
+﻿using DUPSS.Common;
+using DUPSS.DTO.DTOs;
 using DUPSS.API.Services;
+using DUPSS.Objects;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

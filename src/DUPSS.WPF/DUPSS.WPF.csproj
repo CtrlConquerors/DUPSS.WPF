@@ -6,6 +6,21 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <UserSecretsId>f1aeb4f0-5835-420a-97e5-3c67ea47410d</UserSecretsId>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.6" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DUPSS.APIClients\DUPSS.ApiClients.csproj" />
+    <ProjectReference Include="..\DUPSS.API\DUPSS.API.csproj" />
+    <ProjectReference Include="..\DUPSS.Common\DUPSS.Common.csproj" />
+    <ProjectReference Include="..\DUPSS.DTO\DUPSS.DTO.csproj" />
+  </ItemGroup>
 
 </Project>

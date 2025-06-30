@@ -1,8 +1,8 @@
-﻿using DUPSS.API.Models.AccessLayer;
-using DUPSS.API.Models.AccessLayer.DAOs;
-using DUPSS.API.Models.Common;
-using DUPSS.API.Models.DTOs; // Đảm bảo namespace này được bao gồm
-using DUPSS.API.Models.Objects; // Đảm bảo namespace này được bao gồm cho User domain model
+﻿using DUPSS.DB;
+using DUPSS.DAO.DAOs;
+using DUPSS.Common;
+using DUPSS.DTO.DTOs; // Đảm bảo namespace này được bao gồm
+using DUPSS.Objects; // Đảm bảo namespace này được bao gồm cho User domain model
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using DUPSS.API.Models.AccessLayer.Interfaces; // Thêm dòng này cho IUserDAO
+using DUPSS.DAO.Interfaces; // Thêm dòng này cho IUserDAO
 
 namespace DUPSS.API.Controllers
 {
@@ -30,7 +30,7 @@ namespace DUPSS.API.Controllers
         }
 
         [HttpPost("Login")]
-        public async Task<ActionResult> Login([FromBody] Models.Common.LoginRequest request)
+        public async Task<ActionResult> Login([FromBody] Common.LoginRequest request)
         {
             try
             {

@@ -1,8 +1,7 @@
 ﻿using BCrypt.Net;
-using DUPSS.API.Models.AccessLayer;
-using DUPSS.API.Models.Common;
-using DUPSS.API.Models.DTOs;
-using DUPSS.API.Models.Objects;
+using DUPSS.Common;
+using DUPSS.DTO.DTOs;
+using DUPSS.Objects;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -10,6 +9,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using DUPSS.DB;
 
 namespace DUPSS.API.Services
 {

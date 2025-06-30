@@ -1,7 +1,8 @@
-using DUPSS.API.Models.AccessLayer;
-using DUPSS.API.Models.AccessLayer.DAOs;
-using DUPSS.API.Models.AccessLayer.Interfaces;
+using DUPSS.DB;
+using DUPSS.DAO.DAOs;
+using DUPSS.DAO.Interfaces;
 using DUPSS.API.Services;
+using DUPSS.DTO.DTOs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;

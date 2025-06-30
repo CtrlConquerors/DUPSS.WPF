@@ -1,7 +1,7 @@
-﻿using DUPSS.API.Models.AccessLayer;
-using DUPSS.API.Models.AccessLayer.DAOs;
-using DUPSS.API.Models.DTOs;
-using DUPSS.API.Models.Objects;
+﻿using DUPSS.DB;
+using DUPSS.DAO.DAOs;
+using DUPSS.DTO.DTOs;
+using DUPSS.Objects;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DUPSS.API.Controllers

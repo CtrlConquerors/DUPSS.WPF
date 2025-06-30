@@ -1,0 +1,14 @@
+﻿using DUPSS.DTO.DTOs;
+using DUPSS.Objects;
+
+namespace DUPSS.DAO.Interfaces
+{
+    public interface ICourseTopicDAO
+    {
+        Task<CourseTopicDTO> CreateAsync(CourseTopic courseTopic);
+        Task<CourseTopicDTO> GetByIdAsync(string topicId);
+        Task<List<CourseTopicDTO>> GetAllAsync();
+        Task<CourseTopicDTO> UpdateAsync(CourseTopic courseTopic);
+        Task<bool> DeleteAsync(string topicId);
+    }
+}

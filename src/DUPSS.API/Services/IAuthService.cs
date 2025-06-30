@@ -1,6 +1,6 @@
-﻿using DUPSS.API.Models.Common;
-using DUPSS.API.Models.DTOs;
-using DUPSS.API.Models.Objects;
+﻿using DUPSS.Common;
+using DUPSS.DTO.DTOs;
+using DUPSS.Objects;
 
 namespace DUPSS.API.Services
 {

@@ -1,7 +1,7 @@
-﻿using DUPSS.API.Models.AccessLayer.DAOs;
-using DUPSS.API.Models.AccessLayer.Interfaces; // Thêm namespace này để sử dụng ICourseDAO
-using DUPSS.API.Models.DTOs; // Thêm namespace này để sử dụng CourseDTO
-using DUPSS.API.Models.Objects; // Đảm bảo namespace này được bao gồm cho Course domain model
+﻿using DUPSS.DAO.DAOs;
+using DUPSS.DAO.Interfaces; // Thêm namespace này để sử dụng ICourseDAO
+using DUPSS.DTO.DTOs; // Thêm namespace này để sử dụng CourseDTO
+using DUPSS.Objects; // Đảm bảo namespace này được bao gồm cho Course domain model
 using Microsoft.AspNetCore.Mvc;
 using Npgsql; // Thêm namespace này cho NpgsqlException
 
