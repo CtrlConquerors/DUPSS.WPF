@@ -1,15 +1,107 @@
-﻿<Page x:Class="DUPSS.WPF.Views.Home"
-      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-      mc:Ignorable="d"
-      d:DesignHeight="1200" d:DesignWidth="1000"
-      Title="Home">
+﻿<Window x:Class="DUPSS.WPF.Views.Home"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DUPSS.WPF.Views"
+        mc:Ignorable="d"
+        Title="DUPSS Home" Height="800" Width="1200"
+        Background="{StaticResource WindowBackgroundBrush}">
+    <Window.Resources>
+        <!-- Global Styles based on Home.razor.css -->
+        <SolidColorBrush x:Key="PrimaryBlueBrush" Color="#1e68ff"/>
+        <SolidColorBrush x:Key="SecondaryBlueBrush" Color="#7fbcff"/>
+        <SolidColorBrush x:Key="AccentYellowBrush" Color="#fdd835"/>
+        <SolidColorBrush x:Key="DarkBlueBrush" Color="#1a237e"/>
+        <SolidColorBrush x:Key="LightGrayBrush" Color="#f0f2f5"/>
+        <SolidColorBrush x:Key="WhiteBrush" Color="White"/>
+        <SolidColorBrush x:Key="BlackBrush" Color="Black"/>
+        <SolidColorBrush x:Key="TextMutedBrush" Color="#555"/>
+        <SolidColorBrush x:Key="WindowBackgroundBrush" Color="#f0f2f5"/>
 
-    <Page.Resources>
-        <!-- Styles for mimicking the CSS -->
-        <Style x:Key="HeroButton" TargetType="Button">
+        <!-- Common Font Styles (Assuming Open Sans and Montserrat are available or embedded) -->
+        <Style TargetType="TextBlock" x:Key="BaseTextStyle">
+            <Setter Property="FontFamily" Value="Open Sans"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="#333"/>
+            <Setter Property="LineHeight" Value="1.6"/>
+        </Style>
+
+        <Style TargetType="TextBlock" BasedOn="{StaticResource BaseTextStyle}" x:Key="HeadingTextStyle">
+            <Setter Property="FontFamily" Value="Montserrat"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+
+        <!-- Button Style for READ THE STORY -->
+        <Style x:Key="ReadStoryButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource AccentYellowBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AccentYellowBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource DarkBlueBrush}"/>
+            <Setter Property="Padding" Value="10 20"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border CornerRadius="30" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontFamily" Value="Open Sans"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#e0c030"/>
+                    <Setter Property="BorderBrush" Value="#e0c030"/>
+                    <Setter Property="RenderTransform">
+                        <Setter.Value>
+                            <TranslateTransform X="3"/>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Card Base Style -->
+        <Style x:Key="CardBaseStyle" TargetType="Border">
+            <Setter Property="BorderBrush" Value="#fbfbff"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="20"/>
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="Background" Value="{StaticResource WhiteBrush}"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect ShadowDepth="0" Color="#1e60ff" Opacity="0.15" BlurRadius="32"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <TranslateTransform/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="RenderTransform">
+                        <Setter.Value>
+                            <TranslateTransform Y="-6"/>
+                        </Setter.Value>
+                    </Setter>
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect ShadowDepth="0" Color="#1e60ff" Opacity="0.15" BlurRadius="32"/>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Badge Style -->
+        <Style x:Key="BadgeStyle" TargetType="Border">
             <Setter Property="Background">
                 <Setter.Value>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
@@ -18,12 +110,69 @@
                     </LinearGradientBrush>
                 </Setter.Value>
             </Setter>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="Padding" Value="12 25"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="4 10"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect ShadowDepth="1" Color="#1e68ff" Opacity="0.04" BlurRadius="4"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- NEW: Style for Blog Topics ListBoxItem -->
+        <Style x:Key="BlogTopicListItemStyle" TargetType="ListBoxItem">
             <Setter Property="FontSize" Value="14"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#333"/>
+            <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="Padding" Value="11 18"/>
+            <!-- CONVERTED FROM 0.7rem 1.1rem -->
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter x:Name="contentPresenter"
+                                              Content="{TemplateBinding Content}"
+                                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                                              ContentStringFormat="{TemplateBinding ContentStringFormat}"
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="contentPresenter" Property="TextElement.Foreground" Value="{StaticResource PrimaryBlueBrush}"/>
+                                <Setter TargetName="contentPresenter" Property="TextElement.FontWeight" Value="SemiBold"/>
+                                <Setter TargetName="border" Property="RenderTransform">
+                                    <Setter.Value>
+                                        <TranslateTransform X="6"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Margin" Value="0 8"/>
+            <!-- CONVERTED FROM 0 0.5rem -->
+        </Style>
+
+        <!-- Carousel Control Button Style -->
+        <Style x:Key="CarouselControlButton" TargetType="Button">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#ccc"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Width" Value="45"/>
+            <Setter Property="Height" Value="45"/>
+            <Setter Property="FontSize" Value="21"/>
+            <!-- CONVERTED FROM 1.5em (1.5 * 14px base font size = 21px) -->
+            <Setter Property="Foreground" Value="{StaticResource DarkBlueBrush}"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -31,218 +180,457 @@
                         <Border Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="5">
+                                CornerRadius="22.5">
+                            <!-- Half of width/height for perfect circle -->
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
-        </Style>
-
-        <Style x:Key="BlogTopicTitle" TargetType="TextBlock">
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="FontSize" Value="20"/>
-            <Setter Property="Foreground" Value="#FF1B6EC2"/>
-            <!-- Matches #1b6ec2 -->
-            <Setter Property="Margin" Value="0,0,0,20"/>
-        </Style>
-
-        <Style x:Key="BlogTopicItem" TargetType="Border">
-            <Setter Property="Background" Value="#F8FAFC"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Margin" Value="0,0,0,5"/>
-            <Setter Property="Padding" Value="7 11"/>
-        </Style>
-
-        <Style x:Key="BlogCardShadow" TargetType="Border">
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="CornerRadius" Value="10"/>
             <Setter Property="Effect">
                 <Setter.Value>
-                    <DropShadowEffect ShadowDepth="2" Direction="270" Color="Black" Opacity="0.1" BlurRadius="5"/>
+                    <DropShadowEffect ShadowDepth="0" BlurRadius="8" Opacity="0.1" Color="Black"/>
                 </Setter.Value>
             </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{StaticResource AccentYellowBrush}"/>
+                    <Setter Property="Foreground" Value="{StaticResource DarkBlueBrush}"/>
+                    <Setter Property="RenderTransform">
+                        <Setter.Value>
+                            <ScaleTransform ScaleX="1.1" ScaleY="1.1"/>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
         </Style>
-    </Page.Resources>
 
-    <Grid Background="#F0F2F5">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+    </Window.Resources>
 
-        <!-- Hero Section -->
-        <Grid Grid.Row="0" Margin="20" Height="400"
-              HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-            <Grid.Background>
-                <!-- This mimics the background image from CSS -->
-                <ImageBrush ImageSource="/DUPSS.WPF;component/Assets/Images/hero-background.jpg" Stretch="UniformToFill"/>
-            </Grid.Background>
-            <Border Background="#66000000" />
-            <!-- Overlay for text readability -->
+    <Grid>
+        <!-- Main ScrollViewer for content exceeding window size -->
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <!-- Hero Section -->
+                <Grid Height="500" Margin="-7">
+                    <Grid.Background>
+                        <ImageBrush ImageSource="/images/test2.gif" Stretch="UniformToFill"/>
+                    </Grid.Background>
+                    <!-- Overlay -->
+                    <Rectangle Fill="Black" Opacity="0.2" Grid.ZIndex="1"/>
 
-            <Border Width="400" Height="200" HorizontalAlignment="Right" VerticalAlignment="Center"
-                    Style="{StaticResource BlogCardShadow}" Margin="0,0,50,0">
-                <StackPanel Margin="20">
-                    <TextBlock Text="A Journey of Overcoming Temptation" FontSize="24" FontWeight="Bold" Foreground="#1B6EC2" TextWrapping="Wrap" Margin="0,0,0,10"/>
-                    <TextBlock Text="&quot;I didn’t think one small decision could change everything—until it did.&quot;"
-                               FontStyle="Italic" Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,20"/>
-                    <Button Content="READ THE STORY →" Style="{StaticResource HeroButton}"/>
-                </StackPanel>
-            </Border>
-        </Grid>
-
-        <!-- Blog Topics and Blog Cards Section -->
-        <Grid Grid.Row="1" Margin="20,0,20,20">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="250"/>
-                <!-- blog-topics col-md-3 equivalent -->
-                <ColumnDefinition Width="*"/>
-                <!-- blog-card col-md-9 equivalent -->
-            </Grid.ColumnDefinitions>
-
-            <!-- Blog Topics -->
-            <StackPanel Grid.Column="0" Margin="0,0,20,0">
-                <TextBlock Text="Blog Topics" Style="{StaticResource BlogTopicTitle}"/>
-                <StackPanel>
-                    <Border Style="{StaticResource BlogTopicItem}">
-                        <TextBlock Text="Health & Wellness" Foreground="#333"/>
+                    <!-- Hero Card Content -->
+                    <Border Background="#fef7e6" CornerRadius="10" Padding="30"
+                            HorizontalAlignment="Left" VerticalAlignment="Center" Margin="80,0,0,0"
+                            Width="400" MaxWidth="400" Grid.ZIndex="2">
+                        <Border.Effect>
+                            <DropShadowEffect ShadowDepth="0" BlurRadius="20" Opacity="0.1" Color="Black"/>
+                        </Border.Effect>
+                        <Border.RenderTransform>
+                            <RotateTransform Angle="-10"/>
+                        </Border.RenderTransform>
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="RenderTransform">
+                                            <Setter.Value>
+                                                <TranslateTransform Y="-5"/>
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Setter Property="Effect">
+                                            <Setter.Value>
+                                                <DropShadowEffect ShadowDepth="0" Color="#1e60ff" Opacity="0.15" BlurRadius="32"/>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Trigger>
+                                    </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <StackPanel>
+                            <TextBlock Text="A Journey of Overcoming Temptation" Style="{StaticResource HeadingTextStyle}"
+                                       FontSize="28" Foreground="{StaticResource DarkBlueBrush}" Margin="0 0 0 15" LineHeight="1.3"/>
+                            <TextBlock Text="&quot;I didn’t think one small decision could change everything—until it did.&quot;"
+                                       Style="{StaticResource BaseTextStyle}" FontSize="16" FontStyle="Normal"
+                                       Foreground="{StaticResource TextMutedBrush}" Margin="0 0 0 20" LineHeight="1.5"/>
+                            <Button Content="READ THE STORY →" Style="{StaticResource ReadStoryButtonStyle}"
+                                    HorizontalAlignment="Left" Click="ReadTheStory_Click"/>
+                        </StackPanel>
                     </Border>
-                    <Border Style="{StaticResource BlogTopicItem}">
-                        <TextBlock Text="Education" Foreground="#333"/>
-                    </Border>
-                    <Border Style="{StaticResource BlogTopicItem}">
-                        <TextBlock Text="Science & Research" Foreground="#333"/>
-                    </Border>
-                    <Border Style="{StaticResource BlogTopicItem}">
-                        <TextBlock Text="Policy & Advocacy" Foreground="#333"/>
-                    </Border>
-                    <Border Style="{StaticResource BlogTopicItem}">
-                        <TextBlock Text="Events & Campaigns" Foreground="#333"/>
-                    </Border>
-                    <Border Style="{StaticResource BlogTopicItem}">
-                        <TextBlock Text="Social Life" Foreground="#333"/>
-                    </Border>
-                </StackPanel>
-            </StackPanel>
+                </Grid>
 
-            <!-- Blog Cards -->
-            <StackPanel Grid.Column="1" Margin="20,0,0,0">
-                <TextBlock Text="Trending Topics" Foreground="#1B6EC2" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,15"/>
-                <StackPanel Orientation="Vertical" Spacing="20" Margin="0,0,0,20">
-                    <!-- Blog Card 1 -->
-                    <Border Width="700" HorizontalAlignment="Left" Style="{StaticResource BlogCardShadow}">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="200"/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0" Margin="20">
-                                <TextBlock Text="Know the Facts: How Education Can Prevent Drug Abuse" FontSize="18" FontWeight="Bold" TextWrapping="Wrap" Margin="0,0,0,5"/>
-                                <TextBlock Text="Misinformation fuels risky behavior. Learn how evidence-based drug education in schools and communities empowers young people to make informed, healthy choices."
-                                           TextWrapping="Wrap" Foreground="Gray" Margin="0,0,0,10"/>
-                                <Border Background="LightGray" CornerRadius="3" Padding="5,2" HorizontalAlignment="Left">
-                                    <TextBlock Text="Education" FontSize="12" Foreground="Black"/>
-                                </Border>
-                                <TextBlock Margin="0,5,0,0" FontSize="12" Foreground="Gray">
-                                    By Mark Tuchel • <Run Foreground="#0892ff">7 min read</Run>
-                                </TextBlock>
-                            </StackPanel>
-                            <Image Grid.Column="1" Source="/DUPSS.WPF;component/Assets/Images/1.jpg" Stretch="UniformToFill"/>
-                        </Grid>
-                    </Border>
-
-                    <!-- Blog Card 2 -->
-                    <Border Width="700" HorizontalAlignment="Left" Style="{StaticResource BlogCardShadow}">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="200"/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0" Margin="20">
-                                <TextBlock Text="Building Resilience: Protective Factors Against Substance Use" FontSize="18" FontWeight="Bold" TextWrapping="Wrap" Margin="0,0,0,5"/>
-                                <TextBlock Text="Strong family bonds, peer support, and extracurricular activities can shield teens from addiction. Discover practical ways to foster resilience in your community."
-                                           TextWrapping="Wrap" Foreground="Gray" Margin="0,0,0,10"/>
-                                <Border Background="LightGray" CornerRadius="3" Padding="5,2" HorizontalAlignment="Left">
-                                    <TextBlock Text="Health & Wellness" FontSize="12" Foreground="Black"/>
-                                </Border>
-                                <TextBlock Margin="0,5,0,0" FontSize="12" Foreground="Gray">
-                                    By Harry Duval • <Run Foreground="#0892ff">4 min read</Run>
-                                </TextBlock>
-                            </StackPanel>
-                            <Image Grid.Column="1" Source="/DUPSS.WPF;component/Assets/Images/1.jpg" Stretch="UniformToFill"/>
-                        </Grid>
-                    </Border>
-                </StackPanel>
-            </StackPanel>
-        </Grid>
-
-        <!-- New Hero Section (Carousel Placeholder) -->
-        <Grid Grid.Row="2" Margin="20" Height="300" Background="#F0F2F5">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-            <TextBlock Grid.Row="0" Text="Every individual and community has the ability to protect themselves from the risks of drug use and plays a vital role in building a healthier, safer society."
-                       TextWrapping="Wrap" TextAlignment="Center" FontSize="24" FontWeight="SemiBold" Margin="50,0,50,20"/>
-
-            <!-- Simple Horizontal Carousel Placeholder -->
-            <Border Grid.Row="1" BorderBrush="LightGray" BorderThickness="1" CornerRadius="10" Background="White"
-                    HorizontalAlignment="Center" VerticalAlignment="Stretch" Width="800">
-                <Grid>
+                <!-- Blog Topics and Trending Topics Section -->
+                <Grid Margin="20" MaxWidth="1200" HorizontalAlignment="Center">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
+                        <!-- For Blog Topics -->
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
+                        <!-- For Blog Cards -->
                     </Grid.ColumnDefinitions>
 
-                    <Button Grid.Column="0" Content="&lt;" FontSize="24" Margin="10,0" VerticalAlignment="Center" Style="{StaticResource CarouselArrowButton}"/>
-                    <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
-                        <StackPanel Orientation="Horizontal" Margin="10">
-                            <!-- Carousel Images - Static for now, would be bound to a collection -->
-                            <Image Source="/DUPSS.WPF;component/Assets/Images/1.jpg" Width="380" Height="250" Margin="5" Stretch="UniformToFill"/>
-                            <Image Source="/DUPSS.WPF;component/Assets/Images/2.jpg" Width="380" Height="250" Margin="5" Stretch="UniformToFill"/>
-                            <Image Source="/DUPSS.WPF;component/Assets/Images/3.jpg" Width="380" Height="250" Margin="5" Stretch="UniformToFill"/>
-                            <Image Source="/DUPSS.WPF;component/Assets/Images/4.jpg" Width="380" Height="250" Margin="5" Stretch="UniformToFill"/>
+                    <!-- Blog Topics (col-md-3) -->
+                    <Border Grid.Column="0" Background="{StaticResource WhiteBrush}" CornerRadius="18" Padding="40,24,32,24"
+                            MinWidth="220" MaxWidth="320" Margin="-80,0,0,0">
+                        <Border.Effect>
+                            <DropShadowEffect ShadowDepth="0" BlurRadius="24" Opacity="0.07" Color="#1e68ff"/>
+                        </Border.Effect>
+                        <StackPanel>
+                            <TextBlock Text="Blog Topics" Style="{StaticResource HeadingTextStyle}"
+                                       FontSize="20.8" Foreground="{StaticResource PrimaryBlueBrush}" Margin="0,0,0,32"
+                                       HorizontalAlignment="Left">
+                                <TextBlock.LayoutTransform>
+                                    <ScaleTransform ScaleY="1.1" />
+                                </TextBlock.LayoutTransform>
+                            </TextBlock>
+                            <!-- After pseudo-element for H5 -->
+                            <Rectangle Width="40" Height="3" HorizontalAlignment="Left" Margin="0,-25,0,25"
+                                       RadiusX="2" RadiusY="2" Grid.ZIndex="1">
+                                <Rectangle.Fill>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                        <GradientStop Color="#1e68ff" Offset="0"/>
+                                        <GradientStop Color="#7fbcff" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Rectangle.Fill>
+                            </Rectangle>
+
+                            <ListBox  BorderThickness="0" Background="Transparent" Padding="0" Margin="0">
+                                <!-- Applied the new style and removed inline properties -->
+                                <ListBoxItem Content="Health &amp; Wellness" Style="{StaticResource BlogTopicListItemStyle}"/>
+                                <ListBoxItem Content="Education" Style="{StaticResource BlogTopicListItemStyle}"/>
+                                <ListBoxItem Content="Science &amp; Research" Style="{StaticResource BlogTopicListItemStyle}"/>
+                                <ListBoxItem Content="Policy &amp; Advocacy" Style="{StaticResource BlogTopicListItemStyle}"/>
+                                <ListBoxItem Content="Events &amp; Campaigns" Style="{StaticResource BlogTopicListItemStyle}"/>
+                                <ListBoxItem Content="Social Life" Style="{StaticResource BlogTopicListItemStyle}"/>
+                            </ListBox>
                         </StackPanel>
-                    </ScrollViewer>
-                    <Button Grid.Column="2" Content="&gt;" FontSize="24" Margin="10,0" VerticalAlignment="Center" Style="{StaticResource CarouselArrowButton}"/>
+                    </Border>
+
+                    <!-- Trending Topics (col-md-9) -->
+                    <StackPanel Grid.Column="1" Margin="0,0,0,30">
+                        <TextBlock Text="Trending Topics" Style="{StaticResource HeadingTextStyle}"
+                                   FontSize="20" Foreground="{StaticResource PrimaryBlueBrush}" FontWeight="Bold"
+                                   Margin="0,0,0,27.2" HorizontalAlignment="Left">
+                        </TextBlock>
+                        <!-- After pseudo-element for H6 -->
+                        <Rectangle Width="48" Height="3" HorizontalAlignment="Left" Margin="0,-25,0,25"
+                                   RadiusX="2" RadiusY="2" Grid.ZIndex="1">
+                            <Rectangle.Fill>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                    <GradientStop Color="#1e68ff" Offset="0"/>
+                                    <GradientStop Color="#7fbcff" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Rectangle.Fill>
+                        </Rectangle>
+
+                        <StackPanel Orientation="Vertical" Margin="0 0 0 30">
+                            <!-- Blog Card 1 -->
+                            <Border Style="{StaticResource CardBaseStyle}" Width="800" MaxWidth="800" HorizontalAlignment="Left">
+                                <Grid Margin="50 0 0 0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="2*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0" Margin="0 0 20 0">
+                                        <TextBlock Text="Know the Facts: How Education Can Prevent Drug Abuse"
+                                                   Style="{StaticResource HeadingTextStyle}" FontSize="20" Margin="0 0 0 5"/>
+                                        <TextBlock Text="Misinformation fuels risky behavior. Learn how evidence-based drug education in schools and communities empowers young people to make informed, healthy choices."
+                                                   Style="{StaticResource BaseTextStyle}" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" Margin="0 0 0 10"/>
+                                        <Border Style="{StaticResource BadgeStyle}" HorizontalAlignment="Left">
+                                            <TextBlock Text="Education" Style="{StaticResource BaseTextStyle}" Foreground="{StaticResource WhiteBrush}" FontSize="12" FontWeight="SemiBold"/>
+                                        </Border>
+                                        <TextBlock Margin="0 5 0 0" Style="{StaticResource BaseTextStyle}" Foreground="{StaticResource TextMutedBrush}" FontSize="12">
+                                            <Run Text="By Mark Tuchel"/> <Run Text="• "/> <Run Text="7 min read" Foreground="#0892ff"/>
+                                        </TextBlock>
+                                    </StackPanel>
+                                    <Border Grid.Column="1" CornerRadius="10">
+                                        <Image Source="/images/1.jpg" Stretch="UniformToFill" Margin="0,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
+                                    </Border>
+                                </Grid>
+                            </Border>
+
+                            <!-- Blog Card 2 -->
+                            <Border Style="{StaticResource CardBaseStyle}" Width="800" MaxWidth="800" HorizontalAlignment="Left" Margin="0,30,0,0">
+                                <Grid Margin="50 0 0 0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="2*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0" Margin="0 0 20 0">
+                                        <TextBlock Text="Building Resilience: Protective Factors Against Substance Use"
+                                                   Style="{StaticResource HeadingTextStyle}" FontSize="20" Margin="0 0 0 5"/>
+                                        <TextBlock Text="Strong family bonds, peer support, and extracurricular activities can shield teens from addiction. Discover practical ways to foster resilience in your community."
+                                                   Style="{StaticResource BaseTextStyle}" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" Margin="0 0 0 10"/>
+                                        <Border Style="{StaticResource BadgeStyle}" HorizontalAlignment="Left">
+                                            <TextBlock Text="Health &amp; Wellness" Style="{StaticResource BaseTextStyle}" Foreground="{StaticResource WhiteBrush}" FontSize="12" FontWeight="SemiBold"/>
+                                        </Border>
+                                        <TextBlock Margin="0 5 0 0" Style="{StaticResource BaseTextStyle}" Foreground="{StaticResource TextMutedBrush}" FontSize="12">
+                                            <Run Text="By Harry Duval"/> <Run Text="• "/> <Run Text="4 min read" Foreground="#0892ff"/>
+                                        </TextBlock>
+                                    </StackPanel>
+                                    <Border Grid.Column="1" CornerRadius="10">
+                                        <Image Source="/images/1.jpg" Stretch="UniformToFill" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
+                                    </Border>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
                 </Grid>
-            </Border>
-        </Grid>
 
-        <!-- Subscribe Container -->
-        <Border Grid.Row="3" Margin="20" CornerRadius="10" Background="White">
-            <Border.Effect>
-                <DropShadowEffect ShadowDepth="4" Direction="270" Color="Black" Opacity="0.1" BlurRadius="10"/>
-            </Border.Effect>
-            <Grid Margin="40" Height="200">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="0.4*"/>
-                    <ColumnDefinition Width="0.6*"/>
-                </Grid.ColumnDefinitions>
+                <!-- New Hero Section (with Typewriter and Carousel) -->
+                <Grid Background="#fbfbff" Margin="0 0 0 50">
+                    <Grid.Effect>
+                        <DropShadowEffect ShadowDepth="0" BlurRadius="100" Opacity="0.1" Color="Black"/>
+                    </Grid.Effect>
+                    <Border Padding="60 0">
+                        <StackPanel MaxWidth="1200" HorizontalAlignment="Center">
+                            <TextBlock x:Name="TypewriterTextBlock" Style="{StaticResource HeadingTextStyle}"
+                                       FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" TextAlignment="Center"
+                                       Width="800" TextWrapping="Wrap" Margin="0 0 0 40">
+                            </TextBlock>
 
-                <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                    <TextBlock Text="Stay up to date" Foreground="#1e60ff" FontSize="18" Margin="0,0,0,5"/>
-                    <TextBlock Text="Get Started" FontSize="28" FontWeight="Bold" Margin="0,0,0,10"/>
-                    <Grid Margin="0,0,0,5">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBox Grid.Column="0" Text="Enter your email.." Padding="10" FontSize="14" VerticalContentAlignment="Center" CornerRadius="5"/>
-                        <Button Grid.Column="1" Content="Register now" Background="#1e60ff" Foreground="White" Padding="10 20" FontSize="14" BorderThickness="0" CornerRadius="5" Margin="10,0,0,0"/>
+                            <!-- Image Carousel Wrapper -->
+                            <Grid Height="400" MaxWidth="900" HorizontalAlignment="Center" Margin="0 20 0 0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Previous Button -->
+                                <Button Grid.Column="0" Content="&lt;" Style="{StaticResource CarouselControlButton}"
+                                        Click="PrevImage_Click" HorizontalAlignment="Right" Margin="0,0,15,0"/>
+
+                                <!-- Carousel Slides -->
+                                <Grid Grid.Column="1" x:Name="CarouselImageSlidesContainer"
+                                      Width="auto" Height="auto" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Grid.Effect>
+                                        <DropShadowEffect ShadowDepth="0" BlurRadius="30" Opacity="0.15" Color="Black"/>
+                                    </Grid.Effect>
+                                    <Border CornerRadius="15" Background="{StaticResource WhiteBrush}"/>
+
+                                    <!-- Slide 1 -->
+                                    <StackPanel x:Name="Slide1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                Visibility="Visible" Opacity="1">
+                                        <Image Source="/images/1.jpg" Width="380" Height="300" Stretch="UniformToFill" Margin="20" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                            <Image.Style>
+                                                <Style TargetType="Image">
+                                                    <Setter Property="RenderTransform">
+                                                        <Setter.Value>
+                                                            <RotateTransform Angle="-10"/>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                    <Style.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="RenderTransform">
+                                                                <Setter.Value>
+                                                                    <RotateTransform Angle="-18"/>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                            <Setter Property="Effect">
+                                                                <Setter.Value>
+                                                                    <DropShadowEffect ShadowDepth="0" Color="#1e60ff" Opacity="0.15" BlurRadius="32"/>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                        </Trigger>
+                                                        </Style.Triggers>
+                                                </Style>
+                                            </Image.Style>
+                                        </Image>
+                                        <Image Source="/images/2.jpg" Width="380" Height="300" Stretch="UniformToFill" Margin="20" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                            <Image.Style>
+                                                <Style TargetType="Image">
+                                                    <Setter Property="RenderTransform">
+                                                        <Setter.Value>
+                                                            <RotateTransform Angle="10"/>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                    <Style.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="RenderTransform">
+                                                                <Setter.Value>
+                                                                    <RotateTransform Angle="18"/>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                            <Setter Property="Effect">
+                                                                <Setter.Value>
+                                                                    <DropShadowEffect ShadowDepth="0" Color="#1e60ff" Opacity="0.15" BlurRadius="32"/>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                        </Trigger>
+                                                        </Style.Triggers>
+                                                </Style>
+                                            </Image.Style>
+                                        </Image>
+                                    </StackPanel>
+
+                                    <!-- Slide 2 -->
+                                    <StackPanel x:Name="Slide2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                Visibility="Collapsed" Opacity="0">
+                                        <Image Source="/images/3.jpg" Width="380" Height="300" Stretch="UniformToFill" Margin="20" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                            <Image.Style>
+                                                <Style TargetType="Image">
+                                                    <Setter Property="RenderTransform">
+                                                        <Setter.Value>
+                                                            <RotateTransform Angle="-10"/>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                    <Style.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="RenderTransform">
+                                                                <Setter.Value>
+                                                                    <RotateTransform Angle="-18"/>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                            <Setter Property="Effect">
+                                                                <Setter.Value>
+                                                                    <DropShadowEffect ShadowDepth="0" Color="#1e60ff" Opacity="0.15" BlurRadius="32"/>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                        </Trigger>
+                                                        </Style.Triggers>
+                                                </Style>
+                                            </Image.Style>
+                                        </Image>
+                                        <Image Source="/images/4.jpg" Width="380" Height="300" Stretch="UniformToFill" Margin="20" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                            <Image.Style>
+                                                <Style TargetType="Image">
+                                                    <Setter Property="RenderTransform">
+                                                        <Setter.Value>
+                                                            <RotateTransform Angle="10"/>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                    <Style.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="RenderTransform">
+                                                                <Setter.Value>
+                                                                    <RotateTransform Angle="18"/>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                            <Setter Property="Effect">
+                                                                <Setter.Value>
+                                                                    <DropShadowEffect ShadowDepth="0" Color="#1e60ff" Opacity="0.15" BlurRadius="32"/>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                        </Trigger>
+                                                        </Style.Triggers>
+                                                </Style>
+                                            </Image.Style>
+                                        </Image>
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Next Button -->
+                                <Button Grid.Column="2" Content="&gt;" Style="{StaticResource CarouselControlButton}"
+                                        Click="NextImage_Click" HorizontalAlignment="Left" Margin="15,0,0,0"/>
+
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+
+                <!-- Subscribe Container -->
+                <Grid Margin="20" MaxWidth="1200" Height="300" HorizontalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="0.4*"/>
+                        <ColumnDefinition Width="0.6*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Left Section -->
+                    <Border Grid.Column="0" Background="{StaticResource WhiteBrush}" CornerRadius="10" Padding="40"
+                            BorderBrush="#f8f9fa" BorderThickness="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                        <StackPanel HorizontalAlignment="Left" VerticalAlignment="Center" MaxWidth="400">
+                            <TextBlock Text="Stay up to date" Style="{StaticResource BaseTextStyle}" FontSize="14" FontWeight="SemiBold"
+                                       Foreground="{StaticResource PrimaryBlueBrush}" Margin="0 0 0 10"/>
+                            <TextBlock Text="Get Started" Style="{StaticResource HeadingTextStyle}" FontSize="28" Margin="0 0 0 20"/>
+                            <StackPanel Orientation="Horizontal" Margin="0 0 0 12">
+                                <Border CornerRadius="6" BorderBrush="#ccc" BorderThickness="1" Margin="0,0,10,0">
+                                    <TextBox Width="250" Padding="12" Background="White" BorderThickness="0"
+             Text="Enter your email.." />
+                                </Border>
+
+                                <Button Content="Register now" Background="{StaticResource PrimaryBlueBrush}" 
+        Foreground="{StaticResource WhiteBrush}" Padding="12,20" 
+        BorderThickness="0" Cursor="Hand"/>
+
+                            </StackPanel>
+                            <TextBlock Text="*You can unsubscribe anytime" Style="{StaticResource BaseTextStyle}" FontSize="12" Foreground="#333"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Right Section (Decorative) -->
+                    <Grid Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ClipToBounds="True">
+                        <Rectangle Fill="#3766ff" HorizontalAlignment="Right" VerticalAlignment="Stretch" Width="300" Margin="0,0,-40,0">
+                            <Rectangle.Clip>
+                                <CombinedGeometry>
+                                    <CombinedGeometry.Geometry1>
+                                        <RectangleGeometry Rect="0,0,340,300" RadiusX="10" RadiusY="10"/>
+                                    </CombinedGeometry.Geometry1>
+                                    <CombinedGeometry.Geometry2>
+                                        <!-- Custom shape for the top-left rounded corner -->
+                                        <PathGeometry>
+                                            <PathFigure StartPoint="0,300">
+                                                <LineSegment Point="0,300"/>
+                                                <LineSegment Point="0,0"/>
+                                                <LineSegment Point="300,0"/>
+                                                <ArcSegment Size="300,300" IsLargeArc="True" SweepDirection="CounterClockwise" Point="0,300" />
+                                            </PathFigure>
+                                        </PathGeometry>
+                                    </CombinedGeometry.Geometry2>
+                                </CombinedGeometry>
+                            </Rectangle.Clip>
+                        </Rectangle>
+                        <Ellipse Fill="#FFFFFF" Opacity="0.2" Width="200" Height="200" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,50,100,0" Grid.ZIndex="1"/>
                     </Grid>
-                    <TextBlock Text="*You can unsubscribe anytime" FontSize="12" Foreground="Gray"/>
-                </StackPanel>
-                <Border Grid.Column="1" Background="LightGray" CornerRadius="10" Margin="20,0,0,0"/>
-            </Grid>
-        </Border>
+                </Grid>
 
-        <!-- Footer will typically be a separate UserControl or custom component in WPF -->
-        <!-- For now, it's just conceptual: <local:Footer /> -->
+                <!-- Footer (Placeholder) -->
+                <!-- You would replace this with your actual Footer control/component -->
+                <Border Background="#1a237e" Padding="50 0" Margin="0" HorizontalAlignment="Stretch">
+                    <StackPanel HorizontalAlignment="Center" MaxWidth="1200">
+                        <Grid Margin="0 50 0 0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
 
+                            <!-- Footer Logo Section -->
+                            <StackPanel Grid.Column="0" HorizontalAlignment="Left" Margin="20,0,0,0">
+                                <Border Width="130" Height="130" Background="{StaticResource WhiteBrush}" CornerRadius="65"
+                                        Padding="7" Margin="0 0 0 10">
+                                    <Border.Effect>
+                                        <DropShadowEffect ShadowDepth="0" BlurRadius="5" Opacity="0.2" Color="Black"/>
+                                    </Border.Effect>
+                                    <Image Source="/images/logo.png" Stretch="Uniform" />
+                                    <!-- Assuming you have a logo.png -->
+                                </Border>
+                                <TextBlock Text="© 2024 DUPSS. All rights reserved." Foreground="White" Opacity="0.8" FontSize="12"/>
+                            </StackPanel>
+
+                            <!-- Footer Info Section -->
+                            <StackPanel Grid.Column="1" HorizontalAlignment="Center" Margin="0,50,0,0">
+                                <TextBlock Text="Contact Us" Style="{StaticResource HeadingTextStyle}" Foreground="#ffd700" Margin="0 0 0 20" HorizontalAlignment="Center"/>
+                                <Rectangle Width="60" Height="3" Fill="#ffd700" RadiusX="2" RadiusY="2" HorizontalAlignment="Center" Margin="0,-20,0,20"/>
+
+                                <TextBlock Text="Email: info@dupss.com" Foreground="White" FontSize="14" Margin="0 0 0 8" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Phone: +1 234 567 8900" Foreground="White" FontSize="14" Margin="0 0 0 8" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Address: 123 Main St, Anytown, USA" Foreground="White" FontSize="14" HorizontalAlignment="Center"/>
+                            </StackPanel>
+
+                            <!-- Placeholder for Subscribe Section (was commented out in CSS) -->
+                            <StackPanel Grid.Column="2" HorizontalAlignment="Right" Margin="0,50,20,0">
+                                <TextBlock Text="Subscribe" Style="{StaticResource HeadingTextStyle}" Foreground="#ffd700" Margin="0 0 0 20" HorizontalAlignment="Center"/>
+                                <Rectangle Width="60" Height="3" Fill="#ffd700" RadiusX="2" RadiusY="2" HorizontalAlignment="Center" Margin="0,-20,0,20"/>
+                                <TextBlock Text="Get our latest updates directly to your inbox." Foreground="White" FontSize="14" TextWrapping="Wrap" TextAlignment="Center" Margin="0 0 0 10"/>
+                                <TextBox Text="Your Email" Width="200" HorizontalAlignment="Center" Margin="0 0 0 10" Padding="5"/>
+                                <Button Content="Subscribe" Width="100" HorizontalAlignment="Center" Background="#ffd700" Foreground="#1a237e" FontWeight="SemiBold" Padding="5"/>
+                            </StackPanel>
+                        </Grid>
+                        <TextBlock Text="This is a placeholder footer. Implement your actual footer logic here." Foreground="LightGray" FontSize="10" Margin="0,30,0,10" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
-</Page>
+</Window>
