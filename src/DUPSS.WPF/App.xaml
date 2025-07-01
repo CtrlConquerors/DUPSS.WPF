@@ -1,16 +1,22 @@
 ﻿<Application x:Class="DUPSS.WPF.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:DUPSS.WPF"
              StartupUri="Layouts/MainLayout.xaml">
     <Application.Resources>
+
+        <!-- Global Brushes -->
+        <SolidColorBrush x:Key="PrimaryBlueBrush" Color="#007bff"/>
+        <SolidColorBrush x:Key="WhiteBrush" Color="White"/>
+
+        <!-- Global Converters -->
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+
+        <!-- Merged Styles -->
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Styles.xaml" />
+                <ResourceDictionary Source="Styles/Styles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-
-            <!-- Local resources still allowed -->
-            <SolidColorBrush x:Key="WindowBackgroundBrush" Color="#f0f2f5"/>
         </ResourceDictionary>
+
     </Application.Resources>
 </Application>
