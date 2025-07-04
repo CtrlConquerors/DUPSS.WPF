@@ -10,15 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="images\1.jpg" />
-    <None Remove="images\2.jpg" />
-    <None Remove="images\3.jpg" />
-    <None Remove="images\4.jpg" />
-    <None Remove="images\Logo.png" />
-    <None Remove="images\test2.gif" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.6" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.6" />
@@ -30,15 +21,6 @@
     <ProjectReference Include="..\DUPSS.API\DUPSS.API.csproj" />
     <ProjectReference Include="..\DUPSS.Common\DUPSS.Common.csproj" />
     <ProjectReference Include="..\DUPSS.DTO\DUPSS.DTO.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Resource Include="images\1.jpg" />
-    <Resource Include="images\2.jpg" />
-    <Resource Include="images\3.jpg" />
-    <Resource Include="images\4.jpg" />
-    <Resource Include="images\Logo.png" />
-    <Resource Include="images\test2.gif" />
   </ItemGroup>
 
 </Project>

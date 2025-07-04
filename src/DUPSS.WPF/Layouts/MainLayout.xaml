@@ -5,10 +5,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DUPSS.WPF.Layouts"
         mc:Ignorable="d"
-        Title="DUPSS Application" Height="8000" Width="1200"
-        MinWidth="1000"
+        Title="DUPSS Application" Height="800" Width="1200"
+        MinHeight="600" MinWidth="1000"
         Background="{StaticResource WindowBackgroundBrush}">
     <Window.Resources>
+        <!-- Global Styles from Home.xaml (re-used for consistency) -->
         <SolidColorBrush x:Key="PrimaryBlueBrush" Color="#1e68ff"/>
         <SolidColorBrush x:Key="SecondaryBlueBrush" Color="#7fbcff"/>
         <SolidColorBrush x:Key="AccentYellowBrush" Color="#fdd835"/>
@@ -19,6 +20,7 @@
         <SolidColorBrush x:Key="TextMutedBrush" Color="#555"/>
         <SolidColorBrush x:Key="WindowBackgroundBrush" Color="#f0f2f5"/>
 
+        <!-- Common Font Styles (Assuming Open Sans and Montserrat are available or embedded) -->
         <Style TargetType="TextBlock" x:Key="BaseTextStyle">
             <Setter Property="FontFamily" Value="Open Sans"/>
             <Setter Property="FontSize" Value="14"/>
@@ -31,6 +33,7 @@
             <Setter Property="FontWeight" Value="Bold"/>
         </Style>
 
+        <!-- Style for Navigation Buttons in Sidebar -->
         <Style x:Key="NavButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -72,21 +75,27 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
+
     </Window.Resources>
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition x:Name="SidebarColumn" Width="250"/>
+            <ColumnDefinition Width="250"/>
+            <!-- Sidebar width -->
             <ColumnDefinition Width="*"/>
+            <!-- Main content area -->
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <!-- Top row height -->
             <RowDefinition Height="*"/>
+            <!-- Main content area below top row -->
         </Grid.RowDefinitions>
 
-        <!-- Sidebar (Collapsible) -->
+        <!-- Sidebar (Column 0, Row 0 & 1 spanning) -->
         <Border Grid.Column="0" Grid.RowSpan="2"
-                Padding="0"
+          
+                Padding="20"
                 BorderBrush="#d6d5d5" BorderThickness="0,0,1,0">
             <Border.Background>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
@@ -95,31 +104,22 @@
                 </LinearGradientBrush>
             </Border.Background>
             <StackPanel>
-                <!-- Collapse Button -->
-                <Button x:Name="SidebarToggleButton"
-                        Content="⮜"
-                        Width="30" Height="30"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Top"
-                        Click="SidebarToggleButton_Click"
-                        ToolTip="Collapse/Expand Sidebar"/>
-                <StackPanel x:Name="SidebarContentPanel">
-                    <!-- Application Logo/Title -->
-                    <TextBlock Text="DUPSS"
-                               Style="{StaticResource HeadingTextStyle}"
-                               FontSize="28" FontWeight="Bold"
-                               Foreground="White"
-                               HorizontalAlignment="Center"
-                               Margin="0 20 0 40"/>
-                    <!-- Navigation Menu -->
-                    <Button Content="Home" Style="{StaticResource NavButtonStyle}" Tag="Home" Click="Navigate_Click"/>
-                    <Button Content="Appointments" Style="{StaticResource NavButtonStyle}" Tag="Appointments" Click="Navigate_Click"/>
-                    <Button Content="Campaigns" Style="{StaticResource NavButtonStyle}" Tag="Campaigns" Click="Navigate_Click"/>
-                    <Button Content="Courses" Style="{StaticResource NavButtonStyle}" Tag="Courses" Click="Navigate_Click"/>
-                    <Button Content="Assessments" Style="{StaticResource NavButtonStyle}" Tag="Assessments" Click="Navigate_Click"/>
-                    <Button Content="Blog" Style="{StaticResource NavButtonStyle}" Tag="Blog" Click="Navigate_Click"/>
-                    <Button Content="Users" Style="{StaticResource NavButtonStyle}" Tag="Users" Click="Navigate_Click"/>
-                </StackPanel>
+                <!-- Application Logo/Title -->
+                <TextBlock Text="DUPSS"
+                           Style="{StaticResource HeadingTextStyle}"
+                           FontSize="28" FontWeight="Bold"
+                           Foreground="White"
+                           HorizontalAlignment="Center"
+                           Margin="0 20 0 40"/>
+
+                <!-- Navigation Menu -->
+                <Button Content="Home" Style="{StaticResource NavButtonStyle}" Tag="Home" Click="Navigate_Click"/>
+                <Button Content="Appointments" Style="{StaticResource NavButtonStyle}" Tag="Appointments" Click="Navigate_Click"/>
+                <Button Content="Campaigns" Style="{StaticResource NavButtonStyle}" Tag="Campaigns" Click="Navigate_Click"/>
+                <Button Content="Courses" Style="{StaticResource NavButtonStyle}" Tag="Courses" Click="Navigate_Click"/>
+                <Button Content="Assessments" Style="{StaticResource NavButtonStyle}" Tag="Assessments" Click="Navigate_Click"/>
+                <Button Content="Blog" Style="{StaticResource NavButtonStyle}" Tag="Blog" Click="Navigate_Click"/>
+                <Button Content="Users" Style="{StaticResource NavButtonStyle}" Tag="Users" Click="Navigate_Click"/>
             </StackPanel>
         </Border>
 
@@ -131,13 +131,15 @@
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Center">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                <!-- Placeholder for user info/logout, similar to Blazor's top-row.auth -->
                 <TextBlock Text="Welcome, User!" Style="{StaticResource BaseTextStyle}" Foreground="{StaticResource DarkBlueBrush}" Margin="0 0 20 0" FontWeight="SemiBold"/>
-                <Button Content="Logout"  Width="100" Height="35" FontSize="14" Padding="0" Click="Logout_Click"/>
+                <Button Content="Logout" Style="{StaticResource ReadStoryButtonStyle}" Width="100" Height="35" FontSize="14" Padding="0" Click="Logout_Click"/>
             </StackPanel>
         </Border>
 
         <!-- Main Content Area (Column 1, Row 1) -->
         <Border Grid.Column="1" Grid.Row="1" Background="{StaticResource WindowBackgroundBrush}" Padding="20">
+            <!-- Frame to load different pages/views -->
             <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden"/>
         </Border>
     </Grid>
