@@ -99,15 +99,12 @@ namespace DUPSS.WPF.Views // This namespace matches your Home.xaml's x:Class and
             // Ensure index is within bounds
             if (index < 0 || index >= _carouselSlides.Length) return;
 
-            // Hide all slides with fade-out effect and then collapse
+            // Hide all slides (remove fade-out event handler to avoid stacking)
             foreach (var slide in _carouselSlides)
             {
-                if (slide != _carouselSlides[index])
-                {
-                    Storyboard.SetTarget(_fadeOutStoryboard, slide);
-                    _fadeOutStoryboard.Completed += (s, e) => slide.Visibility = Visibility.Collapsed;
-                    _fadeOutStoryboard.Begin();
-                }
+                _fadeOutStoryboard.Completed -= (s, e) => slide.Visibility = Visibility.Collapsed;
+                slide.Visibility = Visibility.Collapsed;
+                slide.Opacity = 0;
             }
 
             // Show the active slide with fade-in effect

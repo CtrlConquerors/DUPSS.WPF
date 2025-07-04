@@ -82,10 +82,15 @@ namespace DUPSS.WPF.Layouts
         }
 
 
+        private TextBox SearchTextBox;
+
         public NavMenu()
         {
             InitializeComponent();
             this.DataContext = this; // Set DataContext to itself for easy binding to DependencyProperties
+
+            // Initialize SearchTextBox by finding it in the XAML
+            SearchTextBox = (TextBox)FindName("SearchTextBox");
 
             // Add converters to resources if not already in App.xaml
             if (!this.Resources.Contains("BooleanToVisibilityConverter"))
@@ -98,7 +103,6 @@ namespace DUPSS.WPF.Layouts
             }
 
             // Simulate initial authentication state (for testing)
-            // In a real app, this would come from an authentication service
             SetAuthenticationState(false, "Guest", "Guest"); // Default to not authenticated
         }
 
@@ -203,9 +207,9 @@ namespace DUPSS.WPF.Layouts
         private void GetStartedButton_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show("Navigating to Login/Registration...", "Get Started", MessageBoxButton.OK, MessageBoxImage.Information);
-            // In a real application, navigate to the login/registration page
-            NavigateRequested?.Invoke(this, "Login"); // Assuming a Login.xaml page
+            // In a real application, navigate to the login/registration page            NavigateRequested?.Invoke(this, "Login"); // Assuming a Login.xaml page
         }
+
 
         /// <summary>
         /// Handles the search button click.
