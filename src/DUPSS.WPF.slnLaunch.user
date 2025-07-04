@@ -1,0 +1,17 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Path": "DUPSS.WPF\\DUPSS.WPF.csproj",
+        "Action": "Start",
+        "DebugTarget": "DUPSS.WPF"
+      },
+      {
+        "Path": "DUPSS.API\\DUPSS.API.csproj",
+        "Action": "Start",
+        "DebugTarget": "https"
+      }
+    ]
+  }
+]

@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Navigation; // Required for Frame navigation
+using DUPSS.WPF.Views;
 
 namespace DUPSS.WPF.Layouts // Namespace matches the folder structure
 {
@@ -10,6 +11,7 @@ namespace DUPSS.WPF.Layouts // Namespace matches the folder structure
     /// </summary>
     public partial class MainLayout : Window
     {
+        private bool _sidebarCollapsed = false;
         public MainLayout()
         {
             InitializeComponent();
@@ -68,6 +70,24 @@ namespace DUPSS.WPF.Layouts // Namespace matches the folder structure
             // Example: var loginWindow = new LoginWindow();
             // loginWindow.Show();
             // this.Close();
+        }
+        private void SidebarToggleButton_Click(object sender, RoutedEventArgs e)
+        {
+            _sidebarCollapsed = !_sidebarCollapsed;
+            if (_sidebarCollapsed)
+            {
+                SidebarColumn.Width = new GridLength(40); // Thin bar
+                SidebarContentPanel.Visibility = Visibility.Collapsed; // Ensure SidebarContentPanel is defined in XAML
+                SidebarToggleButton.Content = "⮞";
+                SidebarToggleButton.HorizontalAlignment = HorizontalAlignment.Center;
+            }
+            else
+            {
+                SidebarColumn.Width = new GridLength(250);
+                SidebarContentPanel.Visibility = Visibility.Visible; // Ensure SidebarContentPanel is defined in XAML
+                SidebarToggleButton.Content = "⮜";
+                SidebarToggleButton.HorizontalAlignment = HorizontalAlignment.Right;
+            }
         }
     }
 }

@@ -5,10 +5,11 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:local="clr-namespace:DUPSS.WPF.Views"
       mc:Ignorable="d"
-      d:DesignHeight="800" d:DesignWidth="1200"
+      d:DesignHeight="8000" d:DesignWidth="1200"
       Background="{StaticResource WindowBackgroundBrush}">
     <Page.Resources>
         <!-- Global Styles based on Home.razor.css -->
+
         <SolidColorBrush x:Key="PrimaryBlueBrush" Color="#1e68ff"/>
         <SolidColorBrush x:Key="SecondaryBlueBrush" Color="#7fbcff"/>
         <SolidColorBrush x:Key="AccentYellowBrush" Color="#fdd835"/>
@@ -209,7 +210,7 @@
 
     <Grid>
         <!-- Main ScrollViewer for content exceeding page size -->
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" >
             <StackPanel>
                 <!-- Hero Section -->
                 <Grid Height="500" Margin="-7">
@@ -244,7 +245,7 @@
                                             </Setter.Value>
                                         </Setter>
                                     </Trigger>
-                                    </Style.Triggers>
+                                </Style.Triggers>
                             </Style>
                         </Border.Style>
                         <StackPanel>
@@ -270,7 +271,7 @@
 
                     <!-- Blog Topics (col-md-3) -->
                     <Border Grid.Column="0" Background="{StaticResource WhiteBrush}" CornerRadius="18" Padding="40,24,32,24"
-                            MinWidth="220" MaxWidth="320" Margin="-80,0,0,0">
+                            MinWidth="220" MaxWidth="320" Margin="-80,5,13,0">
                         <Border.Effect>
                             <DropShadowEffect ShadowDepth="0" BlurRadius="24" Opacity="0.07" Color="#1e68ff"/>
                         </Border.Effect>
@@ -324,7 +325,7 @@
 
                         <StackPanel Orientation="Vertical" Margin="0 0 0 30">
                             <!-- Blog Card 1 -->
-                            <Border Style="{StaticResource CardBaseStyle}" Width="800" MaxWidth="800" HorizontalAlignment="Left">
+                            <Border Style="{StaticResource CardBaseStyle}" Width="801" MaxWidth="800" HorizontalAlignment="Left" Height="183">
                                 <Grid Margin="50 0 0 0">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="2*"/>
@@ -349,7 +350,7 @@
                             </Border>
 
                             <!-- Blog Card 2 -->
-                            <Border Style="{StaticResource CardBaseStyle}" Width="800" MaxWidth="800" HorizontalAlignment="Left" Margin="0,30,0,0">
+                            <Border Style="{StaticResource CardBaseStyle}" Width="817" MaxWidth="800" HorizontalAlignment="Left" Margin="0,30,0,0">
                                 <Grid Margin="50 0 0 0">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="2*"/>
@@ -406,12 +407,12 @@
                                     <Grid.Effect>
                                         <DropShadowEffect ShadowDepth="0" BlurRadius="30" Opacity="0.15" Color="Black"/>
                                     </Grid.Effect>
-                                    <Border CornerRadius="15" Background="{StaticResource WhiteBrush}"/>
+                                    <Border CornerRadius="15" Background="{StaticResource WhiteBrush}" Margin="-12,-28,-11,0"/>
 
                                     <!-- Slide 1 -->
                                     <StackPanel x:Name="Slide1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center"
                                                 Visibility="Visible" Opacity="1">
-                                        <Image Source="/images/1.jpg" Width="380" Height="300" Stretch="UniformToFill" Margin="20" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                        <Image Source="/images/1.jpg" Width="346" Height="222" Stretch="UniformToFill" Margin="20" VerticalAlignment="Center">
                                             <Image.Style>
                                                 <Style TargetType="Image">
                                                     <Setter Property="RenderTransform">
@@ -432,13 +433,13 @@
                                                                 </Setter.Value>
                                                             </Setter>
                                                         </Trigger>
-                                                        </Style.Triggers>
+                                                    </Style.Triggers>
                                                 </Style>
                                             </Image.Style>
                                         </Image>
-                                        <Image Source="/images/2.jpg" Width="380" Height="300" Stretch="UniformToFill" Margin="20" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                        <Image Source="/images/2.jpg" Width="279" Height="174" Stretch="UniformToFill">
                                             <Image.Style>
-                                                <Style TargetType="Image">
+                                                <Style TargetType="{x:Type Image}">
                                                     <Setter Property="RenderTransform">
                                                         <Setter.Value>
                                                             <RotateTransform Angle="10"/>
@@ -457,7 +458,7 @@
                                                                 </Setter.Value>
                                                             </Setter>
                                                         </Trigger>
-                                                        </Style.Triggers>
+                                                    </Style.Triggers>
                                                 </Style>
                                             </Image.Style>
                                         </Image>
@@ -487,7 +488,7 @@
                                                                 </Setter.Value>
                                                             </Setter>
                                                         </Trigger>
-                                                        </Style.Triggers>
+                                                    </Style.Triggers>
                                                 </Style>
                                             </Image.Style>
                                         </Image>
@@ -512,7 +513,7 @@
                                                                 </Setter.Value>
                                                             </Setter>
                                                         </Trigger>
-                                                        </Style.Triggers>
+                                                    </Style.Triggers>
                                                 </Style>
                                             </Image.Style>
                                         </Image>
@@ -521,7 +522,7 @@
 
                                 <!-- Next Button -->
                                 <Button Grid.Column="2" Content="&gt;" Style="{StaticResource CarouselControlButton}"
-                                        Click="NextImage_Click" HorizontalAlignment="Left" Margin="15,0,0,0"/>
+                                        Click="NextImage_Click" HorizontalAlignment="Left" Margin="15,178,0,178" Width="40"/>
 
                             </Grid>
                         </StackPanel>
@@ -538,7 +539,7 @@
 
                     <!-- Left Section -->
                     <Border Grid.Column="0" Background="{StaticResource WhiteBrush}" CornerRadius="10" Padding="40"
-                            BorderBrush="#f8f9fa" BorderThickness="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                            BorderBrush="#f8f9fa" BorderThickness="1" Grid.ColumnSpan="2" Margin="0,0,344,0">
                         <StackPanel HorizontalAlignment="Left" VerticalAlignment="Center" MaxWidth="400">
                             <TextBlock Text="Stay up to date" Style="{StaticResource BaseTextStyle}" FontSize="14" FontWeight="SemiBold"
                                        Foreground="{StaticResource PrimaryBlueBrush}" Margin="0 0 0 10"/>
@@ -561,7 +562,7 @@
 
                     <!-- Right Section (Decorative) -->
                     <Grid Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ClipToBounds="True">
-                        <Rectangle Fill="#3766ff" HorizontalAlignment="Right" VerticalAlignment="Stretch" Width="300" Margin="0,0,-40,0">
+                        <Rectangle Fill="#3766ff" HorizontalAlignment="Left" Width="342" Margin="184,0,0,0">
                             <Rectangle.Clip>
                                 <CombinedGeometry>
                                     <CombinedGeometry.Geometry1>
@@ -589,7 +590,7 @@
                 <!-- You would replace this with your actual Footer control/component -->
                 <Border Background="#1a237e" Padding="50 0" Margin="0" HorizontalAlignment="Stretch">
                     <StackPanel HorizontalAlignment="Center" MaxWidth="1200">
-                        <Grid Margin="0 50 0 0">
+                        <Grid Margin="0 50 0 0" Width="1111">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="*"/>
