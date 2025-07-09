@@ -39,7 +39,7 @@ namespace DUPSS.WPF.Views
                 ShowStatus("Loading courses...");
                 // Replace with your actual API endpoint or service
                 using var http = new HttpClient();
-                var result = await http.GetFromJsonAsync<List<CourseDTO>>("https://localhost:5001/api/Courses/GetAll");
+                var result = await http.GetFromJsonAsync<List<CourseDTO>>("https://localhost:7026/api/Courses/GetAll");
                 _allCourses = result ?? new List<CourseDTO>();
                 HideStatus();
                 ApplySearchAndDisplay();
@@ -47,6 +47,7 @@ namespace DUPSS.WPF.Views
             catch (Exception ex)
             {
                 ShowStatus("Oops! Something went wrong while loading courses. Please try again later.");
+                ShowStatus($"Error: {ex.Message}");
             }
         }
 
