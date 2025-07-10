@@ -24,9 +24,9 @@ namespace DUPSS.Objects
         [Required, MaxLength(255)]
         public required string RoleId { get; set; }
         public string? refreshToken { get; set; }
-        public DateTime? refreshTokenExpiry { get; set; }
+        public DateTimeOffset? refreshTokenExpiry { get; set; }
         public string? PasswordResetToken { get; set; }
-        public DateTime? TokenExpiry { get; set; }
+        public DateTimeOffset? TokenExpiry { get; set; }
         [NotMapped]
         public string? ImageUrl { get; set; }
         [JsonIgnore]

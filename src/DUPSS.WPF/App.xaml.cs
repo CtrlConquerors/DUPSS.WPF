@@ -26,6 +26,16 @@ namespace DUPSS.WPF
             string baseUrl = Configuration["ApiSettings:BaseUrl"];
             MessageBox.Show($"API Base URL loaded: {baseUrl}", "Configuration Loaded"); // For demonstration
 
+            // Sau đó vẫn kiểm tra:
+            if (string.IsNullOrWhiteSpace(baseUrl))
+            {
+                MessageBox.Show("⚠️ Missing ApiSettings:BaseUrl in appsettings.json!");
+                Shutdown();
+                return;
+            }
+
+            HttpClient = new HttpClient { BaseAddress = new Uri(baseUrl) };
+
             // Call the base OnStartup method to ensure normal WPF startup processes
             base.OnStartup(e);
 

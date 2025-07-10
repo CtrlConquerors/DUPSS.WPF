@@ -1,21 +1,23 @@
-﻿using DUPSS.DAO.DAOs;
-using DUPSS.DAO.Interfaces; // Thêm namespace này để sử dụng ICourseDAO
-using DUPSS.DTO.DTOs; // Thêm namespace này để sử dụng CourseDTO
-using DUPSS.Objects; // Đảm bảo namespace này được bao gồm cho Course domain model
+﻿using DUPSS.DAO.Interfaces;
+using DUPSS.DTO.DTOs;
+using DUPSS.Objects;
 using Microsoft.AspNetCore.Mvc;
-using Npgsql; // Thêm namespace này cho NpgsqlException
+using Microsoft.Data.SqlClient; // Sử dụng SqlException thay vì NpgsqlException
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace DUPSS.API.Controllers
 {
-    [ApiController, Route("api/[controller]")]
+    [ApiController]
+    [Route("api/[controller]")]
     public class CoursesController : ControllerBase
     {
-        private readonly ICourseDAO _courseDAO; // Sử dụng giao diện, không phải kiểu cụ thể
+        private readonly ICourseDAO _courseDAO;
 
-        // Hàm tạo phải nhận ICourseDAO thông qua Dependency Injection
         public CoursesController(ICourseDAO courseDAO)
         {
-            _courseDAO = courseDAO; // Gán thể hiện đã được inject
+            _courseDAO = courseDAO;
         }
 
         [HttpGet("GetAll")]
@@ -26,7 +28,7 @@ namespace DUPSS.API.Controllers
                 var courses = await _courseDAO.GetAllAsync();
                 return Ok(courses);
             }
-            catch (NpgsqlException ex)
+            catch (SqlException ex)
             {
                 return StatusCode(500, $"Database error: {ex.Message}");
             }
@@ -46,7 +48,7 @@ namespace DUPSS.API.Controllers
                     return NotFound($"Course with ID {courseId} not found.");
                 return Ok(course);
             }
-            catch (NpgsqlException ex)
+            catch (SqlException ex)
             {
                 return StatusCode(500, $"Database error: {ex.Message}");
             }
@@ -61,12 +63,10 @@ namespace DUPSS.API.Controllers
         {
             try
             {
-                // Replace _userDAO.CountAsync() with a manual count operation
                 var courses = await _courseDAO.GetAllAsync();
-                var count = courses.Count;
-                return Ok(count);
+                return Ok(courses.Count);
             }
-            catch (Npgsql.NpgsqlException ex)
+            catch (SqlException ex)
             {
                 return StatusCode(500, $"Database error: {ex.Message}");
             }
@@ -77,29 +77,26 @@ namespace DUPSS.API.Controllers
         }
 
         [HttpPost("Create")]
-        // Thay đổi tham số từ Course sang CourseDTO
         public async Task<ActionResult<CourseDTO>> Create([FromBody] CourseDTO courseDto)
         {
             try
             {
-                // Ánh xạ CourseDTO sang Course domain model trước khi truyền cho DAO
-                var courseDomainModel = new Course
+                var course = new Course
                 {
                     CourseId = courseDto.CourseId,
                     TopicId = courseDto.TopicId,
                     CourseName = courseDto.CourseName,
                     CourseType = courseDto.CourseType,
                     StaffId = courseDto.StaffId,
-                    Description = courseDto.Description, // Bao gồm Description
-                    ConsultantId = courseDto.ConsultantId // Bao gồm ConsultantId
-                    // Các thuộc tính khác như ImageUrl, CreatedDate, Status, Inventory, IsSelected
-                    // không cần ánh xạ ngược vì chúng là [NotMapped] hoặc được quản lý bởi backend.
+                    Description = courseDto.Description,
+                    ConsultantId = courseDto.ConsultantId
+                    // Các trường backend tự sinh (CreatedDate, Status, ...) không cần set
                 };
 
-                var createdCourse = await _courseDAO.CreateAsync(courseDomainModel);
+                var createdCourse = await _courseDAO.CreateAsync(course);
                 return CreatedAtAction(nameof(GetById), new { courseId = createdCourse.CourseId }, createdCourse);
             }
-            catch (NpgsqlException ex)
+            catch (SqlException ex)
             {
                 return StatusCode(500, $"Database error: {ex.Message}");
             }
@@ -110,28 +107,25 @@ namespace DUPSS.API.Controllers
         }
 
         [HttpPut("Update")]
-        // Thay đổi tham số từ Course sang CourseDTO
         public async Task<ActionResult<CourseDTO>> Update([FromBody] CourseDTO courseDto)
         {
             try
             {
-                // Ánh xạ CourseDTO sang Course domain model trước khi truyền cho DAO
-                var courseDomainModel = new Course
+                var course = new Course
                 {
                     CourseId = courseDto.CourseId,
                     TopicId = courseDto.TopicId,
                     CourseName = courseDto.CourseName,
                     CourseType = courseDto.CourseType,
                     StaffId = courseDto.StaffId,
-                    Description = courseDto.Description, // Bao gồm Description
-                    ConsultantId = courseDto.ConsultantId // Bao gồm ConsultantId
-                    // Đảm bảo tất cả các thuộc tính có thể cập nhật đều được ánh xạ
+                    Description = courseDto.Description,
+                    ConsultantId = courseDto.ConsultantId
                 };
 
-                var updatedCourse = await _courseDAO.UpdateAsync(courseDomainModel);
-                return Ok(updatedCourse);
+                var updated = await _courseDAO.UpdateAsync(course);
+                return Ok(updated);
             }
-            catch (NpgsqlException ex)
+            catch (SqlException ex)
             {
                 return StatusCode(500, $"Database error: {ex.Message}");
             }
@@ -151,7 +145,7 @@ namespace DUPSS.API.Controllers
                     return NotFound($"Course with ID {courseId} not found.");
                 return Ok(result);
             }
-            catch (NpgsqlException ex)
+            catch (SqlException ex)
             {
                 return StatusCode(500, $"Database error: {ex.Message}");
             }
