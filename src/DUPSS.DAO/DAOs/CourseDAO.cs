@@ -25,10 +25,9 @@ namespace DUPSS.DAO.DAOs
                 CourseName = course.CourseName,
                 CourseType = course.CourseType,
                 StaffId = course.StaffId,
-                Description = course.Description, // NEW: Include Description
-                ConsultantId = course.ConsultantId, // NEW: Include ConsultantId
-                ImageUrl = $"images/{course.CourseId}.jpg",
-                ImageUrl2 = $"images/{course.ConsultantId}.jpg",
+                Description = course.Description, // Include Description
+                ConsultantId = course.ConsultantId, // Include ConsultantId
+                // ImageUrl and ImageUrl2 are no longer generated here; WPF client will handle local paths
                 CreatedDate = course.CreatedDate,
                 Status = course.Status,
                 Inventory = course.Inventory,
@@ -41,7 +40,7 @@ namespace DUPSS.DAO.DAOs
             return await _context.Course
                 .Include(c => c.Topic) // Eagerly load Topic
                 .Include(c => c.Staff) // Eagerly load Staff
-                .Include(c => c.Consultant) // NEW: Eagerly load Consultant
+                .Include(c => c.Consultant) // Eagerly load Consultant
                 .Where(c => c.CourseId == courseId)
                 .Select(c => new CourseDTO
                 {
@@ -50,10 +49,9 @@ namespace DUPSS.DAO.DAOs
                     CourseName = c.CourseName,
                     CourseType = c.CourseType,
                     StaffId = c.StaffId,
-                    Description = c.Description, // NEW: Include Description
-                    ConsultantId = c.ConsultantId, // NEW: Include ConsultantId
-                    ImageUrl = $"images/{c.CourseId}.jpg",
-                    ImageUrl2 = $"images/{c.ConsultantId}.jpg",
+                    Description = c.Description, // Include Description
+                    ConsultantId = c.ConsultantId, // Include ConsultantId
+                    // ImageUrl and ImageUrl2 are no longer generated here
                     CreatedDate = c.CreatedDate,
                     Status = c.Status,
                     Inventory = c.Inventory,
@@ -72,14 +70,14 @@ namespace DUPSS.DAO.DAOs
                         Email = c.Staff.Email,
                         RoleId = c.Staff.RoleId
                     } : null,
-                    Consultant = c.Consultant != null ? new UserDTO // NEW: Include Consultant DTO
+                    Consultant = c.Consultant != null ? new UserDTO // Include Consultant DTO
                     {
                         UserId = c.Consultant.UserId,
                         Username = c.Consultant.Username,
                         DoB = c.Consultant.DoB,
                         PhoneNumber = c.Consultant.PhoneNumber,
                         Email = c.Consultant.Email,
-                        ImageUrl = $"images/{c.Consultant.UserId}.jpg",
+                        ImageUrl = $"images/{c.Consultant.UserId}.jpg", // Keep this if Consultant image is still from API/server
                         RoleId = c.Consultant.RoleId
                     } : null
                 })
@@ -91,7 +89,7 @@ namespace DUPSS.DAO.DAOs
             return await _context.Course
                 .Include(c => c.Topic) // Eagerly load Topic
                 .Include(c => c.Staff) // Eagerly load Staff
-                .Include(c => c.Consultant) // NEW: Eagerly load Consultant
+                .Include(c => c.Consultant) // Eagerly load Consultant
                 .Select(c => new CourseDTO
                 {
                     CourseId = c.CourseId,
@@ -99,10 +97,9 @@ namespace DUPSS.DAO.DAOs
                     CourseName = c.CourseName,
                     CourseType = c.CourseType,
                     StaffId = c.StaffId,
-                    Description = c.Description, // NEW: Include Description
-                    ConsultantId = c.ConsultantId, // NEW: Include ConsultantId
-                    ImageUrl = $"images/{c.CourseId}.jpg",
-                    ImageUrl2 = $"images/{c.ConsultantId}.jpg",
+                    Description = c.Description, // Include Description
+                    ConsultantId = c.ConsultantId, // Include ConsultantId
+                    // ImageUrl and ImageUrl2 are no longer generated here
                     CreatedDate = c.CreatedDate,
                     Status = c.Status,
                     Inventory = c.Inventory,
@@ -121,14 +118,14 @@ namespace DUPSS.DAO.DAOs
                         Email = c.Staff.Email,
                         RoleId = c.Staff.RoleId
                     } : null,
-                    Consultant = c.Consultant != null ? new UserDTO // NEW: Include Consultant DTO
+                    Consultant = c.Consultant != null ? new UserDTO // Include Consultant DTO
                     {
                         UserId = c.Consultant.UserId,
                         Username = c.Consultant.Username,
                         DoB = c.Consultant.DoB,
                         PhoneNumber = c.Consultant.PhoneNumber,
                         Email = c.Consultant.Email,
-                        ImageUrl = $"images/{c.Consultant.UserId}.jpg",
+                        ImageUrl = $"images/{c.Consultant.UserId}.jpg", // Keep this if Consultant image is still from API/server
                         RoleId = c.Consultant.RoleId
                     } : null
                 })
@@ -145,8 +142,8 @@ namespace DUPSS.DAO.DAOs
             existingCourse.CourseType = course.CourseType;
             existingCourse.TopicId = course.TopicId;
             existingCourse.StaffId = course.StaffId;
-            existingCourse.Description = course.Description; // NEW: Update Description
-            existingCourse.ConsultantId = course.ConsultantId; // NEW: Update ConsultantId
+            existingCourse.Description = course.Description; // Update Description
+            existingCourse.ConsultantId = course.ConsultantId; // Update ConsultantId
 
             await _context.SaveChangesAsync();
             return new CourseDTO
@@ -156,10 +153,9 @@ namespace DUPSS.DAO.DAOs
                 CourseName = existingCourse.CourseName,
                 CourseType = existingCourse.CourseType,
                 StaffId = existingCourse.StaffId,
-                Description = existingCourse.Description, // NEW: Include updated Description
-                ConsultantId = existingCourse.ConsultantId, // NEW: Include updated ConsultantId
-                ImageUrl = $"images/{existingCourse.CourseId}.jpg",
-                ImageUrl2 = $"images/{existingCourse.ConsultantId}.jpg",
+                Description = existingCourse.Description, // Include updated Description
+                ConsultantId = existingCourse.ConsultantId, // Include updated ConsultantId
+                // ImageUrl and ImageUrl2 are no longer generated here
                 CreatedDate = existingCourse.CreatedDate,
                 Status = existingCourse.Status,
                 Inventory = existingCourse.Inventory,
@@ -183,4 +179,3 @@ namespace DUPSS.DAO.DAOs
         }
     }
 }
-

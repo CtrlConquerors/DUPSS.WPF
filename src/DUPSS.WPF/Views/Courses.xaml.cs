@@ -7,6 +7,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media.Imaging; // Required for BitmapImage
+using System.IO; // Required for Path.GetExtension
 
 namespace DUPSS.WPF.Views
 {
@@ -16,6 +18,11 @@ namespace DUPSS.WPF.Views
         private List<CourseDTO> allCourses = new List<CourseDTO>();
         private int displayLimit = 3;
         private bool isShowingAll = false;
+
+        // Define common image extensions to check
+        private readonly string[] _imageExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".bmp" };
+        // Define a placeholder image URI for when a course image is not found
+        private readonly Uri _placeholderImageUri = new Uri("pack://application:,,,/DUPSS.WPF;component/Images/placeholder.png");
 
         public Courses()
         {
@@ -44,61 +51,104 @@ namespace DUPSS.WPF.Views
                 if (courses != null && courses.Count > 0)
                 {
                     allCourses = courses;
-                    Debug.WriteLine($"✅ Loaded {courses.Count} courses.");
+                    SetCourseImageUris(); // Call method to set local image URIs
+                    Debug.WriteLine($"✅ Loaded {courses.Count} courses. Setting image URIs.");
                     FilterCourses();
-                    StatusPanel.Visibility = Visibility.Collapsed;
-
-                    // Hiện nút explore nếu số lượng > displayLimit
-                    if (allCourses.Count > displayLimit)
-                        ExploreMoreButton.Visibility = Visibility.Visible;
                 }
                 else
                 {
-                    StatusText.Text = "No courses found.";
+                    allCourses = new List<CourseDTO>(); // Ensure it's not null
+                    StatusPanel.Visibility = Visibility.Visible;
+                    StatusText.Text = "No courses available.";
+                    Debug.WriteLine("⚠️ No courses returned from API.");
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"❌ Exception: {ex}");
-                StatusText.Text = "Failed to load courses.";
-                MessageBox.Show($"Failed to load courses.\n\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                StatusPanel.Visibility = Visibility.Visible;
+                StatusText.Text = $"Error loading courses: {ex.Message}";
+                Debug.WriteLine($"❌ Error loading courses: {ex.Message}");
+                // In a real application, you might log the full exception details
+            }
+        }
+
+        // Method to set local image URIs for each course
+        private void SetCourseImageUris()
+        {
+            foreach (var course in allCourses)
+            {
+                Uri imageUri = null;
+                // Try to find an image with any of the specified extensions
+                foreach (var ext in _imageExtensions)
+                {
+                    // Construct the pack URI for the image
+                    var potentialUriString = $"pack://application:,,,/DUPSS.WPF;component/Images/{course.CourseId}{ext}";
+                    try
+                    {
+                        var uri = new Uri(potentialUriString);
+                        // Check if the resource stream exists for the URI
+                        if (Application.GetResourceStream(uri) != null)
+                        {
+                            imageUri = uri;
+                            break; // Found a valid image, stop checking extensions
+                        }
+                    }
+                    catch (UriFormatException)
+                    {
+                        Debug.WriteLine($"Invalid URI format for: {potentialUriString}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Error checking resource stream for {potentialUriString}: {ex.Message}");
+                    }
+                }
+
+                if (imageUri != null)
+                {
+                    course.ImageUrl = imageUri.ToString();
+                }
+                else
+                {
+                    course.ImageUrl = _placeholderImageUri.ToString();
+                    Debug.WriteLine($"No specific image found for CourseId: {course.CourseId}. Using placeholder.");
+                }
             }
         }
 
         private void FilterCourses()
         {
-            string keyword = SearchBox.Text?.Trim().ToLower();
-            IEnumerable<CourseDTO> filtered = allCourses;
+            var searchText = SearchBox.Text.ToLowerInvariant();
+            IEnumerable<CourseDTO> filtered;
 
-            if (!string.IsNullOrEmpty(keyword))
+            if (string.IsNullOrWhiteSpace(searchText))
             {
-                filtered = filtered.Where(c =>
-                    (c.CourseName != null && c.CourseName.ToLower().Contains(keyword)) ||
-                    (c.Topic?.TopicName != null && c.Topic.TopicName.ToLower().Contains(keyword)) ||
-                    (c.Description != null && c.Description.ToLower().Contains(keyword))
-                );
-            }
-
-            if (!isShowingAll)
-            {
-                filtered = filtered.Take(displayLimit);
-            }
-
-            CoursesGrid.ItemsSource = filtered.ToList();
-
-            // Hiện nút explore / show less
-            if (string.IsNullOrEmpty(keyword) && allCourses.Count > displayLimit)
-            {
-                ExploreMoreButton.Visibility = isShowingAll ? Visibility.Collapsed : Visibility.Visible;
-                ShowLessButton.Visibility = isShowingAll ? Visibility.Visible : Visibility.Collapsed;
+                filtered = allCourses;
             }
             else
             {
-                ExploreMoreButton.Visibility = Visibility.Collapsed;
-                ShowLessButton.Visibility = Visibility.Collapsed;
+                filtered = allCourses.Where(c =>
+                    c.CourseName.ToLowerInvariant().Contains(searchText) ||
+                    (c.Description != null && c.Description.ToLowerInvariant().Contains(searchText)) ||
+                    (c.Topic?.TopicName != null && c.Topic.TopicName.ToLowerInvariant().Contains(searchText))
+                ).ToList();
             }
 
-            // Hiện thông báo nếu không có kết quả
+            // Apply display limit if not showing all
+            if (!isShowingAll && filtered.Count() > displayLimit)
+            {
+                CoursesGrid.ItemsSource = filtered.Take(displayLimit).ToList();
+                ExploreMoreButton.Visibility = Visibility.Visible;
+                ShowLessButton.Visibility = Visibility.Collapsed; // Only show Explore More
+            }
+            else
+            {
+                CoursesGrid.ItemsSource = filtered.ToList();
+                ExploreMoreButton.Visibility = Visibility.Collapsed;
+                // Show "Show Less" only if there are more courses than the initial display limit AND we are currently showing all
+                ShowLessButton.Visibility = (allCourses.Count > displayLimit && isShowingAll) ? Visibility.Visible : Visibility.Collapsed;
+            }
+
+            // Show message if no results
             if (!filtered.Any())
             {
                 StatusPanel.Visibility = Visibility.Visible;
@@ -120,12 +170,16 @@ namespace DUPSS.WPF.Views
         {
             isShowingAll = true;
             FilterCourses();
+            // Scroll to the top of the ScrollViewer after expanding
+            MainScrollViewer.ScrollToHome(); // <--- NEW: Scroll to top
         }
 
         private void ShowLessButton_Click(object sender, RoutedEventArgs e)
         {
             isShowingAll = false;
             FilterCourses();
+            // Scroll to the top of the ScrollViewer after collapsing
+            MainScrollViewer.ScrollToHome(); // <--- NEW: Scroll to top
         }
 
         private void CourseCard_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)

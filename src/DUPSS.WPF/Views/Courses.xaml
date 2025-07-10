@@ -7,7 +7,8 @@
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
     </Page.Resources>
 
-    <Grid>
+    <!-- Wrap the main content with a ScrollViewer -->
+    <ScrollViewer x:Name="MainScrollViewer" VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="40" HorizontalAlignment="Center" Width="800">
 
             <!-- Tiêu đề -->
@@ -73,5 +74,5 @@
                         Click="ShowLessButton_Click" Visibility="Collapsed" Margin="5"/>
             </StackPanel>
         </StackPanel>
-    </Grid>
+    </ScrollViewer>
 </Page>

@@ -26,12 +26,15 @@ namespace DUPSS.DAO.DAOs
                 Content = blog.Content,
                 Status = blog.Status,
                 BlogTopicId = blog.BlogTopicId,
+                // ImageUrl is no longer generated here; WPF client will handle local paths
             };
         }
 
         public async Task<BlogDTO?> GetByIdAsync(string blogId)
         {
             return await _context.Blog
+                .Include(b => b.Staff) // Eagerly load Staff
+                .Include(b => b.BlogTopic) // Eagerly load BlogTopic
                 .Where(b => b.BlogId == blogId)
                 .Select(b => new BlogDTO
                 {
@@ -55,7 +58,7 @@ namespace DUPSS.DAO.DAOs
                         BlogTopicId = b.BlogTopic.BlogTopicId,
                         BlogTopicName = b.BlogTopic.BlogTopicName,
                     } : null,
-                    ImageUrl = $"/images/{b.BlogId}.jpg"
+                    // ImageUrl is no longer generated here
                 })
                 .FirstOrDefaultAsync();
         }
@@ -63,6 +66,8 @@ namespace DUPSS.DAO.DAOs
         public async Task<List<BlogDTO>> GetAllAsync()
         {
             return await _context.Blog
+                .Include(b => b.Staff) // Eagerly load Staff
+                .Include(b => b.BlogTopic) // Eagerly load BlogTopic
                 .Select(b => new BlogDTO
                 {
                     BlogId = b.BlogId,
@@ -85,7 +90,7 @@ namespace DUPSS.DAO.DAOs
                         BlogTopicId = b.BlogTopic.BlogTopicId,
                         BlogTopicName = b.BlogTopic.BlogTopicName,
                     } : null,
-                    ImageUrl = $"/images/{b.BlogId}.jpg"
+                    // ImageUrl is no longer generated here
                 })
                 .ToListAsync();
         }

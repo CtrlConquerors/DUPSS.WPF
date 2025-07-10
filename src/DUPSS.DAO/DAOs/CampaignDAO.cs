@@ -23,7 +23,7 @@ namespace DUPSS.DAO.DAOs
                 CampaignId = campaign.CampaignId,
                 StaffId = campaign.StaffId,
                 Title = campaign.Title,
-                ImageUrl = $"images/{campaign.CampaignId}.jpg",
+                // ImageUrl is no longer generated here; WPF client will handle local paths
                 Description = campaign.Description,
                 StartDate = campaign.StartDate,
                 EndDate = campaign.EndDate,
@@ -37,6 +37,7 @@ namespace DUPSS.DAO.DAOs
         public async Task<CampaignDTO?> GetByIdAsync(string campaignId)
         {
             return await _context.Campaign
+                .Include(c => c.Staff) // Eagerly load Staff
                 .Where(c => c.CampaignId == campaignId)
                 .Select(c => new CampaignDTO
                 {
@@ -60,15 +61,15 @@ namespace DUPSS.DAO.DAOs
                         RoleId = c.Staff.RoleId
 
                     } : null,
-                    ImageUrl = $"/images/{c.CampaignId}.jpg"
+                    // ImageUrl is no longer generated here
                 })
-
                 .FirstOrDefaultAsync();
         }
 
         public async Task<List<CampaignDTO>> GetAllAsync()
         {
             return await _context.Campaign
+                .Include(c => c.Staff) // Eagerly load Staff
                 .Select(c => new CampaignDTO
                 {
                     CampaignId = c.CampaignId,
@@ -79,7 +80,7 @@ namespace DUPSS.DAO.DAOs
                     EndDate = c.EndDate,
                     Status = c.Status,
                     Location = c.Location,
-                    Introduction = c.Introduction,      
+                    Introduction = c.Introduction,
                     Duration = c.EndDate.HasValue ? (TimeSpan?)(c.EndDate.Value.ToDateTime(new TimeOnly(0)) - c.StartDate.ToDateTime(new TimeOnly(0))) : null,
                     Staff = c.Staff != null ? new UserDTO
                     {
@@ -90,7 +91,7 @@ namespace DUPSS.DAO.DAOs
                         Email = c.Staff.Email,
                         RoleId = c.Staff.RoleId
                     } : null,
-                    ImageUrl = $"/images/{c.CampaignId}.jpg"
+                    // ImageUrl is no longer generated here
                 })
                 .ToListAsync();
         }

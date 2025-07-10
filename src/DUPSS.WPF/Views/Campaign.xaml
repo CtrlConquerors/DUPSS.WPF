@@ -7,54 +7,71 @@
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
     </Page.Resources>
 
+    <!-- Removed fixed Height from Grid and added ScrollViewer -->
     <Grid Background="#f7f9fc">
-        <StackPanel Margin="40" HorizontalAlignment="Center" Width="900">
-            <TextBlock Text="Ongoing Awareness Campaigns"
-                       FontSize="32"
-                       FontWeight="Bold"
-                       Margin="0,0,0,10"
-                       HorizontalAlignment="Center"
-                       Foreground="LightBlue"/>
-            <TextBlock Text="The sky was cloudless and of a deep dark blue the spectacle before us was indeed."
-                       FontSize="16"
-                       Foreground="Gray"
-                       Margin="0,0,0,30"
-                       HorizontalAlignment="Center"/>
+        <ScrollViewer x:Name="MainScrollViewer" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="40" HorizontalAlignment="Center" Width="900">
+                <TextBlock Text="Ongoing Awareness Campaigns"
+                           FontSize="32"
+                           FontWeight="Bold"
+                           Margin="0,0,0,10"
+                           HorizontalAlignment="Center"
+                           Foreground="LightBlue"/>
+                <TextBlock Text="The sky was cloudless and of a deep dark blue the spectacle before us was indeed."
+                           FontSize="16"
+                           Foreground="Gray"
+                           Margin="0,0,0,30"
+                           HorizontalAlignment="Center"/>
 
-            <!-- Loading/Error/No Results -->
-            <StackPanel x:Name="StatusPanel" Visibility="Collapsed" Margin="0,0,0,20">
-                <TextBlock x:Name="StatusText" FontSize="16" Foreground="Gray" HorizontalAlignment="Center"/>
+                <!-- Search Box (NEW) -->
+                <Grid Width="400" Height="32" Margin="0,0,0,20" HorizontalAlignment="Center">
+                    <TextBox x:Name="SearchBox"
+                             VerticalContentAlignment="Center"
+                             TextChanged="SearchBox_TextChanged"
+                             Padding="8,0,0,0"/>
+                    <TextBlock Text="Search campaigns by title, description, or location..."
+                               Foreground="Gray" Margin="8,0,0,0"
+                               VerticalAlignment="Center"
+                               IsHitTestVisible="False"
+                               Visibility="{Binding Text.IsEmpty, ElementName=SearchBox, Converter={StaticResource BoolToVis}}"/>
+                </Grid>
+
+                <!-- Loading/Error/No Results -->
+                <StackPanel x:Name="StatusPanel" Visibility="Collapsed" Margin="0,0,0,20">
+                    <TextBlock x:Name="StatusText" FontSize="16" Foreground="Gray" HorizontalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Campaign Grid -->
+                <ItemsControl x:Name="CampaignGrid">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal" ItemWidth="320" ItemHeight="340"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Margin="10" Padding="10" Background="#fff" CornerRadius="15" Width="300" Height="320" Cursor="Hand"
+                                    MouseLeftButtonUp="CampaignCard_Click">
+                                <StackPanel>
+                                    <!-- Image Source now expects a local pack URI or the common placeholder -->
+                                    <Image Source="{Binding ImageUrl, TargetNullValue='pack://application:,,,/DUPSS.WPF;component/Images/placeholder.png'}"
+                                           Height="120" Stretch="UniformToFill" Margin="0,0,0,10"/>
+                                    <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="16" Margin="0,5,0,0" Foreground="#2c3e50"/>
+                                    <TextBlock Text="Status: " FontWeight="SemiBold" FontSize="12" Foreground="#888" Margin="0,2,0,0"/>
+                                    <TextBlock Text="{Binding Status, TargetNullValue='-'}" FontSize="12" Foreground="#888"/>
+                                    <TextBlock Text="{Binding Description}" FontSize="13" Foreground="#555" TextWrapping="Wrap" Margin="0,8,0,0"/>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- Explore More / Show Less Buttons -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
+                    <Button x:Name="ExploreMoreButton" Content="Explore More" Click="ExploreMoreButton_Click" Visibility="Collapsed" Margin="5"/>
+                    <Button x:Name="ShowLessButton" Content="Show Less" Click="ShowLessButton_Click" Visibility="Collapsed" Margin="5"/>
+                </StackPanel>
             </StackPanel>
-
-            <!-- Campaign Grid -->
-            <ItemsControl x:Name="CampaignGrid">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <WrapPanel Orientation="Horizontal" ItemWidth="320" ItemHeight="340"/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Border Margin="10" Padding="10" Background="#fff" CornerRadius="15" Width="300" Height="320" Cursor="Hand"
-                                MouseLeftButtonUp="CampaignCard_Click">
-                            <StackPanel>
-                                <Image Source="{Binding ImageUrl, TargetNullValue='https://placehold.co/300x200/F0F0F0/000000?text=Campaign+Image'}"
-                                       Height="120" Stretch="UniformToFill" Margin="0,0,0,10"/>
-                                <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="16" Margin="0,5,0,0" Foreground="#2c3e50"/>
-                                <TextBlock Text="Status: " FontWeight="SemiBold" FontSize="12" Foreground="#888" Margin="0,2,0,0"/>
-                                <TextBlock Text="{Binding Status, TargetNullValue='-'}" FontSize="12" Foreground="#888"/>
-                                <TextBlock Text="{Binding Description}" FontSize="13" Foreground="#555" TextWrapping="Wrap" Margin="0,8,0,0"/>
-                            </StackPanel>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-
-            <!-- Explore More / Show Less Buttons -->
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
-                <Button x:Name="ExploreMoreButton" Content="Explore More" Click="ExploreMoreButton_Click" Visibility="Collapsed" Margin="5"/>
-                <Button x:Name="ShowLessButton" Content="Show Less" Click="ShowLessButton_Click" Visibility="Collapsed" Margin="5"/>
-            </StackPanel>
-        </StackPanel>
+        </ScrollViewer>
     </Grid>
 </Page>
