@@ -67,7 +67,7 @@
                                     MouseLeftButtonUp="BlogCard_Click">
                                 <StackPanel>
                                     <!-- Image Source now expects a local pack URI or the common placeholder -->
-                                    <Image Source="{Binding ImageUrl, TargetNullValue='pack://application:,,,/DUPSS.WPF;component/Images/placeholder.png'}"
+                                    <Image Source="{Binding ImageUrl, TargetNullValue='pack://application:,,,/DUPSS.WPF;component/Images/Blogs/placeholder.png'}"
                                            Height="120" Stretch="UniformToFill" Margin="0,0,0,10"/>
                                     <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="16" Margin="0,5,0,0" Foreground="#2c3e50"/>
                                     <TextBlock Text="Topic: " FontWeight="SemiBold" FontSize="12" Foreground="#888" Margin="0,2,0,0"/>

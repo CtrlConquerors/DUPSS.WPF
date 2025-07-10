@@ -27,7 +27,7 @@ namespace DUPSS.WPF.Views
         private readonly string[] _imageExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".bmp" };
         // Define a placeholder image URI for when a blog image is not found
         // NOW USING THE SAME PLACEHOLDER AS COURSES
-        private readonly Uri _placeholderImageUri = new Uri("pack://application:,,,/DUPSS.WPF;component/Images/placeholder.png");
+        private readonly Uri _placeholderImageUri = new Uri("pack://application:,,,/DUPSS.WPF;component/Images/Blogs/placeholder.png");
 
 
         public Blog()
@@ -91,7 +91,7 @@ namespace DUPSS.WPF.Views
                 Uri imageUri = null;
                 foreach (var ext in _imageExtensions)
                 {
-                    var potentialUriString = $"pack://application:,,,/DUPSS.WPF;component/Images/{blog.BlogId}{ext}";
+                    var potentialUriString = $"pack://application:,,,/DUPSS.WPF;component/Images/Blogs/{blog.BlogId}{ext}";
                     try
                     {
                         var uri = new Uri(potentialUriString);

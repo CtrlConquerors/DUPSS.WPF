@@ -27,7 +27,7 @@ namespace DUPSS.WPF.Views
         // Define common image extensions to check
         private readonly string[] _imageExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".bmp" };
         // Define the shared placeholder image URI
-        private readonly Uri _placeholderImageUri = new Uri("pack://application:,,,/DUPSS.WPF;component/Images/placeholder.png");
+        private readonly Uri _placeholderImageUri = new Uri("pack://application:,,,/DUPSS.WPF;component/Images/Campaigns/placeholder.png");
 
         public Campaign()
         {
@@ -78,7 +78,7 @@ namespace DUPSS.WPF.Views
                 {
                     // Construct the pack URI for the image
                     // Campaign ID starts with "CAM" and 4 decimal numbers, e.g., CAM0001
-                    var potentialUriString = $"pack://application:,,,/DUPSS.WPF;component/Images/{campaign.CampaignId}{ext}";
+                    var potentialUriString = $"pack://application:,,,/DUPSS.WPF;component/Images/Campaigns/{campaign.CampaignId}{ext}";
                     try
                     {
                         var uri = new Uri(potentialUriString);

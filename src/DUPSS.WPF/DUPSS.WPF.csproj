@@ -10,36 +10,40 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="images\1.jpg" />
-    <None Remove="images\2.jpg" />
-    <None Remove="images\3.jpg" />
-    <None Remove="images\4.jpg" />
-    <None Remove="images\5481541a-60c6-4699-ac0d-12a968525faa.jpg" />
-    <None Remove="images\About1.jpg" />
-    <None Remove="images\avatar2.png" />
-    <None Remove="images\B0001.jpg" />
-    <None Remove="images\B0002.jpg" />
-    <None Remove="images\B0003.jpg" />
-    <None Remove="images\banner1.png" />
-    <None Remove="images\bird.gif" />
-    <None Remove="images\blog1.gif" />
-    <None Remove="images\blog10.gif" />
-    <None Remove="images\C0001.jpg" />
-    <None Remove="images\C0002.jpg" />
-    <None Remove="images\C0003.jpg" />
-    <None Remove="images\C0004.jpg" />
-    <None Remove="images\C0005.jpg" />
-    <None Remove="images\C0006.jpg" />
-    <None Remove="images\C0007.jpg" />
-    <None Remove="images\C0008.jpg" />
-    <None Remove="images\C0009.jpg" />
-    <None Remove="images\CAM0001.jpg" />
-    <None Remove="images\CAM0002.jpg" />
-    <None Remove="images\CAM0003.jpg" />
-    <None Remove="images\CAM0004.jpg" />
-    <None Remove="images\Logo.png" />
-    <None Remove="images\placeholder.png" />
-    <None Remove="images\test2.gif" />
+    <Resource Include="images\Others\1.jpg" />
+    <Resource Include="images\Others\2.jpg" />
+    <Resource Include="images\Others\3.jpg" />
+    <Resource Include="images\Others\4.jpg" />
+    <Resource Include="images\Users\5481541a-60c6-4699-ac0d-12a968525faa.jpg" />
+    <Resource Include="images\Others\About1.jpg" />
+    <Resource Include="images\Users\avatar2.png" />
+    <Resource Include="images\Blogs\B0001.jpg" />
+    <Resource Include="images\Blogs\B0002.jpg" />
+    <Resource Include="images\Blogs\B0003.jpg" />
+    <Resource Include="images\Others\banner1.png" />
+    <Resource Include="images\Others\bird.gif" />
+    <Resource Include="images\Blogs\blog1.gif" />
+    <Resource Include="images\Blogs\blog10.gif" />
+    <Resource Include="images\Courses\C0001.jpg" />
+    <Resource Include="images\Courses\C0002.jpg" />
+    <Resource Include="images\Courses\C0003.jpg" />
+    <Resource Include="images\Courses\C0004.jpg" />
+    <Resource Include="images\Courses\C0005.jpg" />
+    <Resource Include="images\Courses\C0006.jpg" />
+    <Resource Include="images\Courses\C0007.jpg" />
+    <Resource Include="images\Courses\C0008.jpg" />
+    <Resource Include="images\Courses\C0009.jpg" />
+    <Resource Include="images\Campaigns\CAM0001.jpg" />
+    <Resource Include="images\Campaigns\CAM0002.jpg" />
+    <Resource Include="images\Campaigns\CAM0003.jpg" />
+    <Resource Include="images\Campaigns\CAM0004.jpg" />
+    <Resource Include="images\Others\Logo.png" />
+    <Resource Include="images\Others\placeholder.png" />
+    <Resource Include="images\Courses\placeholder.png" />
+    <Resource Include="images\Users\placeholder.png" />
+    <Resource Include="images\Campaigns\placeholder.png" />
+    <Resource Include="images\Blogs\placeholder.png" />
+    <Resource Include="images\Others\test2.gif" />
   </ItemGroup>
 
   <ItemGroup>
@@ -54,43 +58,6 @@
     <ProjectReference Include="..\DUPSS.API\DUPSS.API.csproj" />
     <ProjectReference Include="..\DUPSS.Common\DUPSS.Common.csproj" />
     <ProjectReference Include="..\DUPSS.DTO\DUPSS.DTO.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Resource Include="images\1.jpg" />
-    <Resource Include="images\2.jpg" />
-    <Resource Include="images\3.jpg" />
-    <Resource Include="images\4.jpg" />
-    <Resource Include="images\5481541a-60c6-4699-ac0d-12a968525faa.jpg" />
-    <Resource Include="images\About1.jpg" />
-    <Resource Include="images\avatar2.png" />
-    <Resource Include="images\B0001.jpg" />
-    <Resource Include="images\B0002.jpg" />
-    <Resource Include="images\B0003.jpg" />
-    <Resource Include="images\banner1.png" />
-    <Resource Include="images\bird.gif" />
-    <Resource Include="images\blog1.gif" />
-    <Resource Include="images\blog10.gif" />
-    <Resource Include="images\C0001.jpg" />
-    <Resource Include="images\C0002.jpg" />
-    <Resource Include="images\C0003.jpg" />
-    <Resource Include="images\C0004.jpg" />
-    <Resource Include="images\C0005.jpg" />
-    <Resource Include="images\C0006.jpg" />
-    <Resource Include="images\C0007.jpg" />
-    <Resource Include="images\C0008.jpg" />
-    <Resource Include="images\C0009.jpg" />
-    <Resource Include="images\CAM0001.jpg" />
-    <Resource Include="images\CAM0002.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="images\CAM0003.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="images\CAM0004.jpg" />
-    <Resource Include="images\Logo.png" />
-    <Resource Include="images\placeholder.png" />
-    <Resource Include="images\test2.gif" />
   </ItemGroup>
 
   <ItemGroup>

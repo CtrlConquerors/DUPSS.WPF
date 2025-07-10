@@ -22,7 +22,7 @@ namespace DUPSS.WPF.Views
         // Define common image extensions to check
         private readonly string[] _imageExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".bmp" };
         // Define a placeholder image URI for when a course image is not found
-        private readonly Uri _placeholderImageUri = new Uri("pack://application:,,,/DUPSS.WPF;component/Images/placeholder.png");
+        private readonly Uri _placeholderImageUri = new Uri("pack://application:,,,/DUPSS.WPF;component/Images/Courses/placeholder.png");
 
         public Courses()
         {
@@ -82,7 +82,7 @@ namespace DUPSS.WPF.Views
                 foreach (var ext in _imageExtensions)
                 {
                     // Construct the pack URI for the image
-                    var potentialUriString = $"pack://application:,,,/DUPSS.WPF;component/Images/{course.CourseId}{ext}";
+                    var potentialUriString = $"pack://application:,,,/DUPSS.WPF;component/Images/Courses/{course.CourseId}{ext}";
                     try
                     {
                         var uri = new Uri(potentialUriString);
