@@ -1,0 +1,57 @@
+﻿<Page x:Class="DUPSS.WPF.Views.BookAppointment"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Book Appointment"
+      Background="#F0F4FF">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid Margin="20">
+            <Border Padding="30" Background="White" CornerRadius="20"
+                    BorderBrush="#2d5fa4" BorderThickness="3">
+                <Border.Effect>
+                    <DropShadowEffect Color="Black" BlurRadius="10" ShadowDepth="3" Opacity="0.3"/>
+                </Border.Effect>
+
+                <StackPanel>
+
+                    <TextBlock Text="🎨 Booking appointment with consultant"
+                               FontSize="24" FontWeight="Bold" Foreground="#2d5fa4"
+                               Margin="0 0 0 20" HorizontalAlignment="Center"/>
+
+                    <!-- Warning if can't book -->
+                    <TextBlock x:Name="WarningText"
+                               Text="⚠️ You already have active appointment(s). Please cancel or finish them before booking new."
+                               Foreground="#b45309" FontWeight="Bold"
+                               Visibility="Collapsed"
+                               TextWrapping="Wrap" Margin="0 0 0 10"/>
+
+                    <!-- Choose date -->
+                    <StackPanel Margin="0 0 0 15">
+                        <TextBlock Text="Choose date" FontWeight="Bold" Foreground="#2d5fa4"/>
+                        <ComboBox x:Name="DateComboBox" SelectionChanged="DateComboBox_SelectionChanged"/>
+                    </StackPanel>
+
+                    <!-- Choose slot -->
+                    <StackPanel Margin="0 0 0 15">
+                        <TextBlock Text="Choose time slot" FontWeight="Bold" Foreground="#2d5fa4"/>
+                        <ComboBox x:Name="SlotComboBox"/>
+                    </StackPanel>
+
+                    <!-- Topic -->
+                    <StackPanel Margin="0 0 0 15">
+                        <TextBlock Text="Topic (Describe what you'd like to discuss)" FontWeight="Bold" Foreground="#2d5fa4"/>
+                        <TextBox x:Name="TopicTextBox"/>
+                    </StackPanel>
+
+                    <!-- Button -->
+                    <Button Content="🖌️ Book Now"
+                            Background="#2d5fa4" Foreground="White"
+                            FontWeight="Bold" Padding="10"
+                            Click="BookNow_Click"
+                            HorizontalAlignment="Center"
+                            Width="200" Margin="0 10 0 0"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </ScrollViewer>
+</Page>

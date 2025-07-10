@@ -13,7 +13,13 @@
     <Compile Update="Layouts\NavMenu.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Views\AppointmentHome.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Views\Blog.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\BookAppointment.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="Views\Campaign.xaml.cs">

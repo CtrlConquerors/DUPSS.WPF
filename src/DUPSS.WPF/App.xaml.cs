@@ -2,6 +2,7 @@
 using System.IO;
 using System.Windows;
 using DUPSS.WPF;
+using System.Net.Http;
 
 namespace DUPSS.WPF
 {
@@ -11,6 +12,7 @@ namespace DUPSS.WPF
     public partial class App : Application
     {
         public static IConfiguration Configuration { get; private set; } // Static property to access configuration globally
+        public static HttpClient HttpClient { get; private set; }
 
         protected override void OnStartup(StartupEventArgs e)
         {

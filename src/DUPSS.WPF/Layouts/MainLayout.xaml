@@ -113,7 +113,7 @@
                                Margin="0 20 0 40"/>
                     <!-- Navigation Menu -->
                     <Button Content="Home" Style="{StaticResource NavButtonStyle}" Tag="Home" Click="Navigate_Click"/>
-                    <Button Content="Appointments" Style="{StaticResource NavButtonStyle}" Tag="Appointments" Click="Navigate_Click"/>
+                    <Button Content="Appointments" Style="{StaticResource NavButtonStyle}" Tag="AppointmentHome" Click="Navigate_Click"/>
                     <Button Content="Campaign" Style="{StaticResource NavButtonStyle}" Tag="Campaign" Click="Navigate_Click"/>
                     <Button Content="Courses" Style="{StaticResource NavButtonStyle}" Tag="Courses" Click="Navigate_Click"/>
                     <Button Content="Assessments" Style="{StaticResource NavButtonStyle}" Tag="Assessments" Click="Navigate_Click"/>
