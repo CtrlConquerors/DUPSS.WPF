@@ -1,0 +1,117 @@
+﻿<UserControl x:Class="DUPSS.WPF.Views.AboutUs"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:DUPSS.WPF.Views"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Background="White">
+        <StackPanel>
+            <!-- Slide 1: Hero -->
+            <Grid Height="600">
+                <Image Source="/Images/Others/About1.jpg" Stretch="Fill"/>
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock x:Name="TypewriterText" FontSize="48" FontWeight="Bold" Foreground="White" TextWrapping="Wrap" />
+                    <TextBlock Text="Empowering communities. Transforming lives. Fighting drug abuse through compassion, education, and united action."
+                               Foreground="White" FontSize="18" TextAlignment="Center" Width="600" Margin="0,20,0,0"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Who We Are -->
+            <StackPanel Margin="20">
+                <TextBlock Text="Who We Are" FontSize="30" FontWeight="Bold" Margin="0,20,0,10"/>
+                <TextBlock Text="ALPHA is a volunteer-powered charity driven by hope and humanity..."
+                           TextWrapping="Wrap" FontSize="16"/>
+
+                <!-- Mission & Vision -->
+                <Grid Margin="20,30">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Mission &amp; Vision" FontSize="26" FontWeight="Bold" Margin="0,0,0,10"/>
+                        <TextBlock Text="Mission: To educate, advocate, and guide people toward drug-free lives.
+Vision: A society where every person has access to the support they need to overcome and prevent substance abuse."
+                                   TextWrapping="Wrap" FontSize="16"/>
+                    </StackPanel>
+                    <Image Grid.Column="1" Source="/Images/Blogs/blog1.gif" Width="300" Height="200" Margin="20,0,0,0"/>
+                </Grid>
+
+                <!-- What We Do -->
+                <TextBlock Text="What We Do" FontSize="26" FontWeight="Bold" Margin="0,20,0,10"/>
+                <UniformGrid Columns="4" Margin="0,10">
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="📣" FontSize="40"/>
+                        <TextBlock Text="Campaigns" FontWeight="Bold" FontSize="18" Margin="0,5"/>
+                        <TextBlock Text="We organize school and community workshops to raise awareness..." TextWrapping="Wrap" FontSize="14"/>
+                    </StackPanel>
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="🤝" FontSize="40"/>
+                        <TextBlock Text="Support" FontWeight="Bold" FontSize="18" Margin="0,5"/>
+                        <TextBlock Text="Professional guidance and emotional support offered..." TextWrapping="Wrap" FontSize="14"/>
+                    </StackPanel>
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="👩‍🏫" FontSize="40"/>
+                        <TextBlock Text="Education" FontWeight="Bold" FontSize="18" Margin="0,5"/>
+                        <TextBlock Text="Interactive training programs tailored to students..." TextWrapping="Wrap" FontSize="14"/>
+                    </StackPanel>
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="👥" FontSize="40"/>
+                        <TextBlock Text="Community" FontWeight="Bold" FontSize="18" Margin="0,5"/>
+                        <TextBlock Text="Building a united network that collaborates with local organizations..." TextWrapping="Wrap" FontSize="14"/>
+                    </StackPanel>
+                </UniformGrid>
+
+                <!-- Our Journey -->
+                <TextBlock Text="Our Journey" FontSize="26" FontWeight="Bold" Margin="0,20,0,10"/>
+                <ItemsControl ItemsSource="{Binding Timeline}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border BorderThickness="0 0 0 2" BorderBrush="Blue" Margin="0,10">
+                                <StackPanel Orientation="Horizontal">
+                                    <Ellipse Fill="Blue" Width="16" Height="16" Margin="0,0,10,0"/>
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Year}" FontSize="18" FontWeight="Bold"/>
+                                        <TextBlock Text="{Binding Content}" TextWrapping="Wrap" FontSize="14"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- The Meaning of ALPHA -->
+                <TextBlock Text="The Meaning of 'ALPHA'" FontSize="26" FontWeight="Bold" Margin="0,20,0,10"/>
+                <StackPanel>
+                    <TextBlock Text="A - Advocating for change and health" FontSize="16" Margin="0,4"/>
+                    <TextBlock Text="L - Love and compassion for all" FontSize="16" Margin="0,4"/>
+                    <TextBlock Text="P - Providing support and education" FontSize="16" Margin="0,4"/>
+                    <TextBlock Text="H - Hope for a better future" FontSize="16" Margin="0,4"/>
+                    <TextBlock Text="A - Awakening awareness and action" FontSize="16" Margin="0,4"/>
+                </StackPanel>
+
+                <!-- Meet Our Team -->
+                <TextBlock Text="Meet Our Team" FontSize="26" FontWeight="Bold" Margin="0,20,0,10"/>
+                <UniformGrid Columns="3" Margin="0,10">
+                    <StackPanel HorizontalAlignment="Center">
+                        <Image Source="/Images/Others/1.jpg" Width="150" Height="150" Margin="0,0,0,5"/>
+                        <TextBlock Text="Linh Tran" FontWeight="Bold" FontSize="16"/>
+                        <TextBlock Text="Head of Volunteer Programs" FontSize="14"/>
+                    </StackPanel>
+                    <StackPanel HorizontalAlignment="Center">
+                        <Image Source="/Images/Others/2.jpg" Width="150" Height="150" Margin="0,0,0,5"/>
+                        <TextBlock Text="Minh Pham" FontWeight="Bold" FontSize="16"/>
+                        <TextBlock Text="Senior Consultant" FontSize="14"/>
+                    </StackPanel>
+                    <StackPanel HorizontalAlignment="Center">
+                        <Image Source="/Images/Others/3.jpg" Width="150" Height="150" Margin="0,0,0,5"/>
+                        <TextBlock Text="Sarah Nguyen" FontWeight="Bold" FontSize="16"/>
+                        <TextBlock Text="Operations Manager" FontSize="14"/>
+                    </StackPanel>
+                </UniformGrid>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

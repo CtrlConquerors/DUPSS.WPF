@@ -13,6 +13,9 @@
     <Compile Update="Layouts\NavMenu.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Views\AboutUs.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Views\AppointmentHome.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
