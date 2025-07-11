@@ -12,7 +12,7 @@ namespace DUPSS.Objects
         [Required]
         public required string ConsultantId { get; set; }
         [Required]
-        public DateTime AppointmentDate { get; set; }
+        public DateTimeOffset AppointmentDate { get; set; }
         [Required, MaxLength(50)]
         public required string Status { get; set; }
         [MaxLength(100)]

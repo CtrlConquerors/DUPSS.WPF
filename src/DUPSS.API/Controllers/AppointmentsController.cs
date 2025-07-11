@@ -71,7 +71,7 @@ namespace DUPSS.API.Controllers
                     AppointmentId = "",
                     MemberId = dto.MemberId,
                     ConsultantId = dto.ConsultantId,
-                    AppointmentDate = dto.AppointmentDate,
+                    AppointmentDate = dto.AppointmentDate.UtcDateTime,
                     Status = dto.Status,
                     Topic = dto.Topic,
                     Notes = dto.Notes
@@ -168,7 +168,7 @@ namespace DUPSS.API.Controllers
                 AppointmentId = "",
                 MemberId = dto.MemberId,
                 ConsultantId = dto.ConsultantId,
-                AppointmentDate = dto.AppointmentDate,
+                AppointmentDate = dto.AppointmentDate.UtcDateTime,
                 Status = string.IsNullOrWhiteSpace(dto.Status) ? "Pending" : dto.Status,
                 Topic = dto.Topic,
                 Notes = dto.Notes

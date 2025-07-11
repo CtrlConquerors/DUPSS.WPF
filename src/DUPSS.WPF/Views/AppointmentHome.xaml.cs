@@ -50,7 +50,7 @@ namespace DUPSS.WPF.Views
 
         private void ViewHistory_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Chuyển sang trang lịch sử cuộc hẹn...", "Thông báo");
+            this.NavigationService?.Navigate(new DUPSS.WPF.Views.Appointment());
         }
 
         private void BookAppointment_Click(object sender, RoutedEventArgs e)
