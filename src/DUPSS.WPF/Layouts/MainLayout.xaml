@@ -5,11 +5,19 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DUPSS.WPF.Layouts"
         mc:Ignorable="d"
+<<<<<<< Updated upstream
         Title="DUPSS Application" Height="800" Width="1200"
         MinHeight="600" MinWidth="1000"
         Background="{StaticResource WindowBackgroundBrush}">
     <Window.Resources>
         <!-- Global Styles from Home.xaml (re-used for consistency) -->
+=======
+        Title="DUPSS Application" Height="720" Width="1200"
+        MinWidth="1000"
+        Background="{StaticResource WindowBackgroundBrush}">
+    <Window.Resources>
+        <!-- Global Brushes (ensure WindowBackgroundBrush is defined only once) -->
+>>>>>>> Stashed changes
         <SolidColorBrush x:Key="PrimaryBlueBrush" Color="#1e68ff"/>
         <SolidColorBrush x:Key="SecondaryBlueBrush" Color="#7fbcff"/>
         <SolidColorBrush x:Key="AccentYellowBrush" Color="#fdd835"/>
@@ -104,6 +112,7 @@
                 </LinearGradientBrush>
             </Border.Background>
             <StackPanel>
+<<<<<<< Updated upstream
                 <!-- Application Logo/Title -->
                 <TextBlock Text="DUPSS"
                            Style="{StaticResource HeadingTextStyle}"
@@ -120,6 +129,33 @@
                 <Button Content="Assessments" Style="{StaticResource NavButtonStyle}" Tag="Assessments" Click="Navigate_Click"/>
                 <Button Content="Blog" Style="{StaticResource NavButtonStyle}" Tag="Blog" Click="Navigate_Click"/>
                 <Button Content="Users" Style="{StaticResource NavButtonStyle}" Tag="Users" Click="Navigate_Click"/>
+=======
+                <!-- Collapse Button -->
+                <Button x:Name="SidebarToggleButton"
+                        Content="⮜"
+                        Width="30" Height="30"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Click="SidebarToggleButton_Click"
+                        ToolTip="Collapse/Expand Sidebar"/>
+                <StackPanel x:Name="SidebarContentPanel">
+                    <!-- Application Logo/Title -->
+                    <TextBlock Text="DUPSS"
+                               Style="{StaticResource HeadingTextStyle}"
+                               FontSize="28" FontWeight="Bold"
+                               Foreground="White"
+                               HorizontalAlignment="Center"
+                               Margin="0 20 0 40"/>
+                    <!-- Navigation Menu -->
+                    <Button Content="Home" Style="{StaticResource NavButtonStyle}" Tag="Home" Click="Navigate_Click"/>
+                    <Button Content="About Us" Style="{StaticResource NavButtonStyle}" Tag="AboutUs" Click="Navigate_Click"/>
+                    <Button Content="Appointments" Style="{StaticResource NavButtonStyle}" Tag="AppointmentHome" Click="Navigate_Click"/>
+                    <Button Content="Campaign" Style="{StaticResource NavButtonStyle}" Tag="Campaign" Click="Navigate_Click"/>
+                    <Button Content="Courses" Style="{StaticResource NavButtonStyle}" Tag="Courses" Click="Navigate_Click"/>
+                    <Button Content="Assessments" Style="{StaticResource NavButtonStyle}" Tag="Assessments" Click="Navigate_Click"/>
+                    <Button Content="Blog" Style="{StaticResource NavButtonStyle}" Tag="Blog" Click="Navigate_Click"/>
+                </StackPanel>
+>>>>>>> Stashed changes
             </StackPanel>
         </Border>
 
@@ -131,9 +167,15 @@
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Center">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+<<<<<<< Updated upstream
                 <!-- Placeholder for user info/logout, similar to Blazor's top-row.auth -->
                 <TextBlock Text="Welcome, User!" Style="{StaticResource BaseTextStyle}" Foreground="{StaticResource DarkBlueBrush}" Margin="0 0 20 0" FontWeight="SemiBold"/>
                 <Button Content="Logout" Style="{StaticResource ReadStoryButtonStyle}" Width="100" Height="35" FontSize="14" Padding="0" Click="Logout_Click"/>
+=======
+                <TextBlock x:Name="WelcomeTextBlock" Text="Welcome, User!" Style="{StaticResource BaseTextStyle}" Foreground="{StaticResource DarkBlueBrush}" Margin="0 0 20 0" FontWeight="SemiBold" Visibility="Collapsed"/>
+                <Button x:Name="LoginButton" Content="Login" Width="100" Height="35" FontSize="14" Padding="0" Click="LoginButton_Click" Visibility="Visible"/>
+                <Button x:Name="LogoutButton" Content="Logout" Width="100" Height="35" FontSize="14" Padding="0" Click="Logout_Click" Visibility="Collapsed"/>
+>>>>>>> Stashed changes
             </StackPanel>
         </Border>
 

@@ -10,6 +10,61 @@
   </PropertyGroup>
 
   <ItemGroup>
+<<<<<<< Updated upstream
+=======
+    <None Remove="images\Others\login-background.png" />
+    <None Remove="images\Others\logo2.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="images\Others\1.jpg" />
+    <Resource Include="images\Others\2.jpg" />
+    <Resource Include="images\Others\3.jpg" />
+    <Resource Include="images\Others\4.jpg" />
+    <Resource Include="images\Others\login-background.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="images\Others\logo2.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="images\Users\5481541a-60c6-4699-ac0d-12a968525faa.jpg" />
+    <Resource Include="images\Others\About1.jpg" />
+    <Resource Include="images\Users\avatar2.png" />
+    <Resource Include="images\Blogs\B0001.jpg" />
+    <Resource Include="images\Blogs\B0002.jpg" />
+    <Resource Include="images\Blogs\B0003.jpg" />
+    <Resource Include="images\Others\banner1.png" />
+    <Resource Include="images\Others\bird.gif" />
+    <Resource Include="images\Blogs\blog1.gif" />
+    <Resource Include="images\Blogs\blog10.gif" />
+    <Resource Include="images\Courses\C0001.jpg" />
+    <Resource Include="images\Courses\C0002.jpg" />
+    <Resource Include="images\Courses\C0003.jpg" />
+    <Resource Include="images\Courses\C0004.jpg" />
+    <Resource Include="images\Courses\C0005.jpg" />
+    <Resource Include="images\Courses\C0006.jpg" />
+    <Resource Include="images\Courses\C0007.jpg" />
+    <Resource Include="images\Courses\C0008.jpg" />
+    <Resource Include="images\Courses\C0009.jpg" />
+    <Resource Include="images\Campaigns\CAM0001.jpg" />
+    <Resource Include="images\Campaigns\CAM0002.jpg" />
+    <Resource Include="images\Campaigns\CAM0003.jpg" />
+    <Resource Include="images\Campaigns\CAM0004.jpg" />
+    <Resource Include="images\Others\Logo.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="images\Others\placeholder.png" />
+    <Resource Include="images\Courses\placeholder.png" />
+    <Resource Include="images\Users\placeholder.png" />
+    <Resource Include="images\Campaigns\placeholder.png" />
+    <Resource Include="images\Blogs\placeholder.png" />
+    <Resource Include="images\Others\test2.gif">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
+
+  <ItemGroup>
+>>>>>>> Stashed changes
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.6" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.6" />
