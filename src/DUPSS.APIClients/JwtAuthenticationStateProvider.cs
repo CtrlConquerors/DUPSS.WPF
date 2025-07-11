@@ -1,22 +1,27 @@
 ﻿// using Microsoft.AspNetCore.Components.Authentication;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+// REMOVED: using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage; // This is Blazor-specific
+using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Threading;
+using System.Linq; // Added for .Any() and .Select()
+using DUPSS.Common; // CHANGED: Reference to your IProtectedLocalStorage moved to DUPSS.Common
 
 namespace DUPSS.ApiClients
 {
     public class JwtAuthenticationStateProvider : AuthenticationStateProvider
     {
         private readonly AuthApiService _authApiService;
-        private readonly ProtectedLocalStorage _localStorage;
+        // CHANGED: Use your custom IProtectedLocalStorage interface
+        private readonly IProtectedLocalStorage _localStorage;
         private const string AccessTokenKey = "accessToken";
         private string? _accessToken;
         private Timer? _logoutTimer;
 
-        public JwtAuthenticationStateProvider(AuthApiService authApiService, ProtectedLocalStorage localStorage)
+        // CHANGED: Constructor now accepts IProtectedLocalStorage
+        public JwtAuthenticationStateProvider(AuthApiService authApiService, IProtectedLocalStorage localStorage)
         {
             _authApiService = authApiService;
             _localStorage = localStorage;
@@ -28,6 +33,7 @@ namespace DUPSS.ApiClients
             {
                 try
                 {
+                    // Use your custom _localStorage.GetAsync
                     var result = await _localStorage.GetAsync<string>(AccessTokenKey);
                     _accessToken = result.Success ? result.Value : null;
 
@@ -38,8 +44,14 @@ namespace DUPSS.ApiClients
                 }
                 catch (InvalidOperationException ex)
                 {
-                    // JS interop not available (likely during prerendering)
-                    Console.WriteLine($"JS interop unavailable: {ex.Message}");
+                    // This catch block might be less relevant for WPF, but kept for consistency
+                    // with the original Blazor context if it was copied.
+                    Console.WriteLine($"Operation unavailable: {ex.Message}");
+                    return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
+                }
+                catch (Exception ex) // Catch general exceptions from storage service
+                {
+                    Console.WriteLine($"Error retrieving token from secure storage: {ex.Message}");
                     return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
                 }
             }
@@ -71,6 +83,7 @@ namespace DUPSS.ApiClients
                 throw new Exception("Invalid email or password.");
             }
             _accessToken = tokenResponse.AccessToken;
+            // Use your custom _localStorage.SetAsync
             await _localStorage.SetAsync(AccessTokenKey, _accessToken);
             SetLogoutTimer(_accessToken);
             Console.WriteLine("Login successful, notifying authentication state change");
@@ -81,6 +94,7 @@ namespace DUPSS.ApiClients
         {
             _accessToken = null;
             _logoutTimer?.Dispose();
+            // Use your custom _localStorage.DeleteAsync
             await _localStorage.DeleteAsync(AccessTokenKey);
             NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
         }
@@ -103,6 +117,8 @@ namespace DUPSS.ApiClients
 
             if (timeToExpire <= TimeSpan.Zero)
             {
+                // This will trigger a Logout, which in turn calls _localStorage.DeleteAsync
+                // and notifies authentication state change.
                 Logout();
                 return;
             }
