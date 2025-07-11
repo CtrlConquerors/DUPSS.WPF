@@ -6,15 +6,10 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
-    <UserSecretsId>f1aeb4f0-5835-420a-97e5-3c67ea47410d</UserSecretsId>
+    
   </PropertyGroup>
 
-  <ItemGroup>
-
-    <None Remove="images\Others\login-background.png" />
-    <None Remove="images\Others\logo2.png" />
-  </ItemGroup>
-
+ 
   <ItemGroup>
 
     <Resource Include="images\Others\1.jpg" />
@@ -22,12 +17,12 @@
     <Resource Include="images\Others\3.jpg" />
     <Resource Include="images\Others\4.jpg" />
 
-    <Resource Include="images\Others\login-background.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="images\Others\logo2.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
+    <Resource Include="images\Others\login-background.png"/>
+      
+   
+    <Resource Include="images\Others\logo2.png"/>
+     
+    
 
     <Resource Include="images\Users\5481541a-60c6-4699-ac0d-12a968525faa.jpg" />
     <Resource Include="images\Others\About1.jpg" />
@@ -55,9 +50,7 @@
 
     <Resource Include="images\Others\Logo.png" />
 
-    <Resource Include="images\Others\Logo.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
+   
 
     <Resource Include="images\Others\placeholder.png" />
     <Resource Include="images\Courses\placeholder.png" />
@@ -68,12 +61,7 @@
     <Resource Include="images\Others\test2.gif" />
   </ItemGroup>
 
-  <ItemGroup>
-
-    <Resource Include="images\Others\test2.gif">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-  </ItemGroup>
+  
 
   <ItemGroup>
 

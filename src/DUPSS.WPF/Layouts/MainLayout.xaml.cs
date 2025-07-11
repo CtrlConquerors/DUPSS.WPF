@@ -2,16 +2,12 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Navigation; // Required for Frame navigation
-
-using DUPSS.WPF.Views;
-
 using DUPSS.WPF.Views; // For Login page
 using DUPSS.ApiClients; // For AuthApiService, UserApiService, JwtAuthenticationStateProvider
 using DUPSS.Common; // For WpfSecureStorageService, UserDTO
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Authorization; // For AuthenticationState
 using System.Security.Claims; // For ClaimTypes
-
 
 namespace DUPSS.WPF.Layouts // Namespace matches the folder structure
 {
@@ -20,15 +16,11 @@ namespace DUPSS.WPF.Layouts // Namespace matches the folder structure
     /// </summary>
     public partial class MainLayout : Window
     {
-
-        private bool _sidebarCollapsed = false;
-
         private bool _sidebarCollapsed = false;
 
         private readonly AuthApiService _authApiService;
         private readonly UserApiService _userApiService;
         private readonly JwtAuthenticationStateProvider _authStateProvider;
-
 
         public MainLayout()
         {
@@ -182,7 +174,6 @@ namespace DUPSS.WPF.Layouts // Namespace matches the folder structure
             MessageBox.Show("You have been logged out.", "Logout", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-
         /// <summary>
         /// Handles the Login button click, navigating to the Login page.
         /// </summary>
@@ -195,37 +186,23 @@ namespace DUPSS.WPF.Layouts // Namespace matches the folder structure
         /// Handles the click event for the sidebar toggle button.
         /// Collapses or expands the sidebar.
         /// </summary>
-
         private void SidebarToggleButton_Click(object sender, RoutedEventArgs e)
         {
             _sidebarCollapsed = !_sidebarCollapsed;
             if (_sidebarCollapsed)
             {
                 SidebarColumn.Width = new GridLength(40); // Thin bar
-
-                SidebarContentPanel.Visibility = Visibility.Collapsed; // Ensure SidebarContentPanel is defined in XAML
-                SidebarToggleButton.Content = "⮞";
-
                 SidebarContentPanel.Visibility = Visibility.Collapsed;
                 SidebarToggleButton.Content = "⮞"; // Right arrow
-
                 SidebarToggleButton.HorizontalAlignment = HorizontalAlignment.Center;
             }
             else
             {
                 SidebarColumn.Width = new GridLength(250);
-
-                SidebarContentPanel.Visibility = Visibility.Visible; // Ensure SidebarContentPanel is defined in XAML
-                SidebarToggleButton.Content = "⮜";
-                SidebarToggleButton.HorizontalAlignment = HorizontalAlignment.Right;
-            }
-        }
-
                 SidebarContentPanel.Visibility = Visibility.Visible;
                 SidebarToggleButton.Content = "⮜"; // Left arrow
                 SidebarToggleButton.HorizontalAlignment = HorizontalAlignment.Right;
             }
         }
-
     }
 }
