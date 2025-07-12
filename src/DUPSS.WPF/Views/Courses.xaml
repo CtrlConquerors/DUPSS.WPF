@@ -76,6 +76,8 @@
             FontSize="16"
             Padding="18,8"
             BorderThickness="0"
+            Width="110"
+            Height="30"            
             Cursor="Hand">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
@@ -106,6 +108,8 @@
             FontSize="16"
             Padding="18,8"
             BorderThickness="0"
+            Width="110"
+            Height="30"              
             Cursor="Hand">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
