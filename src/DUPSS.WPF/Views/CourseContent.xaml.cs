@@ -16,6 +16,8 @@ using System.Windows.Input; // For ICommand
 using System.Windows.Navigation; // For NavigationService
 using System.IO; // For Path.Combine, File.Exists
 using System.Diagnostics; // For Debug.WriteLine
+using System.Windows.Threading; // For DispatcherTimer
+using System.Windows.Media; // Required for VisualTreeHelper
 
 namespace DUPSS.WPF.Views
 {
@@ -151,6 +153,10 @@ namespace DUPSS.WPF.Views
         private readonly string[] _imageExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
         private readonly Uri _placeholderImageUri = new Uri("pack://application:,,,/DUPSS.WPF;component/Images/Courses/placeholder.png");
 
+        // MediaElement related properties
+        // Removed _mediaTimer as it's no longer needed for updating slider/time
+        // Removed CurrentTimeText and TotalTimeText properties
+
         // Constructor with Dependency Injection
         public CourseContent(
             CourseApiService courseApiService,
@@ -170,6 +176,8 @@ namespace DUPSS.WPF.Views
             ToggleLessonContentCommand = new RelayCommand<CourseLesson>(lesson => ToggleLessonContent(lesson));
             CompleteCourseCommand = new RelayCommand(async () => await CompleteCourse(), () => !IsCompletingCourse && CurrentEnrollment?.Status != "Completed");
             GoBackToCoursesCommand = new RelayCommand(() => GoBackToCourses());
+
+            // Removed _mediaTimer initialization as it's no longer needed
         }
 
         // Page Loaded event handler (equivalent to Blazor's OnInitializedAsync or OnParametersSetAsync)
@@ -217,6 +225,7 @@ namespace DUPSS.WPF.Views
                     Course = fetchedCourse;
 
                     // Resolve Course Image URL for WPF (pack URI)
+                    // Ensure ImageUrl is always set to a valid URI, even if it's the placeholder
                     Course.ImageUrl = GetPackUriForImage(
                         $"Images/Courses/{Course.CourseId}",
                         _imageExtensions,
@@ -319,10 +328,216 @@ namespace DUPSS.WPF.Views
             if ((lesson.Type == "Reading" && !string.IsNullOrEmpty(lesson.Content)) ||
                 (lesson.Type == "Video" && !string.IsNullOrEmpty(lesson.VideoUrl)))
             {
+                // Collapse any currently expanded lesson content first
+                foreach (var module in Modules)
+                {
+                    foreach (var l in module.Lessons)
+                    {
+                        if (l != lesson && l.IsContentExpanded)
+                        {
+                            l.IsContentExpanded = false;
+                            // Stop any playing video when collapsing other lessons
+                            // Access the MediaElement via the AssociatedMediaElement property of the lesson
+                            if (l.Type == "Video" && l.AssociatedMediaElement != null && l.AssociatedMediaElement.Source != null)
+                            {
+                                l.AssociatedMediaElement.Stop();
+                            }
+                        }
+                    }
+                }
+
                 lesson.IsContentExpanded = !lesson.IsContentExpanded;
+
+                // Handle MediaElement specific actions for the currently toggled lesson
+                if (lesson.Type == "Video" && lesson.AssociatedMediaElement != null)
+                {
+                    if (lesson.IsContentExpanded)
+                    {
+                        // Set source and play when expanded
+                        // The StringToUriConverter in XAML will handle the null check for VideoUrl
+                        lesson.AssociatedMediaElement.Source = new Uri(lesson.VideoUrl!, UriKind.RelativeOrAbsolute);
+                        lesson.AssociatedMediaElement.Play();
+                        // Removed _mediaTimer.Start()
+                    }
+                    else
+                    {
+                        // Stop and clear source when collapsed
+                        lesson.AssociatedMediaElement.Stop();
+                        lesson.AssociatedMediaElement.Source = null;
+                        // Removed _mediaTimer.Stop()
+                        // Removed slider and time text resets
+                    }
+                }
                 OnPropertyChanged(nameof(Modules)); // Notify UI of change
             }
         }
+
+        // Event handlers for MediaElement
+        // These handlers need to determine which MediaElement triggered the event.
+        private void LessonMediaElement_MediaOpened(object sender, RoutedEventArgs e)
+        {
+            MediaElement? mediaElement = sender as MediaElement;
+            if (mediaElement != null && mediaElement.NaturalDuration.HasTimeSpan)
+            {
+                // Removed logic to update position slider and time text
+            }
+        }
+
+        private void LessonMediaElement_MediaEnded(object sender, RoutedEventArgs e)
+        {
+            MediaElement? mediaElement = sender as MediaElement;
+            if (mediaElement != null)
+            {
+                mediaElement.Stop();
+                // Removed _mediaTimer.Stop()
+                // Removed logic to reset position slider and time text
+            }
+        }
+
+        private void LessonMediaElement_MediaFailed(object sender, ExceptionRoutedEventArgs e)
+        {
+            MediaElement? mediaElement = sender as MediaElement;
+            Debug.WriteLine($"Media failed for {mediaElement?.Source}: {e.ErrorException.Message}");
+            ShowCompletionMessage("Error", $"Failed to play video: {e.ErrorException.Message}", "alert-danger");
+        }
+
+        // Removed MediaTimer_Tick as it's no longer needed for updating slider/time
+        /*
+        private void MediaTimer_Tick(object? sender, EventArgs e)
+        {
+            // This timer is global. It needs to update the *currently playing* video's controls.
+            foreach (var module in Modules)
+            {
+                foreach (var lesson in module.Lessons)
+                {
+                    if (lesson.IsContentExpanded && lesson.Type == "Video" && lesson.AssociatedMediaElement != null && lesson.AssociatedMediaElement.Source != null)
+                    {
+                        MediaElement currentMediaElement = lesson.AssociatedMediaElement;
+                        if (currentMediaElement.NaturalDuration.HasTimeSpan)
+                        {
+                            DependencyObject? parentStackPanel = VisualTreeHelper.GetParent(currentMediaElement);
+                            if (parentStackPanel != null)
+                            {
+                                Slider? positionSlider = this.FindChild<Slider>(parentStackPanel, "PositionSlider");
+                                TextBlock? currentTimeText = this.FindChild<TextBlock>(parentStackPanel, "CurrentTimeText");
+
+                                if (positionSlider != null)
+                                {
+                                    // Prevent infinite loop by checking if the slider value is already close to the media position
+                                    if (Math.Abs(positionSlider.Value - currentMediaElement.Position.TotalSeconds) > 0.5)
+                                    {
+                                        positionSlider.Value = currentMediaElement.Position.TotalSeconds;
+                                    }
+                                }
+                                if (currentTimeText != null)
+                                {
+                                    currentTimeText.Text = currentMediaElement.Position.ToString(@"mm\:ss");
+                                }
+                            }
+                        }
+                        break; // Only one video should be expanded and playing at a time
+                    }
+                }
+            }
+        }
+        */
+
+        // Playback control button clicks
+        private void PlayButton_Click(object sender, RoutedEventArgs e)
+        {
+            Button? button = sender as Button;
+            CourseLesson? lesson = button?.DataContext as CourseLesson;
+            if (lesson?.AssociatedMediaElement != null)
+            {
+                lesson.AssociatedMediaElement.Play();
+                // Removed _mediaTimer.Start()
+            }
+        }
+
+        private void PauseButton_Click(object sender, RoutedEventArgs e)
+        {
+            Button? button = sender as Button;
+            CourseLesson? lesson = button?.DataContext as CourseLesson;
+            if (lesson?.AssociatedMediaElement != null)
+            {
+                lesson.AssociatedMediaElement.Pause();
+                // Removed _mediaTimer.Stop()
+            }
+        }
+
+        // Removed StopButton_Click
+        /*
+        private void StopButton_Click(object sender, RoutedEventArgs e)
+        {
+            Button? button = sender as Button;
+            CourseLesson? lesson = button?.DataContext as CourseLesson;
+            if (lesson?.AssociatedMediaElement != null)
+            {
+                lesson.AssociatedMediaElement.Stop();
+                _mediaTimer.Stop();
+                // Reset controls for this specific media element
+                DependencyObject? parentStackPanel = VisualTreeHelper.GetParent(lesson.AssociatedMediaElement);
+                if (parentStackPanel != null)
+                {
+                    Slider? positionSlider = this.FindChild<Slider>(parentStackPanel, "PositionSlider");
+                    TextBlock? currentTimeText = this.FindChild<TextBlock>(parentStackPanel, "CurrentTimeText");
+                    if (positionSlider != null) positionSlider.Value = 0;
+                    if (currentTimeText != null) currentTimeText.Text = "00:00";
+                }
+            }
+        }
+        */
+
+        // Removed PositionSlider_ValueChanged
+        /*
+        private void PositionSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            Slider? slider = sender as Slider;
+            CourseLesson? lesson = slider?.DataContext as CourseLesson;
+            if (lesson?.AssociatedMediaElement != null && lesson.AssociatedMediaElement.NaturalDuration.HasTimeSpan)
+            {
+                // Only seek if the change was user-initiated (not by the timer)
+                if (slider != null && !slider.IsMouseOver && Math.Abs(slider.Value - lesson.AssociatedMediaElement.Position.TotalSeconds) > 0.5)
+                {
+                    lesson.AssociatedMediaElement.Position = TimeSpan.FromSeconds(slider.Value);
+                }
+            }
+        }
+        */
+
+        // Volume slider changed
+        private void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            Slider? slider = sender as Slider;
+            CourseLesson? lesson = slider?.DataContext as CourseLesson;
+            if (lesson?.AssociatedMediaElement != null)
+            {
+                lesson.AssociatedMediaElement.Volume = slider?.Value ?? 0.5; // Default to 0.5 if slider is null
+            }
+        }
+
+        // New: Loaded event for MediaElement to associate it with the lesson
+        private void LessonMediaElement_Loaded(object sender, RoutedEventArgs e)
+        {
+            MediaElement? mediaElement = sender as MediaElement;
+            CourseLesson? lesson = mediaElement?.DataContext as CourseLesson;
+            if (lesson != null && mediaElement != null)
+            {
+                lesson.AssociatedMediaElement = mediaElement;
+            }
+        }
+
+        // New: Unloaded event for MediaElement to clear the association
+        private void LessonMediaElement_Unloaded(object sender, RoutedEventArgs e)
+        {
+            MediaElement? mediaElement = sender as MediaElement;
+            CourseLesson? lesson = mediaElement?.DataContext as CourseLesson;
+            if (lesson != null)
+            {
+                lesson.AssociatedMediaElement = null;
+            }
+        }
+
 
         private async Task CompleteCourse()
         {
@@ -362,6 +577,11 @@ namespace DUPSS.WPF.Views
                     {
                         lesson.IsComplete = true;
                         lesson.IsContentExpanded = false; // Collapse reading/video content on course completion
+                        // Stop any playing video when course is completed
+                        if (lesson.Type == "Video" && lesson.AssociatedMediaElement != null && lesson.AssociatedMediaElement.Source != null)
+                        {
+                            lesson.AssociatedMediaElement.Stop();
+                        }
                     }
                 }
                 OnPropertyChanged(nameof(Modules)); // Notify UI of changes
@@ -401,6 +621,44 @@ namespace DUPSS.WPF.Views
             }
             Debug.WriteLine("Navigating back to Courses page.");
         }
+
+        // Helper method to find a child control by name within a DependencyObject's visual tree
+        private T? FindChild<T>(DependencyObject parent, string childName) where T : DependencyObject
+        {
+            // Confirm parent and child name are valid.
+            if (parent == null) return null;
+
+            T? foundChild = null;
+            int childrenCount = VisualTreeHelper.GetChildrenCount(parent);
+            for (int i = 0; i < childrenCount; i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+                // If the child is not of the desired type, skip it.
+                if (child is not T typedChild) continue;
+
+                if (!string.IsNullOrEmpty(childName))
+                {
+                    var frameworkElement = child as FrameworkElement;
+                    if (frameworkElement != null && frameworkElement.Name == childName)
+                    {
+                        foundChild = typedChild;
+                        break;
+                    }
+                }
+                else
+                {
+                    // If no name is specified, return the first found child of the correct type.
+                    foundChild = typedChild;
+                    break;
+                }
+
+                // Recurse into children of this child in the visual tree.
+                foundChild = this.FindChild<T>(child, childName);
+                if (foundChild != null) break;
+            }
+            return foundChild;
+        }
+
 
         // Mock data population (copied directly from your Blazor component)
         private void PopulateMockModules(string courseId)
@@ -454,8 +712,8 @@ namespace DUPSS.WPF.Views
                     },
                     Lessons = new List<CourseLesson>
                     {
-                        // Example YouTube embed URL
-                        new CourseLesson { Title = "Lesson 3.1: Communicating Confidently", Type = "Video", DurationText = "12 min", IsComplete = false, VideoUrl = "https://www.youtube.com/watch?v=9ifImJbiLVQ" }, // MODIFIED: Changed to watch URL
+                        // MODIFIED: Changed VideoUrl to a local path
+                        new CourseLesson { Title = "Lesson 3.1: Communicating Confidently", Type = "Video", DurationText = "12 min", IsComplete = false, VideoUrl = "Videos/Communication.mp4" },
                         new CourseLesson { Title = "Lesson 3.2: Role-Playing Social Situations", Type = "Reading", DurationText = "8 min", IsComplete = false, Content = "In this lesson, you'll engage in various role-playing exercises designed to simulate real-life social scenarios. This hands-on approach will help you practice responding to peer pressure, initiating conversations, and handling awkward moments, all while maintaining your sobriety. The goal is to build muscle memory for positive social interactions, making it easier to navigate social events with confidence and ease." },
                     }
                 });
@@ -472,7 +730,8 @@ namespace DUPSS.WPF.Views
                     Lessons = new List<CourseLesson>
                     {
                         new CourseLesson { Title = "Lesson 4.1: Setting Social Goals", Type = "Reading", DurationText = "7 min", IsComplete = false, Content = "This lesson delves into the importance of setting clear and achievable social goals in your sober journey. You'll learn how to define what 'fun' and 'social' mean to you without substances, create actionable steps, and develop a roadmap for expanding your sober social circle." },
-                        new CourseLesson { Title = "Lesson 4.2: Reflecting on Social Encounters", Type = "Video", DurationText = "18 min", IsComplete = false, VideoUrl = "https://www.youtube.com/watch?v=0SHJdYREATE" }, // MODIFIED: Changed to watch URL
+                        // MODIFIED: Changed VideoUrl to a local path
+                        new CourseLesson { Title = "Lesson 4.2: Reflecting on Social Encounters", Type = "Video", DurationText = "18 min", IsComplete = false, VideoUrl = "Videos/Reflect.mp4" },
                     }
                 });
                 Modules.Add(new CourseModule
@@ -488,7 +747,8 @@ namespace DUPSS.WPF.Views
                     Lessons = new List<CourseLesson>
                     {
                         new CourseLesson { Title = "Lesson 5.1: Building a Support Network", Type = "Reading", DurationText = "10 min", IsComplete = false, Content = "This lesson will guide you through the process of building and nurturing a strong sober support network. You'll learn how to identify individuals who genuinely support your recovery, communicate your boundaries effectively, and leverage these connections to enhance your social well-being." },
-                        new CourseLesson { Title = "Lesson 5.2: Finding Sober Activities & Hobbies", Type = "Video", DurationText = "15 min", IsComplete = false, VideoUrl = "https://www.youtube.com/watch?v=NajbiHbKaJw" }, // MODIFIED: Changed to watch URL
+                        // MODIFIED: Changed VideoUrl to a local path
+                        new CourseLesson { Title = "Lesson 5.2: Finding Sober Activities & Hobbies", Type = "Video", DurationText = "15 min", IsComplete = false, VideoUrl = "Videos/Sober.mp4" },
                     }
                 });
             }
@@ -505,7 +765,8 @@ namespace DUPSS.WPF.Views
                     },
                     Lessons = new List<CourseLesson>
                     {
-                        new CourseLesson { Title = "Introduction to Sober Living", Type = "Video", DurationText = "8 min", IsComplete = false, VideoUrl = "https://www.youtube.com/watch?v=u7T2r4C173M" }, // MODIFIED: Changed to watch URL
+                        // MODIFIED: Changed VideoUrl to a local path
+                        new CourseLesson { Title = "Introduction to Sober Living", Type = "Video", DurationText = "8 min", IsComplete = false, VideoUrl = "Videos/Intro.mp4" },
                         new CourseLesson { Title = "Understanding the Benefits of Sobriety", Type = "Reading", DurationText = "20 min", IsComplete = false, Content = "This core reading delves into the fundamental principles of the subject matter. It's designed to give you a solid understanding of the essential concepts that will be built upon in subsequent modules. Take your time to absorb the information and feel free to revisit sections as needed. A strong foundation here will greatly benefit your learning journey." }
                     }
                 });
@@ -520,7 +781,8 @@ namespace DUPSS.WPF.Views
                     },
                     Lessons = new List<CourseLesson>
                     {
-                        new CourseLesson { Title = "Navigating Social Scenarios", Type = "Video", DurationText = "12 min", IsComplete = false, VideoUrl = "https://www.youtube.com/watch?v=NO5-tFfuZAA" } // MODIFIED: Changed to watch URL
+                        // MODIFIED: Changed VideoUrl to a local path
+                        new CourseLesson { Title = "Navigating Social Scenarios", Type = "Video", DurationText = "12 min", IsComplete = false, VideoUrl = "Videos/Walkthrough.mp4" }
                     }
                 });
             }
@@ -600,7 +862,7 @@ namespace DUPSS.WPF.Views
             }
 
             public string? Content { get; set; }
-            public string? VideoUrl { get; set; }
+            public string? VideoUrl { get; set; } // Now stores local path
 
             private bool _isContentExpanded = false;
             public bool IsContentExpanded
@@ -612,6 +874,9 @@ namespace DUPSS.WPF.Views
                     OnPropertyChanged();
                 }
             }
+
+            // New property to hold the reference to the MediaElement in the UI
+            public MediaElement? AssociatedMediaElement { get; set; }
 
             public event PropertyChangedEventHandler? PropertyChanged;
             protected void OnPropertyChanged([CallerMemberName] string? name = null)
@@ -661,8 +926,8 @@ namespace DUPSS.WPF.Views
             public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        // Custom Converters (if not already defined globally in App.xaml)
-        // You would typically define these in a CommonConverters.cs file and merge into App.xaml
+        // Custom Converters
+        // Note: StringToUriConverter is now assumed to be in CommonConverters.cs or a similar shared file.
         public class StringToVisibilityConverter : IValueConverter
         {
             public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)

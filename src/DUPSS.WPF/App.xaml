@@ -17,6 +17,8 @@
             <local:HalfWidthConverter x:Key="HalfWidthConverter"/>
             <local:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
             <local:BooleanToChevronConverter x:Key="BooleanToChevronConverter"/>
+           
+            <local:StringToUriConverter x:Key="StringToUriConverter"/>
 
             <!-- Merged Styles -->
             <ResourceDictionary.MergedDictionaries>

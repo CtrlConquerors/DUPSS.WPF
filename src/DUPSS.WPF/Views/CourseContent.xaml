@@ -16,6 +16,9 @@
         <local:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
         <local:BooleanToChevronConverter x:Key="BooleanToChevronConverter"/>
 
+        <!-- NEW: Add the StringToUriConverter -->
+        <local:StringToUriConverter x:Key="StringToUriConverter" />
+
         <!-- Cubic Bezier Easing Function for animations (MOVED HERE) -->
         <CubicEase x:Key="CubicBezierEase" EasingMode="EaseOut"/>
 
@@ -381,14 +384,7 @@
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="8">
                             <!-- Set directly here -->
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <ContentPresenter Grid.Column="0" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Margin="{TemplateBinding Padding}"/>
-                                <ContentPresenter Grid.Column="1" Content="{TemplateBinding Tag}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0 0 10 0"/>
-                            </Grid>
+                            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
@@ -490,7 +486,7 @@
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Grid.Column="0" Text="✓" Style="{StaticResource LessonCheckIconStyle}"/>
                                     <StackPanel Grid.Column="1" Style="{StaticResource LessonDetailsStyle}">
-                                        <TextBlock Text="{Binding DurationText}" Style="{StaticResource LessonTitleStyle}"/>
+                                        <TextBlock Text="{Binding Title}" Style="{StaticResource LessonTitleStyle}"/>
                                         <TextBlock Text="{Binding DurationText}" Visibility="{Binding DurationText, Converter={StaticResource StringToVisibilityConverter}}" Style="{StaticResource LessonDurationStyle}"/>
                                     </StackPanel>
                                 </Grid>
@@ -499,7 +495,6 @@
                             <!-- Lesson Content Display (Reading or Video) -->
                             <ContentControl Visibility="{Binding IsContentExpanded, Converter={StaticResource BooleanToVisibilityConverter}}">
                                 <Grid Margin="0 10 0 0">
-                                    <!-- Re-enabled animations, ensure they are smooth -->
                                     <Grid.Style>
                                         <Style TargetType="Grid">
                                             <Setter Property="MaxHeight" Value="0"/>
@@ -534,26 +529,35 @@
                                         <TextBlock Text="{Binding Content}"
                                                    Visibility="{Binding Content, Converter={StaticResource StringToVisibilityConverter}}"
                                                    TextWrapping="Wrap" Margin="0 0 0 15"/>
-                                        <Frame x:Name="LessonVideoFrame"
-                                               Visibility="{Binding VideoUrl, Converter={StaticResource StringToVisibilityConverter}}"
-                                               Width="850" Height="500" Margin="0 0 0 15"
-                                               NavigationUIVisibility="Hidden">
-                                            <Frame.Style>
-                                                <Style TargetType="Frame">
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding VideoUrl}" Value="{x:Null}">
-                                                            <Setter Property="Source" Value="{x:Null}"/>
-                                                        </DataTrigger>
-                                                        <DataTrigger Binding="{Binding VideoUrl}" Value="">
-                                                            <Setter Property="Source" Value="{x:Null}"/>
-                                                        </DataTrigger>
-                                                        <DataTrigger Binding="{Binding VideoUrl, Converter={StaticResource StringToVisibilityConverter}}" Value="Visible">
-                                                            <Setter Property="Source" Value="{Binding VideoUrl}"/>
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Frame.Style>
-                                        </Frame>
+
+                                        <!-- MODIFIED: Replaced WebView2 with MediaElement for local video playback -->
+                                        <MediaElement x:Name="LessonMediaElement"
+                                                      Source="{Binding VideoUrl, Converter={StaticResource StringToUriConverter}}"
+                                                      Visibility="{Binding VideoUrl, Converter={StaticResource StringToVisibilityConverter}}"
+                                                      Width="850" Height="500" Margin="0 0 0 15"
+                                                      LoadedBehavior="Manual"  
+                                            UnloadedBehavior="Stop"
+                                          
+                                            Stretch="Uniform"
+                                                      MediaOpened="LessonMediaElement_MediaOpened"
+                                                      MediaEnded="LessonMediaElement_MediaEnded"
+                                                      MediaFailed="LessonMediaElement_MediaFailed"
+                                                      Loaded="LessonMediaElement_Loaded"
+                                                      Unloaded="LessonMediaElement_Unloaded"/>
+
+                                            <!-- Video Controls (visible only when MediaElement is visible) -->
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 10 0 0"
+                                                    Visibility="{Binding ElementName=LessonMediaElement, Path=Visibility}">
+                                                <Button Content="Play" Margin="5" Padding="10 5" Click="PlayButton_Click"/>
+                                                <Button Content="Pause" Margin="5" Padding="10 5" Click="PauseButton_Click"/>
+                                                <!-- Removed Stop Button -->
+                                                <!-- Removed Position Slider and Time TextBlocks -->
+                                                <TextBlock Text="Vol:" Margin="15 0 5 0" VerticalAlignment="Center"/>
+                                                <Slider x:Name="VolumeSlider" Width="100" Margin="0"
+                                                    Minimum="0" Maximum="1" Value="0.5"
+                                                    ValueChanged="VolumeSlider_ValueChanged"/>
+                                            </StackPanel>
+
                                     </StackPanel>
                                 </Grid>
                             </ContentControl>
@@ -907,7 +911,6 @@
                                                                     <!-- Lesson Content Display (Reading or Video) -->
                                                                     <ContentControl Visibility="{Binding IsContentExpanded, Converter={StaticResource BooleanToVisibilityConverter}}">
                                                                         <Grid Margin="0 10 0 0">
-                                                                            <!-- Re-enabled animations, ensure they are smooth -->
                                                                             <Grid.Style>
                                                                                 <Style TargetType="Grid">
                                                                                     <Setter Property="MaxHeight" Value="0"/>
@@ -942,26 +945,34 @@
                                                                                 <TextBlock Text="{Binding Content}"
                                                                                            Visibility="{Binding Content, Converter={StaticResource StringToVisibilityConverter}}"
                                                                                            TextWrapping="Wrap" Margin="0 0 0 15"/>
-                                                                                <Frame x:Name="LessonVideoFrame"
-                                                                                       Visibility="{Binding VideoUrl, Converter={StaticResource StringToVisibilityConverter}}"
-                                                                                       Width="850" Height="500" Margin="0 0 0 15"
-                                                                                       NavigationUIVisibility="Hidden">
-                                                                                    <Frame.Style>
-                                                                                        <Style TargetType="Frame">
-                                                                                            <Style.Triggers>
-                                                                                                <DataTrigger Binding="{Binding VideoUrl}" Value="{x:Null}">
-                                                                                                    <Setter Property="Source" Value="{x:Null}"/>
-                                                                                                </DataTrigger>
-                                                                                                <DataTrigger Binding="{Binding VideoUrl}" Value="">
-                                                                                                    <Setter Property="Source" Value="{x:Null}"/>
-                                                                                                </DataTrigger>
-                                                                                                <DataTrigger Binding="{Binding VideoUrl, Converter={StaticResource StringToVisibilityConverter}}" Value="Visible">
-                                                                                                    <Setter Property="Source" Value="{Binding VideoUrl}"/>
-                                                                                                </DataTrigger>
-                                                                                            </Style.Triggers>
-                                                                                        </Style>
-                                                                                    </Frame.Style>
-                                                                                </Frame>
+
+                                                                                <!-- MODIFIED: Replaced WebView2 with MediaElement for local video playback -->
+                                                                                <MediaElement x:Name="LessonMediaElement"
+                                                                                              Source="{Binding VideoUrl, Converter={StaticResource StringToUriConverter}}"
+                                                                                              Visibility="{Binding VideoUrl, Converter={StaticResource StringToVisibilityConverter}}"
+                                                                                              Width="850" Height="500" Margin="0 0 0 15"
+                                                                                              LoadedBehavior="Manual"  
+                                                                                              UnloadedBehavior="Stop"
+                                                                                              Stretch="Uniform"
+                                                                                              MediaOpened="LessonMediaElement_MediaOpened"
+                                                                                              MediaEnded="LessonMediaElement_MediaEnded"
+                                                                                              MediaFailed="LessonMediaElement_MediaFailed"
+                                                                                              Loaded="LessonMediaElement_Loaded"
+                                                                                              Unloaded="LessonMediaElement_Unloaded"/>
+
+                                                                                <!-- Video Controls (visible only when MediaElement is visible) -->
+                                                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 10 0 0"
+                                                                                            Visibility="{Binding ElementName=LessonMediaElement, Path=Visibility}">
+                                                                                    <Button Content="Play" Margin="5" Padding="10 5" Click="PlayButton_Click"/>
+                                                                                    <Button Content="Pause" Margin="5" Padding="10 5" Click="PauseButton_Click"/>
+                                                                                    <!-- Removed Stop Button -->
+                                                                                    <!-- Removed Position Slider and Time TextBlocks -->
+                                                                                    <TextBlock Text="Vol:" Margin="15 0 5 0" VerticalAlignment="Center"/>
+                                                                                    <Slider x:Name="VolumeSlider" Width="100" Margin="0"
+                                                                                            Minimum="0" Maximum="1" Value="0.5"
+                                                                                            ValueChanged="VolumeSlider_ValueChanged"/>
+                                                                                </StackPanel>
+
                                                                             </StackPanel>
                                                                         </Grid>
                                                                     </ContentControl>

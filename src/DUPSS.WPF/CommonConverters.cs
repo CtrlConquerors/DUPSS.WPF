@@ -105,4 +105,24 @@ namespace DUPSS.WPF // This namespace should match the 'local' prefix in App.xam
             throw new NotImplementedException();
         }
     }
+
+    // NEW: Custom converter to handle string to Uri conversion for MediaElement Source
+    public class StringToUriConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            if (value is string uriString && !string.IsNullOrEmpty(uriString))
+            {
+                // Use UriKind.RelativeOrAbsolute for local paths
+                return new Uri(uriString, UriKind.RelativeOrAbsolute);
+            }
+            // Return null or DependencyProperty.UnsetValue if the string is null or empty
+            return null; // Returning null is generally safer for MediaElement.Source when no video
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

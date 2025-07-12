@@ -9,6 +9,32 @@
     
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="Videos\Communication.mp4" />
+    <None Remove="Videos\Intro.mp4" />
+    <None Remove="Videos\Reflect.mp4" />
+    <None Remove="Videos\Sober.mp4" />
+    <None Remove="Videos\Walkthrough.mp4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Videos\Communication.mp4">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Videos\Intro.mp4">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Videos\Reflect.mp4">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Videos\Sober.mp4">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Videos\Walkthrough.mp4">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
  
   <ItemGroup>
 
