@@ -490,255 +490,258 @@
             </StackPanel>
         </Border>
 
-        <Border x:Name="CourseContentGrid" Visibility="{Binding ShowCourseContent, Converter={StaticResource BooleanToVisibilityConverter}}"
-                Style="{StaticResource CourseLayoutGridStyle}"
-                HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,56,0,0">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2*"/>
-                    <ColumnDefinition Width="1*"/>
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
+        <!-- NEW: Wrap the CourseContentGrid in a ScrollViewer -->
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <Border x:Name="CourseContentGrid" Visibility="{Binding ShowCourseContent, Converter={StaticResource BooleanToVisibilityConverter}}"
+                    Style="{StaticResource CourseLayoutGridStyle}"
+                    HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,56,0,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
 
-                <!-- Course Content Column -->
-                <StackPanel Grid.Column="0" Grid.Row="0" Grid.RowSpan="6"
-                            VerticalAlignment="Top" HorizontalAlignment="Stretch" Margin="0 0 28 0">
-                    <TextBlock Text="{Binding CourseData.Course.CourseName}" Style="{StaticResource CourseDetailTitleStyle}"/>
+                    <!-- Course Content Column -->
+                    <StackPanel Grid.Column="0" Grid.Row="0" Grid.RowSpan="6"
+                                VerticalAlignment="Top" HorizontalAlignment="Stretch" Margin="0 0 28 0">
+                        <TextBlock Text="{Binding CourseData.Course.CourseName}" Style="{StaticResource CourseDetailTitleStyle}"/>
 
-                    <!-- CourseDetailSubtitleStyle: Wrapped TextBlock in Border for background, padding, corner radius, and effect -->
-                    <Border Background="{StaticResource WhiteTransparent65}"
-                            Padding="10 18"
-                            CornerRadius="8"
-                            HorizontalAlignment="Left" VerticalAlignment="Top"
-                            Margin="0 0 0 32">
-                        <Border.Effect>
-                            <DropShadowEffect ShadowDepth="1" Color="#007bff" Opacity="0.04" BlurRadius="6"/>
-                        </Border.Effect>
-                        <TextBlock Text="{Binding CourseData.Description}" Style="{StaticResource CourseDetailSubtitleStyle}"/>
-                    </Border>
-
-                    <WrapPanel Orientation="Horizontal" Margin="0 0 0 25">
-                        <!-- CourseTopicBadgeStyle: TextBlock is now a direct child of the Border -->
-                        <Border Style="{StaticResource CourseTopicBadgeStyle}" Margin="0 0 15 0">
-                            <TextBlock Text="{Binding CourseData.Course.Topic.TopicName}" Foreground="{StaticResource PrimaryBlue}" FontWeight="SemiBold" FontSize="14" VerticalAlignment="Center"/>
+                        <!-- CourseDetailSubtitleStyle: Wrapped TextBlock in Border for background, padding, corner radius, and effect -->
+                        <Border Background="{StaticResource WhiteTransparent65}"
+                                Padding="10 18"
+                                CornerRadius="8"
+                                HorizontalAlignment="Left" VerticalAlignment="Top"
+                                Margin="0 0 0 32">
+                            <Border.Effect>
+                                <DropShadowEffect ShadowDepth="1" Color="#007bff" Opacity="0.04" BlurRadius="6"/>
+                            </Border.Effect>
+                            <TextBlock Text="{Binding CourseData.Description}" Style="{StaticResource CourseDetailSubtitleStyle}"/>
                         </Border>
 
-                        <!-- Course Type Display - Content defined directly here -->
-                        <StackPanel Style="{StaticResource CourseTypeDisplayStyle}" Margin="0 0 15 0">
-                            <Ellipse Width="10" Height="10" Margin="0 0 5 0" VerticalAlignment="Center">
-                                <Ellipse.Style>
-                                    <Style TargetType="Ellipse">
-                                        <Setter Property="Fill" Value="Transparent"/>
-                                        <Setter Property="Effect">
-                                            <Setter.Value>
-                                                <DropShadowEffect ShadowDepth="0" BlurRadius="0" Color="Transparent"/>
-                                            </Setter.Value>
-                                        </Setter>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding CourseData.Course.CourseType}" Value="online">
-                                                <Setter Property="Fill" Value="{StaticResource GreenIndicator}"/>
-                                                <Setter Property="Effect">
-                                                    <Setter.Value>
-                                                        <DropShadowEffect ShadowDepth="0" BlurRadius="5" Color="#28a745" Opacity="0.5"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding CourseData.Course.CourseType}" Value="offline">
-                                                <Setter Property="Fill" Value="{StaticResource GreyIndicator}"/>
-                                                <Setter Property="Effect">
-                                                    <Setter.Value>
-                                                        <DropShadowEffect ShadowDepth="0" BlurRadius="5" Color="#808080" Opacity="0.5"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding CourseData.Course.CourseType}" Value="hybrid">
-                                                <Setter Property="Fill" Value="{StaticResource BlueIndicator}"/>
-                                                <Setter Property="Effect">
-                                                    <Setter.Value>
-                                                        <DropShadowEffect ShadowDepth="0" BlurRadius="5" Color="#0000FF" Opacity="0.5"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Ellipse.Style>
-                            </Ellipse>
-                            <TextBlock Text="{Binding CourseData.Course.CourseType}" VerticalAlignment="Center"/>
-                        </StackPanel>
-
-                        <!-- CourseInventoryStyle: Wrapped TextBlock in Border for background, padding, corner radius -->
-                        <Border Background="#f0f2f5" Padding="8 15" CornerRadius="20">
-                            <TextBlock Text="{Binding CourseData.Course.Inventory, StringFormat='Inventory: {0}'}" Style="{StaticResource CourseInventoryStyle}"/>
-                        </Border>
-                    </WrapPanel>
-
-                    <!-- Instructor Info: Wrapped StackPanel in a Border to apply visual properties -->
-                    <Border Background="{StaticResource WhiteTransparent65}"
-                            CornerRadius="36"
-                            Padding="10 22 10 10"
-                            Effect="{StaticResource InstructorInfoEffect}"
-                            HorizontalAlignment="Left" VerticalAlignment="Center"
-                            Margin="0 0 0 36">
-                        <StackPanel Style="{StaticResource InstructorInfoStyle}">
-                            <!-- InstructorAvatarSmallStyle: Wrapped Image in Border for border and background -->
-                            <Border Width="48" Height="48" Margin="0 0 14 0"
-                                    BorderBrush="#b6d0ff" BorderThickness="2.5" Background="White"
-                                    CornerRadius="24">
-                                <!-- Half of Width/Height for perfect circle -->
-                                <Image Source="{Binding CourseData.Instructor.ImageUrl}" Style="{StaticResource InstructorAvatarSmallStyle}"/>
+                        <WrapPanel Orientation="Horizontal" Margin="0 0 0 25">
+                            <!-- CourseTopicBadgeStyle: TextBlock is now a direct child of the Border -->
+                            <Border Style="{StaticResource CourseTopicBadgeStyle}" Margin="0 0 15 0">
+                                <TextBlock Text="{Binding CourseData.Course.Topic.TopicName}" Foreground="{StaticResource PrimaryBlue}" FontWeight="SemiBold" FontSize="14" VerticalAlignment="Center"/>
                             </Border>
-                            <TextBlock>
-                                <Run Text="Instructor: "/>
-                                <Hyperlink Command="{Binding NavigateToInstructorCommand}" CommandParameter="{Binding CourseData.Instructor}">
+
+                            <!-- Course Type Display - Content defined directly here -->
+                            <StackPanel Style="{StaticResource CourseTypeDisplayStyle}" Margin="0 0 15 0">
+                                <Ellipse Width="10" Height="10" Margin="0 0 5 0" VerticalAlignment="Center">
+                                    <Ellipse.Style>
+                                        <Style TargetType="Ellipse">
+                                            <Setter Property="Fill" Value="Transparent"/>
+                                            <Setter Property="Effect">
+                                                <Setter.Value>
+                                                    <DropShadowEffect ShadowDepth="0" BlurRadius="0" Color="Transparent"/>
+                                                </Setter.Value>
+                                            </Setter>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding CourseData.Course.CourseType}" Value="online">
+                                                    <Setter Property="Fill" Value="{StaticResource GreenIndicator}"/>
+                                                    <Setter Property="Effect">
+                                                        <Setter.Value>
+                                                            <DropShadowEffect ShadowDepth="0" BlurRadius="5" Color="#28a745" Opacity="0.5"/>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding CourseData.Course.CourseType}" Value="offline">
+                                                    <Setter Property="Fill" Value="{StaticResource GreyIndicator}"/>
+                                                    <Setter Property="Effect">
+                                                        <Setter.Value>
+                                                            <DropShadowEffect ShadowDepth="0" BlurRadius="5" Color="#808080" Opacity="0.5"/>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding CourseData.Course.CourseType}" Value="hybrid">
+                                                    <Setter Property="Fill" Value="{StaticResource BlueIndicator}"/>
+                                                    <Setter Property="Effect">
+                                                        <Setter.Value>
+                                                            <DropShadowEffect ShadowDepth="0" BlurRadius="5" Color="#0000FF" Opacity="0.5"/>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Ellipse.Style>
+                                </Ellipse>
+                                <TextBlock Text="{Binding CourseData.Course.CourseType}" VerticalAlignment="Center"/>
+                            </StackPanel>
+
+                            <!-- CourseInventoryStyle: Wrapped TextBlock in Border for background, padding, corner radius -->
+                            <!-- REMOVED: Inventory display -->
+                            <!-- <Border Background="#f0f2f5" Padding="8 15" CornerRadius="20">
+                                <TextBlock Text="{Binding CourseData.Course.Inventory, StringFormat='Inventory: {0}'}" Style="{StaticResource CourseInventoryStyle}"/>
+                            </Border> -->
+                        </WrapPanel>
+
+                        <!-- Instructor Info: Wrapped StackPanel in a Border to apply visual properties -->
+                        <Border Background="{StaticResource WhiteTransparent65}"
+                                CornerRadius="36"
+                                Padding="10 22 10 10"
+                                Effect="{StaticResource InstructorInfoEffect}"
+                                HorizontalAlignment="Left" VerticalAlignment="Center"
+                                Margin="0 0 0 36">
+                            <StackPanel Style="{StaticResource InstructorInfoStyle}">
+                                <!-- InstructorAvatarSmallStyle: Wrapped Image in Border for border and background -->
+                                <Border Width="48" Height="48" Margin="0 0 14 0"
+                                        BorderBrush="#b6d0ff" BorderThickness="2.5" Background="White"
+                                        CornerRadius="24">
+                                    <!-- Half of Width/Height for perfect circle -->
+                                    <Image Source="{Binding CourseData.Instructor.ImageUrl}" Style="{StaticResource InstructorAvatarSmallStyle}"/>
+                                </Border>
+                                <TextBlock>
+                                    <Run Text="Instructor: "/>
+                                    <!-- MODIFIED: Changed Hyperlink to TextBlock to disable clicking -->
                                     <TextBlock Text="{Binding CourseData.Instructor.Username}" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBlue}"/>
-                                </Hyperlink>
-                            </TextBlock>
-                        </StackPanel>
-                    </Border>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
 
-                    <!-- Conditional button rendering: Enroll Now or Go to Course -->
-                    <Button x:Name="EnrollButton"
-                            Content="{Binding EnrollButtonText}"
-                            Command="{Binding EnrollCommand}"
-                            IsEnabled="{Binding IsEnrollButtonEnabled}"
-                            Visibility="{Binding IsEnrolledSuccessfully, Converter={StaticResource BooleanToVisibilityConverterInverted}}"
-                            HorizontalAlignment="Left" VerticalAlignment="Center">
-                        <Button.Style>
-                            <Style TargetType="Button" BasedOn="{StaticResource EnrollButtonStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsEnrolling}" Value="True">
-                                        <Setter Property="Content">
-                                            <Setter.Value>
-                                                <StackPanel Orientation="Horizontal">
-                                                    <Border Width="16" Height="16" CornerRadius="8" BorderThickness="2" BorderBrush="White" Margin="0 0 5 0">
-                                                        <Border.RenderTransform>
-                                                            <RotateTransform CenterX="8" CenterY="8"/>
-                                                        </Border.RenderTransform>
-                                                        <Border.Style>
-                                                            <Style TargetType="Border">
-                                                                <Style.Triggers>
-                                                                    <Trigger Property="IsVisible" Value="True">
-                                                                        <Trigger.EnterActions>
-                                                                            <BeginStoryboard>
-                                                                                <Storyboard RepeatBehavior="Forever">
-                                                                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)" From="0" To="360" Duration="0:0:1" />
-                                                                                </Storyboard>
-                                                                            </BeginStoryboard>
-                                                                        </Trigger.EnterActions>
-                                                                    </Trigger>
-                                                                </Style.Triggers>
-                                                            </Style>
-                                                        </Border.Style>
-                                                        <Border.Background>
-                                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                                                <GradientStop Color="#007bff" Offset="0"/>
-                                                                <GradientStop Color="Transparent" Offset="0.5"/>
-                                                            </LinearGradientBrush>
-                                                        </Border.Background>
-                                                    </Border>
-                                                    <TextBlock Text="Loading..." VerticalAlignment="Center" Foreground="White"/>
-                                                </StackPanel>
-                                            </Setter.Value>
-                                        </Setter>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-                    </Button>
-
-                    <Button x:Name="GoToCourseButton"
-                            Content="Go to Course"
-                            Style="{StaticResource GoToCourseButtonStyle}"
-                            Command="{Binding GoToCourseContentCommand}"
-                            Visibility="{Binding IsEnrolledSuccessfully, Converter={StaticResource BooleanToVisibilityConverter}}"
-                            HorizontalAlignment="Left" VerticalAlignment="Center"/>
-
-                    <!-- Enrollment message display: Wrapped TextBlock in Border for background, border, padding, corner radius -->
-                    <Border Padding="10 20" CornerRadius="8" HorizontalAlignment="Left" Margin="0 15 0 0"
-                            Visibility="{Binding HasEnrollmentMessage, Converter={StaticResource BooleanToVisibilityConverter}}">
-                        <Border.Style>
-                            <Style TargetType="Border">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding EnrollmentMessageClass}" Value="alert-success">
-                                        <Setter Property="Background" Value="{StaticResource SuccessBg}"/>
-                                        <Setter Property="BorderBrush" Value="{StaticResource SuccessBorder}"/>
-                                        <Setter Property="BorderThickness" Value="1"/>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding EnrollmentMessageClass}" Value="alert-danger">
-                                        <Setter Property="Background" Value="{StaticResource DangerBg}"/>
-                                        <Setter Property="BorderBrush" Value="{StaticResource DangerBorder}"/>
-                                        <Setter Property="BorderThickness" Value="1"/>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding EnrollmentMessageClass}" Value="alert-warning">
-                                        <Setter Property="Background" Value="{StaticResource WarningBg}"/>
-                                        <Setter Property="BorderBrush" Value="{StaticResource WarningBorder}"/>
-                                        <Setter Property="BorderThickness" Value="1"/>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding EnrollmentMessageClass}" Value="alert-info">
-                                        <Setter Property="Background" Value="{StaticResource InfoBg}"/>
-                                        <Setter Property="BorderBrush" Value="{StaticResource InfoBorder}"/>
-                                        <Setter Property="BorderThickness" Value="1"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Border.Style>
-                        <TextBlock Text="{Binding EnrollmentMessage}">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock" BasedOn="{StaticResource EnrollmentMessageStyle}">
+                        <!-- Conditional button rendering: Enroll Now or Go to Course -->
+                        <Button x:Name="EnrollButton"
+                                Content="{Binding EnrollButtonText}"
+                                Command="{Binding EnrollCommand}"
+                                IsEnabled="{Binding IsEnrollButtonEnabled}"
+                                Visibility="{Binding IsEnrolledSuccessfully, Converter={StaticResource BooleanToVisibilityConverterInverted}}"
+                                HorizontalAlignment="Left" VerticalAlignment="Center">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource EnrollButtonStyle}">
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding EnrollmentMessageClass}" Value="alert-success">
-                                            <Setter Property="Foreground" Value="{StaticResource SuccessColor}"/>
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding EnrollmentMessageClass}" Value="alert-danger">
-                                            <Setter Property="Foreground" Value="{StaticResource DangerColor}"/>
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding EnrollmentMessageClass}" Value="alert-warning">
-                                            <Setter Property="Foreground" Value="{StaticResource WarningColor}"/>
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding EnrollmentMessageClass}" Value="alert-info">
-                                            <Setter Property="Foreground" Value="{StaticResource InfoColor}"/>
+                                        <DataTrigger Binding="{Binding IsEnrolling}" Value="True">
+                                            <Setter Property="Content">
+                                                <Setter.Value>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Border Width="16" Height="16" CornerRadius="8" BorderThickness="2" BorderBrush="White" Margin="0 0 5 0">
+                                                            <Border.RenderTransform>
+                                                                <RotateTransform CenterX="8" CenterY="8"/>
+                                                            </Border.RenderTransform>
+                                                            <Border.Style>
+                                                                <Style TargetType="Border">
+                                                                    <Style.Triggers>
+                                                                        <Trigger Property="IsVisible" Value="True">
+                                                                            <Trigger.EnterActions>
+                                                                                <BeginStoryboard>
+                                                                                    <Storyboard RepeatBehavior="Forever">
+                                                                                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)" From="0" To="360" Duration="0:0:1" />
+                                                                                    </Storyboard>
+                                                                                </BeginStoryboard>
+                                                                            </Trigger.EnterActions>
+                                                                        </Trigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Border.Style>
+                                                            <Border.Background>
+                                                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                                    <GradientStop Color="#007bff" Offset="0"/>
+                                                                    <GradientStop Color="Transparent" Offset="0.5"/>
+                                                                </LinearGradientBrush>
+                                                            </Border.Background>
+                                                        </Border>
+                                                        <TextBlock Text="Loading..." VerticalAlignment="Center" Foreground="White"/>
+                                                    </StackPanel>
+                                                </Setter.Value>
+                                            </Setter>
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-                    </Border>
-                </StackPanel>
+                            </Button.Style>
+                        </Button>
 
-                <!-- Course Image Column -->
-                <Border Grid.Column="1" Grid.Row="0" Grid.RowSpan="6" Margin="28 0 0 0"
-                        HorizontalAlignment="Center" VerticalAlignment="Center"
-                        MaxWidth="400" MaxHeight="440"
-                        CornerRadius="24"
-                        BorderBrush="#007bff" BorderThickness="2.5"
-                        Background="{StaticResource WhiteTransparent32}">
-                    <Border.Effect>
-                        <DropShadowEffect ShadowDepth="8" Color="#000000" Opacity="0.13" BlurRadius="40"/>
-                    </Border.Effect>
-                    <Border.Style>
-                        <Style TargetType="Border">
-                            <Style.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Effect">
-                                        <Setter.Value>
-                                            <DropShadowEffect ShadowDepth="16" Color="#007bff" Opacity="0.18" BlurRadius="64"/>
-                                        </Setter.Value>
-                                    </Setter>
-                                    <Setter Property="BorderBrush" Value="{StaticResource LightBlue}"/>
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Border.Style>
-                    <Image Source="{Binding CourseData.Course.ImageUrl}" Style="{StaticResource CourseDecorativeImageStyle}"/>
-                </Border>
-            </Grid>
-        </Border>
+                        <Button x:Name="GoToCourseButton"
+                                Content="Go to Course"
+                                Style="{StaticResource GoToCourseButtonStyle}"
+                                Command="{Binding GoToCourseContentCommand}"
+                                Visibility="{Binding IsEnrolledSuccessfully, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                HorizontalAlignment="Left" VerticalAlignment="Center"/>
+
+                        <!-- Enrollment message display: Wrapped TextBlock in Border for background, border, padding, corner radius -->
+                        <Border Padding="10 20" CornerRadius="8" HorizontalAlignment="Left" Margin="0 15 0 0"
+                                Visibility="{Binding HasEnrollmentMessage, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding EnrollmentMessageClass}" Value="alert-success">
+                                            <Setter Property="Background" Value="{StaticResource SuccessBg}"/>
+                                            <Setter Property="BorderBrush" Value="{StaticResource SuccessBorder}"/>
+                                            <Setter Property="BorderThickness" Value="1"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding EnrollmentMessageClass}" Value="alert-danger">
+                                            <Setter Property="Background" Value="{StaticResource DangerBg}"/>
+                                            <Setter Property="BorderBrush" Value="{StaticResource DangerBorder}"/>
+                                            <Setter Property="BorderThickness" Value="1"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding EnrollmentMessageClass}" Value="alert-warning">
+                                            <Setter Property="Background" Value="{StaticResource WarningBg}"/>
+                                            <Setter Property="BorderBrush" Value="{StaticResource WarningBorder}"/>
+                                            <Setter Property="BorderThickness" Value="1"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding EnrollmentMessageClass}" Value="alert-info">
+                                            <Setter Property="Background" Value="{StaticResource InfoBg}"/>
+                                            <Setter Property="BorderBrush" Value="{StaticResource InfoBorder}"/>
+                                            <Setter Property="BorderThickness" Value="1"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <TextBlock Text="{Binding EnrollmentMessage}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource EnrollmentMessageStyle}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding EnrollmentMessageClass}" Value="alert-success">
+                                                <Setter Property="Foreground" Value="{StaticResource SuccessColor}"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding EnrollmentMessageClass}" Value="alert-danger">
+                                                <Setter Property="Foreground" Value="{StaticResource DangerColor}"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding EnrollmentMessageClass}" Value="alert-warning">
+                                                <Setter Property="Foreground" Value="{StaticResource WarningColor}"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding EnrollmentMessageClass}" Value="alert-info">
+                                                <Setter Property="Foreground" Value="{StaticResource InfoColor}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Course Image Column -->
+                    <Border Grid.Column="1" Grid.Row="0" Grid.RowSpan="6" Margin="28 0 0 0"
+                            HorizontalAlignment="Center" VerticalAlignment="Center"
+                            MaxWidth="400" MaxHeight="440"
+                            CornerRadius="24"
+                            BorderBrush="#007bff" BorderThickness="2.5"
+                            Background="{StaticResource WhiteTransparent32}">
+                        <Border.Effect>
+                            <DropShadowEffect ShadowDepth="8" Color="#000000" Opacity="0.13" BlurRadius="40"/>
+                        </Border.Effect>
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Effect">
+                                            <Setter.Value>
+                                                <DropShadowEffect ShadowDepth="16" Color="#007bff" Opacity="0.18" BlurRadius="64"/>
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Setter Property="BorderBrush" Value="{StaticResource LightBlue}"/>
+                                    </Trigger>
+                                    </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <Image Source="{Binding CourseData.Course.ImageUrl}" Style="{StaticResource CourseDecorativeImageStyle}"/>
+                    </Border>
+                </Grid>
+            </Border>
+        </ScrollViewer>
     </Grid>
 </Page>

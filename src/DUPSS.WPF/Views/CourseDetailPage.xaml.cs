@@ -13,13 +13,12 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input; // For ICommand
-// Removed using DUPSS.WPF.Views; as converters are now global
+using System.Windows.Media.Imaging; // Added for BitmapImage
+using System.IO; // Added for Path.GetExtension
+using System.Diagnostics; // Added for Debug.WriteLine
 
 namespace DUPSS.WPF.Views
 {
-    // Removed BooleanToVisibilityConverter, BooleanToVisibilityConverterInverted, and HalfWidthConverter classes from here.
-    // They are now defined in CommonConverters.cs under the DUPSS.WPF namespace and declared globally in App.xaml.
-
     public partial class CourseDetailPage : Page, INotifyPropertyChanged
     {
         // Injected Services
@@ -37,7 +36,8 @@ namespace DUPSS.WPF.Views
             {
                 _courseData = value;
                 OnPropertyChanged();
-                OnPropertyChanged(nameof(ShowCourseContent));
+                OnPropertyChanged(nameof(ShowCourseContent)); // Ensure ShowCourseContent updates
+                Debug.WriteLine($"CourseData SET. Course is null: {(_courseData?.Course == null)}. Instructor is null: {(_courseData?.Instructor == null)}");
             }
         }
 
@@ -49,6 +49,8 @@ namespace DUPSS.WPF.Views
             {
                 _isLoading = value;
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(ShowCourseContent)); // <--- ADDED: Notify ShowCourseContent
+                Debug.WriteLine($"IsLoading SET to: {_isLoading}");
             }
         }
 
@@ -60,6 +62,8 @@ namespace DUPSS.WPF.Views
             {
                 _hasError = value;
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(ShowCourseContent)); // <--- ADDED: Notify ShowCourseContent
+                Debug.WriteLine($"HasError SET to: {_hasError}");
             }
         }
 
@@ -71,10 +75,20 @@ namespace DUPSS.WPF.Views
             {
                 _noCourseFound = value;
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(ShowCourseContent)); // <--- ADDED: Notify ShowCourseContent
+                Debug.WriteLine($"NoCourseFound SET to: {_noCourseFound}");
             }
         }
 
-        public bool ShowCourseContent => CourseData?.Course != null && !IsLoading && !HasError && !NoCourseFound;
+        public bool ShowCourseContent
+        {
+            get
+            {
+                var show = CourseData?.Course != null && !IsLoading && !HasError && !NoCourseFound;
+                Debug.WriteLine($"ShowCourseContent GET: CourseData.Course null={CourseData?.Course == null}, !IsLoading={!IsLoading}, !HasError={!HasError}, !NoCourseFound={!NoCourseFound} => Result={show}");
+                return show;
+            }
+        }
 
         private bool _isEnrolling = false;
         public bool IsEnrolling
@@ -138,6 +152,10 @@ namespace DUPSS.WPF.Views
         public ICommand GoBackToCoursesCommand { get; private set; }
         public ICommand NavigateToInstructorCommand { get; private set; }
 
+        // Define common image extensions to check (reused from Courses.xaml.cs)
+        private readonly string[] _imageExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".bmp" };
+        // Define a placeholder image URI for when an image is not found
+        private readonly Uri _placeholderImageUri = new Uri("pack://application:,,,/DUPSS.WPF;component/Images/Courses/placeholder.png"); // Assuming a generic placeholder
 
         // Constructor with Dependency Injection
         public CourseDetailPage(
@@ -148,10 +166,6 @@ namespace DUPSS.WPF.Views
         {
             InitializeComponent();
             this.DataContext = this; // Set DataContext for bindings
-
-            // Converters are now global, no need to add to page resources here.
-            // Removed: this.Resources.Add("BooleanToVisibilityConverterInverted", new BooleanToVisibilityConverterInverted());
-            // Removed: this.Resources.Add("HalfWidthConverter", new HalfWidthConverter());
 
             _courseApiService = courseApiService;
             _courseEnrollApiService = courseEnrollApiService;
@@ -171,39 +185,24 @@ namespace DUPSS.WPF.Views
         // Page Loaded event handler (similar to OnParametersSetAsync in Blazor)
         private async void Page_Loaded(object sender, RoutedEventArgs e)
         {
-            // Retrieve CourseId from NavigationContext if available
-            // This assumes the page is navigated to via a URI like /CourseDetailPage/C0001
-            // You might need to adjust how CourseId is passed based on your navigation setup.
-            // For example, if you navigate using MainFrame.Navigate(new CourseDetailPage("C0001")),
-            // then you would pass the ID in the constructor.
-            // For now, we assume it's set via a public property before Loaded.
-            // If navigating via URI, you might need to parse it from NavigationService.Source.OriginalString
-
-            // For simplicity, let's assume CourseId is set before Page_Loaded by the navigation system
-            // (e.g., if you're using a custom navigation service that sets properties).
-            // If not, you'd need to parse it from the URI.
-            // Example:
-            // if (NavigationService.Source != null && NavigationService.Source.OriginalString.Contains("/CourseDetailPage/"))
-            // {
-            //     CourseId = NavigationService.Source.OriginalString.Split('/').Last();
-            // }
-
+            Debug.WriteLine($"Page_Loaded fired. CourseId: {CourseId}");
             await LoadCourseDataAsync();
         }
 
         private async Task LoadCourseDataAsync()
         {
-            IsLoading = true;
+            IsLoading = true; // This will trigger Debug.WriteLine for IsLoading
             HasError = false;
             NoCourseFound = false;
             EnrollmentMessage = string.Empty;
             IsEnrolledSuccessfully = false;
-            CourseData = null; // Clear previous data
+            CourseData = null; // Clear previous data, this will trigger Debug.WriteLine for CourseData
 
             if (string.IsNullOrWhiteSpace(CourseId))
             {
-                NoCourseFound = true;
-                IsLoading = false;
+                NoCourseFound = true; // This will trigger Debug.WriteLine for NoCourseFound
+                IsLoading = false;    // This will trigger Debug.WriteLine for IsLoading
+                Debug.WriteLine("CourseId is null or empty. Cannot load course details. Displaying NoCourseFound state.");
                 return;
             }
 
@@ -218,46 +217,39 @@ namespace DUPSS.WPF.Views
                     _currentLoggedInUserId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                     if (string.IsNullOrEmpty(_currentLoggedInUserId))
                     {
-                        Console.WriteLine("Warning: Authenticated user has no NameIdentifier claim for UserId.");
+                        Debug.WriteLine("Warning: Authenticated user has no NameIdentifier claim for UserId.");
                     }
                 }
 
                 var fetchedCourseTask = _courseApiService.GetByIdAsync(CourseId);
                 var allEnrollmentsTask = _courseEnrollApiService.GetAllAsync();
-                // UserApiService.GetAllAsync() is removed as it's not used in this component.
-                // If you need all members for other purposes, re-add it.
 
                 await Task.WhenAll(fetchedCourseTask, allEnrollmentsTask);
 
                 var fetchedCourse = fetchedCourseTask.Result;
                 _allEnrollments = allEnrollmentsTask.Result;
 
+
                 if (fetchedCourse != null && fetchedCourse.Consultant != null)
                 {
-                    // Image URL resolution (simplified for WPF, assuming images are in wwwroot/images/Courses and wwwroot/images/Users)
-                    // WPF does not use IWebHostEnvironment for client-side image paths.
-                    // The API should ideally provide the full relative path, or we construct it here.
-                    // Assuming images are named CourseId.jpg and UserId.jpg
-                    if (!string.IsNullOrEmpty(fetchedCourse.CourseId))
-                    {
-                        // Check if ImageUrl is already provided by DTO (from API)
-                        if (string.IsNullOrEmpty(fetchedCourse.ImageUrl))
-                        {
-                            // Fallback if API doesn't provide it, assume default extension
-                            fetchedCourse.ImageUrl = $"/images/Courses/{fetchedCourse.CourseId}.jpg";
-                        }
-                    }
+                    // Construct pack URIs for embedded resources
+                    fetchedCourse.ImageUrl = GetPackUriForImage(
+                        $"Images/Courses/{fetchedCourse.CourseId}",
+                        _imageExtensions,
+                        _placeholderImageUri
+                    ).ToString();
+                    Debug.WriteLine($"Course Image URL set to: {fetchedCourse.ImageUrl}");
 
-                    if (!string.IsNullOrEmpty(fetchedCourse.Consultant.UserId))
-                    {
-                        if (string.IsNullOrEmpty(fetchedCourse.Consultant.ImageUrl))
-                        {
-                            // Fallback if API doesn't provide it, assume default extension
-                            fetchedCourse.Consultant.ImageUrl = $"/images/Users/{fetchedCourse.Consultant.UserId}.jpg";
-                        }
-                    }
 
-                    CourseData = new CoursePageData
+                    // For Instructor Image
+                    fetchedCourse.Consultant.ImageUrl = GetPackUriForImage(
+                        $"Images/Users/{fetchedCourse.Consultant.UserId}",
+                        _imageExtensions,
+                        _placeholderImageUri
+                    ).ToString();
+                    Debug.WriteLine($"Instructor Image URL set to: {fetchedCourse.Consultant.ImageUrl}");
+
+                    CourseData = new CoursePageData // This will trigger Debug.WriteLine for CourseData
                     {
                         Course = fetchedCourse,
                         Description = fetchedCourse.Description ?? "A detailed description for this course will be added soon.",
@@ -278,20 +270,57 @@ namespace DUPSS.WPF.Views
                 }
                 else
                 {
-                    Console.WriteLine($"Course with ID {CourseId} not found or Consultant data missing.");
-                    NoCourseFound = true;
+                    Debug.WriteLine($"Course with ID {CourseId} not found or Consultant data missing. Setting NoCourseFound to true.");
+                    NoCourseFound = true; // This will trigger Debug.WriteLine for NoCourseFound
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error loading course details for ID {CourseId}: {ex.Message}");
-                HasError = true;
+                Debug.WriteLine($"Error loading course details for ID {CourseId}: {ex.Message}");
+                HasError = true; // This will trigger Debug.WriteLine for HasError
             }
             finally
             {
-                IsLoading = false;
+                IsLoading = false; // This will trigger Debug.WriteLine for IsLoading
+                Debug.WriteLine($"--- LoadCourseDataAsync FINISHED ---");
+                Debug.WriteLine($"Final state: IsLoading={IsLoading}, HasError={HasError}, NoCourseFound={NoCourseFound}, CourseData.Course is null={CourseData?.Course == null}, ShowCourseContent={ShowCourseContent}");
+                Debug.WriteLine($"------------------------------------");
             }
         }
+
+        /// <summary>
+        /// Helper method to construct a pack URI for an embedded image resource.
+        /// </summary>
+        /// <param name="basePath">The base path within the component (e.g., "Images/Courses/C0001").</param>
+        /// <param name="extensions">Array of possible file extensions (e.g., ".jpg", ".png").</param>
+        /// <param name="placeholderUri">The URI to use if no specific image is found.</param>
+        /// <returns>A Uri object for the image resource.</returns>
+        private Uri GetPackUriForImage(string basePath, string[] extensions, Uri placeholderUri)
+        {
+            foreach (var ext in extensions)
+            {
+                var potentialUriString = $"pack://application:,,,/DUPSS.WPF;component/{basePath}{ext}";
+                try
+                {
+                    var uri = new Uri(potentialUriString);
+                    if (Application.GetResourceStream(uri) != null)
+                    {
+                        return uri; // Found a valid image
+                    }
+                }
+                catch (UriFormatException)
+                {
+                    Debug.WriteLine($"Invalid URI format for: {potentialUriString}");
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error checking resource stream for {potentialUriString}: {ex.Message}");
+                }
+            }
+            Debug.WriteLine($"No specific image found for base path: {basePath}. Using placeholder.");
+            return placeholderUri; // Return placeholder if no image found
+        }
+
 
         private async Task EnrollNow()
         {
@@ -311,12 +340,9 @@ namespace DUPSS.WPF.Views
 
             IsEnrolling = true;
             EnrollmentMessage = string.Empty;
-            // StateHasChanged() is not needed here as properties are bound and notify changes.
 
             try
             {
-                // In WPF, we rely on the API to handle unique ID generation.
-                // We'll create a new DTO instance for the request.
                 var newEnrollment = new CourseEnrollDTO
                 {
                     // EnrollId should ideally be generated by the API.
@@ -329,39 +355,33 @@ namespace DUPSS.WPF.Views
                     CompleteDate = null
                 };
 
-                // The API call to create the enrollment
                 await _courseEnrollApiService.CreateAsync(newEnrollment);
 
                 IsEnrolledSuccessfully = true;
                 await ShowMessage("Enrollment Success", $"You have successfully enrolled in '{CourseData.Course.CourseName}'!", "alert-success");
-                Console.WriteLine($"Successful enrollment in course {newEnrollment.CourseId} for member {newEnrollment.MemberId} with Enroll ID {newEnrollment.EnrollId}");
+                Debug.WriteLine($"Successful enrollment in course {newEnrollment.CourseId} for member {newEnrollment.MemberId} with Enroll ID {newEnrollment.EnrollId}");
 
                 await Task.Delay(2000); // Wait for 2 seconds
                 GoToCourseContent(); // Navigate after successful enrollment
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error enrolling in course: {ex.Message}");
+                Debug.WriteLine($"Error enrolling in course: {ex.Message}");
                 await ShowMessage("Enrollment Error", $"Failed to enroll in course: {ex.Message}", "alert-danger");
             }
             finally
             {
                 IsEnrolling = false;
-                // StateHasChanged() not needed, bindings will update.
             }
         }
-
-        // Removed GenerateNextEnrollmentId() as it should be handled by the API.
 
         private async Task ShowMessage(string title, string message, string cssClass)
         {
             EnrollmentMessage = message;
             EnrollmentMessageClass = cssClass;
-            Console.WriteLine($"{title}: {message}"); // Use Console.WriteLine instead of JSRuntime.InvokeVoidAsync("console.log")
-            // StateHasChanged() not needed.
+            Debug.WriteLine($"{title}: {message}");
             await Task.Delay(5000); // Display message for 5 seconds
             EnrollmentMessage = string.Empty;
-            // StateHasChanged() not needed.
         }
 
         private void GoBackToCourses()
@@ -375,7 +395,7 @@ namespace DUPSS.WPF.Views
                 // Fallback if no history, navigate to a default courses page
                 NavigationService.Navigate(new Uri("/Views/Courses.xaml", UriKind.Relative));
             }
-            Console.WriteLine("Navigating back to Courses page.");
+            Debug.WriteLine("Navigating back to Courses page.");
         }
 
         private void GoToCourseContent()
@@ -385,12 +405,11 @@ namespace DUPSS.WPF.Views
                 // Navigate to a hypothetical CourseContent page
                 // Ensure you have a CourseContent.xaml page or similar
                 NavigationService.Navigate(new Uri($"/Views/CourseContent.xaml?courseId={CourseData.Course.CourseId}", UriKind.Relative));
-                Console.WriteLine($"Navigating to course content for Course ID: {CourseData.Course.CourseId}");
+                Debug.WriteLine($"Navigating to course content for Course ID: {CourseData.Course.CourseId}");
             }
             else
             {
-                Console.WriteLine("Cannot navigate to course content: Course ID is missing.");
-                // Log error, no MessageBox as per previous instructions
+                Debug.WriteLine("Cannot navigate to course content: Course ID is missing.");
             }
         }
 
@@ -400,11 +419,11 @@ namespace DUPSS.WPF.Views
             {
                 // Example: Navigate to an InstructorProfile page
                 NavigationService.Navigate(new Uri($"/Views/InstructorProfile.xaml?userId={instructor.UserId}", UriKind.Relative));
-                Console.WriteLine($"Navigating to instructor profile for User ID: {instructor.UserId}");
+                Debug.WriteLine($"Navigating to instructor profile for User ID: {instructor.UserId}");
             }
             else
             {
-                Console.WriteLine("Cannot navigate to instructor profile: Instructor User ID is missing.");
+                Debug.WriteLine("Cannot navigate to instructor profile: Instructor User ID is missing.");
             }
         }
 
