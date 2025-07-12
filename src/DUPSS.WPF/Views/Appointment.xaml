@@ -11,36 +11,74 @@
 
             <!-- Filter -->
             <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
-                <TextBox x:Name="SearchBox" Width="150" Margin="0,0,10,0"
+                <TextBox x:Name="SearchBox" Width="160" Margin="0,0,10,0"
                          Text="Find by consultant" Foreground="Gray"
                          GotFocus="SearchBox_GotFocus" LostFocus="SearchBox_LostFocus"/>
-                <DatePicker x:Name="FromDatePicker" Width="120" Margin="0,0,10,0"/>
-                <DatePicker x:Name="ToDatePicker" Width="120" Margin="0,0,10,0"/>
-                <ComboBox x:Name="StatusComboBox" Width="120" Margin="0,0,10,0">
+                <DatePicker x:Name="FromDatePicker" Width="130" Margin="0,0,10,0"/>
+                <DatePicker x:Name="ToDatePicker" Width="130" Margin="0,0,10,0"/>
+                <ComboBox x:Name="StatusComboBox" Width="130" Margin="0,0,10,0">
                     <ComboBoxItem Content="-- Status --" IsSelected="True"/>
                     <ComboBoxItem Content="Pending"/>
                     <ComboBoxItem Content="Accepted"/>
                     <ComboBoxItem Content="Declined"/>
                     <ComboBoxItem Content="Finished"/>
                     <ComboBoxItem Content="Cancel"/>
+                    <ComboBoxItem Content="Missed"/>
                 </ComboBox>
                 <Button Content="Filter" Width="70" Margin="0,0,5,0" Click="FilterButton_Click"/>
                 <Button Content="Reset" Width="70" Click="ResetButton_Click"/>
             </StackPanel>
 
             <!-- Appointments Table -->
-            <DataGrid x:Name="AppointmentDataGrid" AutoGenerateColumns="False" CanUserAddRows="False" Margin="0,0,0,15">
+            <DataGrid x:Name="AppointmentDataGrid"
+                      AutoGenerateColumns="False"
+                      CanUserAddRows="False"
+                      IsReadOnly="True"
+                      RowBackground="White" AlternatingRowBackground="#eef2fb"
+                      Margin="0,0,0,15">
+
+                <DataGrid.RowStyle>
+                    <Style TargetType="DataGridRow">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsNext}" Value="True">
+                                <Setter Property="Background" Value="#FFFACD"/>
+                                <!-- Light yellow -->
+                                <Setter Property="FontWeight" Value="Bold"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.RowStyle>
+
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Date" Binding="{Binding DisplayDate}" Width="*" />
+                    <DataGridTextColumn Header="Date" Binding="{Binding DisplayDate}" Width="2*" />
                     <DataGridTextColumn Header="Consultant" Binding="{Binding ConsultantUsername}" Width="*" />
-                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="*" />
+                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="*">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Status}" Value="Pending">
+                                        <Setter Property="Foreground" Value="Orange"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Status}" Value="Accepted">
+                                        <Setter Property="Foreground" Value="Green"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Status}" Value="Declined">
+                                        <Setter Property="Foreground" Value="Red"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Status}" Value="Cancel">
+                                        <Setter Property="Foreground" Value="Gray"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
                     <DataGridTextColumn Header="Note" Binding="{Binding Notes}" Width="2*" />
                     <DataGridTemplateColumn Header="Action" Width="*">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <Button Content="❌ Cancel" Foreground="Red" 
-                                        Click="CancelButton_Click"
-                                        Visibility="{Binding CancelVisibility}"/>
+                                        Visibility="{Binding CancelVisibility}"
+                                        Click="CancelButton_Click" />
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>

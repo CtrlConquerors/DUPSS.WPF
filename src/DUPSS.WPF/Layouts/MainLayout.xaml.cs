@@ -103,6 +103,7 @@ namespace DUPSS.WPF.Layouts // Namespace matches the folder structure
                         if (userDto != null)
                         {
                             WelcomeTextBlock.Text = $"Welcome, {userDto.Username}!";
+                    
                         }
                         else
                         {

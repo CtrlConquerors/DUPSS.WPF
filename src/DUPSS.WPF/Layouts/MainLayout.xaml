@@ -120,6 +120,7 @@
                     <Button Content="Courses" Style="{StaticResource NavButtonStyle}" Tag="Courses" Click="Navigate_Click"/>
                     <Button Content="Assessments" Style="{StaticResource NavButtonStyle}" Tag="Assessments" Click="Navigate_Click"/>
                     <Button Content="Blog" Style="{StaticResource NavButtonStyle}" Tag="Blog" Click="Navigate_Click"/>
+                    <Button Content="Appointment Consultant" Style="{StaticResource NavButtonStyle}" Tag="AppointmentForConsultant" Click="Navigate_Click"/>
                 </StackPanel>
             </StackPanel>
         </Border>

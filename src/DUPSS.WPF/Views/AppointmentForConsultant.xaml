@@ -1,0 +1,123 @@
+﻿<Page x:Class="DUPSS.WPF.Views.AppointmentForConsultant"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="AppointmentForConsultant">
+
+    <Grid Margin="20">
+        <StackPanel Orientation="Vertical">
+            <TextBlock Text="My Appointments"
+                       FontSize="24"
+                       FontWeight="Bold"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,20"/>
+
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,10" HorizontalAlignment="Center">
+                <TextBox Width="200" Margin="5" x:Name="SearchTextBox" ToolTip="Search by member or topic"/>
+                <DatePicker Width="140" Margin="5" x:Name="FromDatePicker"/>
+                <DatePicker Width="140" Margin="5" x:Name="ToDatePicker"/>
+                <ComboBox Width="140" Margin="5" x:Name="StatusComboBox">
+                    <ComboBoxItem Content=""/>
+                    <ComboBoxItem Content="Pending"/>
+                    <ComboBoxItem Content="Accepted"/>
+                    <ComboBoxItem Content="Declined"/>
+                    <ComboBoxItem Content="Finished"/>
+                    <ComboBoxItem Content="Cancel"/>
+                    <ComboBoxItem Content="Missed"/>
+                </ComboBox>
+                <Button Content="Apply Filter" Width="100" Margin="5" Click="ApplyFilter_Click"/>
+                <Button Content="Reset" Width="80" Margin="5" Click="ResetFilter_Click"/>
+            </StackPanel>
+
+            <DataGrid x:Name="AppointmentGrid"
+                      AutoGenerateColumns="False"
+                      CanUserAddRows="False"
+                      IsReadOnly="False"
+                      Margin="0,10,0,0"
+                      RowHeight="40">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Date" Binding="{Binding AppointmentDate, StringFormat=dd/MM/yyyy HH:mm}" Width="*"/>
+                    <DataGridTextColumn Header="Member" Binding="{Binding Member.Username}" Width="*"/>
+                    <DataGridTextColumn Header="Topic" Binding="{Binding Topic}" Width="*"/>
+                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="*"/>
+                    <DataGridTemplateColumn Header="Note" Width="2*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBox Text="{Binding Notes, UpdateSourceTrigger=PropertyChanged}" Margin="2"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <!-- Actions column giống Blazor -->
+                    <DataGridTemplateColumn Header="Actions" Width="2*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Margin="2">
+                                    <!-- Pending: Accept & Decline -->
+                                    <StackPanel Orientation="Horizontal">
+                                        <StackPanel.Style>
+                                            <Style TargetType="StackPanel">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Pending">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </StackPanel.Style>
+                                        <Button Content="✅ Accept" Margin="2" Tag="{Binding AppointmentId}" Click="Accept_Click"/>
+                                        <Button Content="❌ Decline" Margin="2" Tag="{Binding AppointmentId}" Click="Decline_Click"/>
+                                    </StackPanel>
+
+                                    <!-- Accepted: Finish -->
+                                    <Button Content="✔️ Finish" Margin="2" Tag="{Binding AppointmentId}" Click="Finish_Click">
+                                        <Button.Style>
+                                            <Style TargetType="Button">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Accepted">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
+
+                                    <!-- Các trạng thái khác: hiển thị text -->
+                                    <TextBlock Margin="2" Foreground="Gray">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Setter Property="Text" Value=""/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Declined">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                        <Setter Property="Text" Value="This appointment has been declined"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Finished">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                        <Setter Property="Text" Value="This appointment has been finished"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Cancel">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                        <Setter Property="Text" Value="Cancelled by user"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Missed">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                        <Setter Property="Text" Value="This appointment has been missed"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+
+                                    <!-- Luôn hiển thị Save Note -->
+                                    <Button Content="💾 Save Note" Margin="2" Tag="{Binding AppointmentId}" Click="SaveNote_Click"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </StackPanel>
+    </Grid>
+</Page>

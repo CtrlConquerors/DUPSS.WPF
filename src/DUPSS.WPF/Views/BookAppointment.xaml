@@ -13,37 +13,31 @@
                 </Border.Effect>
 
                 <StackPanel>
-
                     <TextBlock Text="🎨 Booking appointment with consultant"
                                FontSize="24" FontWeight="Bold" Foreground="#2d5fa4"
                                Margin="0 0 0 20" HorizontalAlignment="Center"/>
 
-                    <!-- Warning if can't book -->
                     <TextBlock x:Name="WarningText"
                                Text="⚠️ You already have active appointment(s). Please cancel or finish them before booking new."
                                Foreground="#b45309" FontWeight="Bold"
                                Visibility="Collapsed"
                                TextWrapping="Wrap" Margin="0 0 0 10"/>
 
-                    <!-- Choose date -->
                     <StackPanel Margin="0 0 0 15">
                         <TextBlock Text="Choose date" FontWeight="Bold" Foreground="#2d5fa4"/>
                         <ComboBox x:Name="DateComboBox" SelectionChanged="DateComboBox_SelectionChanged"/>
                     </StackPanel>
 
-                    <!-- Choose slot -->
                     <StackPanel Margin="0 0 0 15">
                         <TextBlock Text="Choose time slot" FontWeight="Bold" Foreground="#2d5fa4"/>
                         <ComboBox x:Name="SlotComboBox"/>
                     </StackPanel>
 
-                    <!-- Topic -->
                     <StackPanel Margin="0 0 0 15">
                         <TextBlock Text="Topic (Describe what you'd like to discuss)" FontWeight="Bold" Foreground="#2d5fa4"/>
                         <TextBox x:Name="TopicTextBox"/>
                     </StackPanel>
 
-                    <!-- Button -->
                     <Button Content="🖌️ Book Now"
                             Background="#2d5fa4" Foreground="White"
                             FontWeight="Bold" Padding="10"

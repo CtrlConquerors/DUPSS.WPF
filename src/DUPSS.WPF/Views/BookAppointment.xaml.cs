@@ -1,8 +1,11 @@
 ﻿using DUPSS.ApiClients;
 using DUPSS.DTO.DTOs;
+using DUPSS.Common; // WpfSecureStorageService
+using Microsoft.AspNetCore.Components.Authorization; // AuthenticationStateProvider
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -12,46 +15,66 @@ namespace DUPSS.WPF.Views
     public partial class BookAppointment : Page
     {
         private readonly AppointmentApiService _appointmentService;
+        private readonly JwtAuthenticationStateProvider _authStateProvider;
+        private readonly UserApiService _userApiService;
+
+        private string? _currentUserId;
 
         public BookAppointment()
         {
             InitializeComponent();
 
-            // Khởi tạo service dùng HttpClient từ App (bạn cần khai báo public static HttpClient trong App.xaml.cs)
             _appointmentService = new AppointmentApiService(App.HttpClient);
+            _userApiService = new UserApiService(App.HttpClient);
 
-            // Load danh sách ngày khả dụng khi mở trang
-            LoadAvailableDatesAsync();
+            var wpfSecureStorage = new WpfSecureStorageService();
+            _authStateProvider = new JwtAuthenticationStateProvider(new AuthApiService(App.HttpClient), wpfSecureStorage);
+
+            Loaded += BookAppointment_Loaded;
         }
 
-        private async void LoadAvailableDatesAsync()
+        private async void BookAppointment_Loaded(object sender, RoutedEventArgs e)
         {
-            // Ví dụ: hiển thị 7 ngày tiếp theo kể từ hôm nay
+            await LoadUserIdAsync();
+            LoadAvailableDates();
+        }
+
+        private async Task LoadUserIdAsync()
+        {
+            var authState = await _authStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            if (user.Identity?.IsAuthenticated == true)
+            {
+                _currentUserId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            }
+        }
+
+        private void LoadAvailableDates()
+        {
             var next7Days = Enumerable.Range(0, 7)
                                       .Select(i => DateTime.Today.AddDays(i))
                                       .ToList();
 
             DateComboBox.ItemsSource = next7Days;
-            DateComboBox.SelectedIndex = 0; // Chọn sẵn ngày đầu tiên
+            DateComboBox.SelectedIndex = 0;
         }
 
         private void DateComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (DateComboBox.SelectedItem is DateTime selectedDate)
-            {
-                // Hardcode slot demo – thực tế có thể load từ API theo ngày
-                var slots = new List<string>
-                {
-                    "17:30", "18:30", "19:30", "20:30"
-                };
-                SlotComboBox.ItemsSource = slots;
-                SlotComboBox.SelectedIndex = 0;
-            }
+            var slots = new List<string> { "17:30", "18:30", "19:30", "20:30" };
+            SlotComboBox.ItemsSource = slots;
+            SlotComboBox.SelectedIndex = 0;
         }
 
         private async void BookNow_Click(object sender, RoutedEventArgs e)
         {
-            // Kiểm tra dữ liệu bắt buộc
+            if (string.IsNullOrEmpty(_currentUserId))
+            {
+                MessageBox.Show("Cannot book: user is not authenticated.", "Error");
+                return;
+            }
+
             if (DateComboBox.SelectedItem == null ||
                 SlotComboBox.SelectedItem == null ||
                 string.IsNullOrWhiteSpace(TopicTextBox.Text))
@@ -63,52 +86,91 @@ namespace DUPSS.WPF.Views
 
             try
             {
-                // Giả sử memberId và consultantId lấy từ đăng nhập hoặc context
-                string memberId = "test-member-id";
-                string consultantId = "test-consultant";
+                // ✏️ 1️⃣ Kiểm tra user đã có appointment Pending/Accepted chưa
+                var existingAppointments = await _appointmentService.GetAppointmentsForMemberAsync(_currentUserId);
+                bool hasActive = existingAppointments.Any(a => a.Status == "Pending" || a.Status == "Accepted");
+
+                if (hasActive)
+                {
+                    MessageBox.Show("⚠️ You already have an active appointment (Pending/Accepted). Please cancel or finish it before booking a new one.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
 
                 var selectedDate = (DateTime)DateComboBox.SelectedItem;
                 var slot = SlotComboBox.SelectedItem.ToString();
                 var topic = TopicTextBox.Text.Trim();
 
-                // Ghép thành DateTime
-                if (TimeSpan.TryParse(slot, out TimeSpan time))
+                if (!TimeSpan.TryParse(slot, out TimeSpan time))
                 {
-                    var appointmentDate = selectedDate.Date.Add(time);
+                    MessageBox.Show("Invalid time slot format.", "Error");
+                    return;
+                }
 
-                    var dto = new AppointmentDTO
+                var appointmentDate = selectedDate.Date.Add(time).ToUniversalTime();
+
+                // 2️⃣ Tự động tìm consultant ít bận nhất & không bị conflict
+                var consultants = await _userApiService.GetConsultantsAsync();
+
+                var consultantLoad = new List<(UserDTO Consultant, int ActiveCount)>();
+
+                foreach (var consultant in consultants)
+                {
+                    var consultantAppointments = await _appointmentService.GetAppointmentsForConsultantAsync(consultant.UserId);
+
+                    bool hasConflict = consultantAppointments.Any(a =>
                     {
-                        AppointmentId = Guid.NewGuid().ToString(),
-                        MemberId = memberId,
-                        ConsultantId = consultantId,
-                        Topic = topic,
-                        AppointmentDate = appointmentDate.ToUniversalTime(),
-                        Status = "Pending"
-                    };
+                        if (a.Status == "Cancel") return false;
 
-                    bool success = await _appointmentService.CreateAppointmentAsync(dto);
+                        var existingStart = a.AppointmentDate;
+                        var existingEnd = existingStart.AddMinutes(40);
+                        var requestedStart = appointmentDate;
+                        var requestedEnd = appointmentDate.AddMinutes(40);
 
-                    if (success)
+                        return requestedStart < existingEnd && existingStart < requestedEnd;
+                    });
+
+                    if (!hasConflict)
                     {
-                        MessageBox.Show("✅ Appointment booked successfully!",
-                                        "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                        int activeCount = consultantAppointments.Count(a => a.Status == "Pending" || a.Status == "Accepted");
+                        consultantLoad.Add((consultant, activeCount));
                     }
-                    else
-                    {
-                        MessageBox.Show("❌ Failed to book appointment. Please try again.",
-                                        "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
+                }
+
+                var best = consultantLoad.OrderBy(x => x.ActiveCount).ThenBy(_ => Guid.NewGuid()).FirstOrDefault();
+
+                if (best.Consultant == null)
+                {
+                    MessageBox.Show("No available consultant at selected time.", "Info");
+                    return;
+                }
+
+                var dto = new AppointmentDTO
+                {
+                    AppointmentId = Guid.NewGuid().ToString(),
+                    MemberId = _currentUserId,
+                    ConsultantId = best.Consultant.UserId,
+                    Topic = topic,
+                    AppointmentDate = appointmentDate,
+                    Status = "Pending"
+                };
+
+                bool success = await _appointmentService.CreateAppointmentAsync(dto);
+
+                if (success)
+                {
+                    MessageBox.Show("✅ Appointment booked successfully!", "Success");
+
+                    // Navigate back to appointment list page
+                    NavigationService?.Navigate(new Appointment());
                 }
                 else
                 {
-                    MessageBox.Show("Invalid time slot format.", "Error",
-                                    MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("❌ Failed to book appointment.", "Error");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Exception: {ex.Message}", "Error",
-                                MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Exception: {ex.Message}", "Error");
             }
         }
     }

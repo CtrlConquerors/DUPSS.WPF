@@ -14,6 +14,8 @@ namespace DUPSS.WPF
         public static IConfiguration Configuration { get; private set; } // Static property to access configuration globally
         public static HttpClient HttpClient { get; private set; }
 
+        public static string? CurrentMemberId { get; set; }
+
         protected override void OnStartup(StartupEventArgs e)
         {
             // Build configuration from appsettings.json

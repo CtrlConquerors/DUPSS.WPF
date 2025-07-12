@@ -1,115 +1,131 @@
 ﻿using DUPSS.ApiClients;
 using DUPSS.DTO.DTOs;
+using DUPSS.Common;
+using Microsoft.AspNetCore.Components.Authorization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace DUPSS.WPF.Views
 {
     public partial class Appointment : Page
     {
         private readonly AppointmentApiService _appointmentService;
+        private readonly JwtAuthenticationStateProvider _authStateProvider;
+
+        private string? _currentUserId;
         private List<AppointmentDTO> _appointments = new();
-        private List<AppointmentViewModel> _filteredAppointments = new();
 
         public Appointment()
         {
             InitializeComponent();
 
-            var httpClient = new HttpClient
-            {
-                BaseAddress = new Uri("https://localhost:7026/")  // <-- thay đúng URL API của bạn
-            };
+            _appointmentService = new AppointmentApiService(App.HttpClient);
+            var secureStorage = new WpfSecureStorageService();
+            _authStateProvider = new JwtAuthenticationStateProvider(new AuthApiService(App.HttpClient), secureStorage);
 
-            _appointmentService = new AppointmentApiService(httpClient);
-            LoadAppointments();
+            Loaded += Appointment_Loaded;
         }
 
-        private async void LoadAppointments()
+        private async void Appointment_Loaded(object sender, RoutedEventArgs e)
         {
-            try
+            await LoadUserIdAsync();
+            await LoadAppointmentsAsync();
+        }
+
+        private async Task LoadUserIdAsync()
+        {
+            var authState = await _authStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            _currentUserId = user?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        }
+
+        private async Task LoadAppointmentsAsync()
+        {
+            if (!string.IsNullOrEmpty(_currentUserId))
             {
-                // TODO: Replace with actual memberId from login
-                var memberId = "df8d14c0-f6cc-4c6b-98cd-175b28bc57eb";
-                _appointments = await _appointmentService.GetAppointmentsForMemberAsync(memberId);
+                _appointments = await _appointmentService.GetAppointmentsForMemberAsync(_currentUserId);
 
-                // Debug: in ra số lượng
-                MessageBox.Show($"Loaded {_appointments.Count} appointments from API.");
+                ShowNextAppointment();
 
-                foreach (var appt in _appointments)
-                {
-                    MessageBox.Show($"AppointmentId={appt.AppointmentId}, Date={appt.AppointmentDate}, Status={appt.Status}, Consultant={appt.Consultant?.Username ?? "null"}");
-                }
+                await AutoUpdateExpiredAppointmentsAsync();
 
                 ApplyFilter();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error loading appointments: {ex.Message}");
+
+
             }
         }
 
-
         private void ApplyFilter()
-{
-    var keyword = SearchBox.Text == "Find by consultant" ? "" : SearchBox.Text;
-    var from = FromDatePicker.SelectedDate;
-    var to = ToDatePicker.SelectedDate;
-    var selectedStatus = (StatusComboBox.SelectedItem as ComboBoxItem)?.Content?.ToString();
-
-    _filteredAppointments = _appointments
-        .Where(a =>
-            (string.IsNullOrEmpty(keyword) || (a.Consultant?.Username?.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0)) &&
-            (!from.HasValue || a.AppointmentDate.ToLocalTime().Date >= from.Value.Date) &&
-            (!to.HasValue || a.AppointmentDate.ToLocalTime().Date <= to.Value.Date) &&
-            (string.IsNullOrEmpty(selectedStatus) || selectedStatus == "-- Status --" || a.Status == selectedStatus)
-        )
-        .Select(a => new AppointmentViewModel(a))
-        .OrderByDescending(a => a.Status == "Pending" || a.Status == "Accepted")
-        .ThenBy(a => a.AppointmentDate)
-        .ToList();
-
-    MessageBox.Show($"Filtered count: {_filteredAppointments.Count}");
-
-    AppointmentDataGrid.ItemsSource = _filteredAppointments;
-}
-
-
-        private void FilterButton_Click(object sender, RoutedEventArgs e) => ApplyFilter();
-
-        private void ResetButton_Click(object sender, RoutedEventArgs e)
         {
-            SearchBox.Text = "Find by consultant";
-            SearchBox.Foreground = System.Windows.Media.Brushes.Gray;
-            FromDatePicker.SelectedDate = null;
-            ToDatePicker.SelectedDate = null;
-            StatusComboBox.SelectedIndex = 0;
-            ApplyFilter();
+            var keyword = SearchBox.Text == "Find by consultant" ? "" : SearchBox.Text.Trim();
+            var from = FromDatePicker.SelectedDate;
+            var to = ToDatePicker.SelectedDate;
+            var status = (StatusComboBox.SelectedItem as ComboBoxItem)?.Content?.ToString();
+
+            var filtered = _appointments
+    .Where(a =>
+        (string.IsNullOrEmpty(keyword) || a.Consultant?.Username?.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0) &&
+        (!from.HasValue || a.AppointmentDate.ToLocalTime().Date >= from.Value.Date) &&
+        (!to.HasValue || a.AppointmentDate.ToLocalTime().Date <= to.Value.Date) &&
+        (string.IsNullOrEmpty(status) || status == "-- Status --" || a.Status == status)
+    )
+    .OrderByDescending(a => a.Status == "Pending" || a.Status == "Accepted")
+    .ThenBy(a => a.AppointmentDate)
+    .Select(dto => new AppointmentViewModel(dto))
+    .ToList();
+
+            // Đánh dấu next appointment
+            var next = filtered
+                .Where(a => a.AppointmentDate > DateTime.UtcNow && (a.Status == "Pending" || a.Status == "Accepted"))
+                .OrderBy(a => a.AppointmentDate)
+                .FirstOrDefault();
+
+            if (next != null)
+            {
+                next.IsNext = true;
+            }
+
+            AppointmentDataGrid.ItemsSource = filtered;
+
         }
 
         private async void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button btn && btn.DataContext is AppointmentViewModel appt)
             {
-                if (MessageBox.Show("Are you sure to cancel this appointment?", "Confirm", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                if (MessageBox.Show("Cancel this appointment?", "Confirm", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
                 {
                     var success = await _appointmentService.UpdateAppointmentStatusAsync(appt.AppointmentId, "Cancel");
                     if (success)
                     {
                         appt.Status = "Cancel";
                         ApplyFilter();
-                        MessageBox.Show("Appointment cancelled successfully.");
+                        MessageBox.Show("Appointment cancelled.");
                     }
                     else
                     {
-                        MessageBox.Show("Failed to cancel appointment.");
+                        MessageBox.Show("Failed to cancel.");
                     }
                 }
             }
+        }
+
+        private void FilterButton_Click(object _, RoutedEventArgs __) => ApplyFilter();
+
+        private void ResetButton_Click(object _, RoutedEventArgs __)
+        {
+            SearchBox.Text = "Find by consultant";
+            SearchBox.Foreground = Brushes.Gray;
+            FromDatePicker.SelectedDate = null;
+            ToDatePicker.SelectedDate = null;
+            StatusComboBox.SelectedIndex = 0;
+            ApplyFilter();
         }
 
         private void SearchBox_GotFocus(object sender, RoutedEventArgs e)
@@ -117,7 +133,7 @@ namespace DUPSS.WPF.Views
             if (SearchBox.Text == "Find by consultant")
             {
                 SearchBox.Text = "";
-                SearchBox.Foreground = System.Windows.Media.Brushes.Black;
+                SearchBox.Foreground = Brushes.Black;
             }
         }
 
@@ -126,10 +142,49 @@ namespace DUPSS.WPF.Views
             if (string.IsNullOrWhiteSpace(SearchBox.Text))
             {
                 SearchBox.Text = "Find by consultant";
-                SearchBox.Foreground = System.Windows.Media.Brushes.Gray;
+                SearchBox.Foreground = Brushes.Gray;
             }
         }
+
+        private void ShowNextAppointment()
+        {
+            var next = _appointments
+                .Where(a => a.AppointmentDate > DateTime.UtcNow && (a.Status == "Pending" || a.Status == "Accepted"))
+                .OrderBy(a => a.AppointmentDate)
+                .FirstOrDefault();
+
+            if (next != null)
+            {
+                MessageBox.Show(
+                    $"📌 Your next appointment:\n\n" +
+                    $"With: {next.Consultant?.Username}\n" +
+                    $"At: {next.AppointmentDate.ToLocalTime():dd/MM/yyyy HH:mm} - {next.AppointmentDate.ToLocalTime().AddMinutes(40):HH:mm}\n" +
+                    $"Status: {next.Status}",
+                    "Upcoming Appointment", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+
+        private async Task AutoUpdateExpiredAppointmentsAsync()
+        {
+            var now = DateTime.UtcNow;
+            foreach (var appt in _appointments)
+            {
+                if (appt.AppointmentDate.AddMinutes(40) < now &&
+                    (appt.Status == "Pending" || appt.Status == "Accepted"))
+                {
+                    var success = await _appointmentService.UpdateAppointmentStatusAsync(appt.AppointmentId, "Missed");
+                    if (success)
+                    {
+                        appt.Status = "Missed";
+                    }
+                }
+            }
+            ApplyFilter();
+        }
+
+
     }
+
 
     public class AppointmentViewModel
     {
@@ -138,8 +193,16 @@ namespace DUPSS.WPF.Views
         public string ConsultantUsername { get; set; }
         public string Status { get; set; }
         public string Notes { get; set; }
-        public string DisplayDate => $"{AppointmentDate.ToLocalTime():dd/MM/yyyy HH:mm} - {AppointmentDate.ToLocalTime().AddMinutes(40):HH:mm}";
-        public bool CanCancel => (Status == "Pending" || Status == "Accepted") && (AppointmentDate - DateTime.UtcNow).TotalHours >= 4;
+
+        public bool IsNext { get; set; }
+
+
+        public string DisplayDate =>
+            $"{AppointmentDate.ToLocalTime():dd/MM/yyyy HH:mm} - {AppointmentDate.ToLocalTime().AddMinutes(40):HH:mm}";
+
+        public Visibility CancelVisibility =>
+            (Status == "Pending" || Status == "Accepted") && (AppointmentDate - DateTime.UtcNow).TotalHours >= 4
+                ? Visibility.Visible : Visibility.Collapsed;
 
         public AppointmentViewModel(AppointmentDTO dto)
         {
@@ -147,7 +210,9 @@ namespace DUPSS.WPF.Views
             AppointmentDate = dto.AppointmentDate.UtcDateTime;
             ConsultantUsername = dto.Consultant?.Username ?? "";
             Status = dto.Status;
-            Notes = dto.Notes;
+            Notes = dto.Notes ?? "";
         }
     }
+
 }
+

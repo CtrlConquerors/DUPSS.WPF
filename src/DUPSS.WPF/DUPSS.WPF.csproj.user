@@ -19,6 +19,9 @@
     <Compile Update="Views\Appointment.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Views\AppointmentForConsultant.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Views\AppointmentHome.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
