@@ -1,8 +1,9 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System.IO;
 using System.Windows;
-using DUPSS.WPF;
 using System.Net.Http;
+using DUPSS.ApiClients; // Make sure to include this namespace
+using DUPSS.Common; // Make sure to include this namespace for IProtectedLocalStorage and WpfSecureStorageService
 
 namespace DUPSS.WPF
 {
@@ -11,8 +12,14 @@ namespace DUPSS.WPF
     /// </summary>
     public partial class App : Application
     {
-        public static IConfiguration Configuration { get; private set; } // Static property to access configuration globally
-        public static HttpClient HttpClient { get; private set; }
+        public static IConfiguration Configuration { get; private set; } = null!; // Static property to access configuration globally
+        public static HttpClient HttpClient { get; private set; } = null!; // Initialize with null-forgiving operator, will be set in OnStartup
+
+        // Declare static properties for your API services
+        public static CourseApiService CourseApiService { get; private set; } = null!;
+        public static CourseEnrollApiService CourseEnrollApiService { get; private set; } = null!;
+        public static UserApiService UserApiService { get; private set; } = null!;
+        public static JwtAuthenticationStateProvider JwtAuthenticationStateProvider { get; private set; } = null!;
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -22,19 +29,32 @@ namespace DUPSS.WPF
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .Build();
 
-            // Example of how to access the BaseUrl
-            string baseUrl = Configuration["ApiSettings:BaseUrl"];
-            MessageBox.Show($"API Base URL loaded: {baseUrl}", "Configuration Loaded"); // For demonstration
+            string baseUrl = Configuration["ApiSettings:BaseUrl"] ?? string.Empty;
 
-            // Sau đó vẫn kiểm tra:
             if (string.IsNullOrWhiteSpace(baseUrl))
             {
-                MessageBox.Show("⚠️ Missing ApiSettings:BaseUrl in appsettings.json!");
+                MessageBox.Show("⚠️ Missing ApiSettings:BaseUrl in appsettings.json! Application will shut down.", "Critical Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 Shutdown();
                 return;
             }
 
+            // Initialize HttpClient
             HttpClient = new HttpClient { BaseAddress = new Uri(baseUrl) };
+            MessageBox.Show($"API Base URL loaded: {baseUrl}", "Configuration Loaded"); // For demonstration
+
+            // --- Initialize your services here ---
+
+            // Use your provided WpfSecureStorageService for secure local storage
+            var localStorage = new WpfSecureStorageService();
+
+            // Initialize AuthApiService (assuming it exists in DUPSS.ApiClients and takes HttpClient)
+            var authApiService = new AuthApiService(HttpClient);
+
+            // Initialize your static API service properties
+            CourseApiService = new CourseApiService(HttpClient);
+            CourseEnrollApiService = new CourseEnrollApiService(HttpClient);
+            UserApiService = new UserApiService(HttpClient);
+            JwtAuthenticationStateProvider = new JwtAuthenticationStateProvider(authApiService, localStorage);
 
             // Call the base OnStartup method to ensure normal WPF startup processes
             base.OnStartup(e);
@@ -46,4 +66,9 @@ namespace DUPSS.WPF
             // mainWindow.Show();
         }
     }
+
+    // The InMemoryProtectedLocalStorage and ProtectedBrowserStorageResult classes
+    // are no longer needed here as you have WpfSecureStorageService and
+    // ProtectedBrowserStorageResult defined in DUPSS.Common.
+    // Ensure DUPSS.Common project is referenced and compiles correctly.
 }

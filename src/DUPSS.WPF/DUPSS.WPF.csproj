@@ -17,10 +17,10 @@
     <Resource Include="images\Others\3.jpg" />
     <Resource Include="images\Others\4.jpg" />
 
-    <Resource Include="images\Others\login-background.png"/>
+    <Resource Include="images\Others\login-background.png" />
       
    
-    <Resource Include="images\Others\logo2.png"/>
+    <Resource Include="images\Others\logo2.png" />
      
     
 

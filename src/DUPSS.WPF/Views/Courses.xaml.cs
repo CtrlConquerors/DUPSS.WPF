@@ -9,6 +9,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging; // Required for BitmapImage
 using System.IO; // Required for Path.GetExtension
+using System.Windows.Navigation; // Required for NavigationService
 
 namespace DUPSS.WPF.Views
 {
@@ -35,8 +36,13 @@ namespace DUPSS.WPF.Views
                 return;
             }
 
+            // Initialize the CourseApiService for this page
             _courseService = new CourseApiService(App.HttpClient);
             LoadCoursesAsync();
+
+            // The static service properties in App.xaml.cs (CourseEnrollApiService, UserApiService,
+            // JwtAuthenticationStateProvider) are now correctly initialized there,
+            // allowing CourseDetailPage to be instantiated with its dependencies.
         }
 
         private async void LoadCoursesAsync()
@@ -188,8 +194,30 @@ namespace DUPSS.WPF.Views
             var course = border?.DataContext as CourseDTO;
             if (course != null)
             {
-                Debug.WriteLine($"📌 Clicked course: {course.CourseName}");
-                // TODO: Navigate to detail page if needed
+                Debug.WriteLine($"📌 Clicked course: {course.CourseName} (ID: {course.CourseId})");
+
+                // Ensure NavigationService is available (it usually is for a Page)
+                if (NavigationService != null)
+                {
+                    // Create an instance of CourseDetailPage
+                    // These services are now correctly initialized and accessible as static properties on your 'App' class.
+                    var courseDetailPage = new CourseDetailPage(
+                        App.CourseApiService, // Reusing the CourseApiService from App (or _courseService if preferred)
+                        App.CourseEnrollApiService!,
+                        App.UserApiService!,
+                        App.JwtAuthenticationStateProvider!
+                    )
+                    {
+                        CourseId = course.CourseId // Set the CourseId property on the detail page
+                    };
+
+                    // Navigate to the CourseDetailPage
+                    NavigationService.Navigate(courseDetailPage);
+                }
+                else
+                {
+                    Debug.WriteLine("❌ NavigationService is null. Cannot navigate to CourseDetailPage.");
+                }
             }
         }
     }
