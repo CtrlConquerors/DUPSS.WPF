@@ -10,7 +10,7 @@
     <!-- Removed fixed Height from Grid and added ScrollViewer -->
     <Grid Background="#f7f9fc">
         <ScrollViewer x:Name="MainScrollViewer" VerticalScrollBarVisibility="Auto">
-            <StackPanel Margin="40" HorizontalAlignment="Center" Width="900">
+            <StackPanel Margin="40" HorizontalAlignment="Center" Width="1000">
                 <TextBlock Text="Ongoing Awareness Campaigns"
                            FontSize="32"
                            FontWeight="Bold"

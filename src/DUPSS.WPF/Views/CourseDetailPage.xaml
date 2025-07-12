@@ -7,9 +7,9 @@
   
       xmlns:dtos="clr-namespace:DUPSS.DTO.DTOs;assembly=DUPSS.DTO"
       mc:Ignorable="d"
-      d:DesignHeight="720" d:DesignWidth="1280"
+      d:DesignHeight="1020" d:DesignWidth="1280"
       Title="CourseDetailPage"
-      Loaded="Page_Loaded">
+      Loaded="Page_Loaded" >
 
     <Page.Resources>
         <!-- Colors and Brushes (from CourseDetailPage.razor.css) -->
@@ -400,6 +400,10 @@
     </Page.Resources>
 
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="167*"/>
+            <RowDefinition Height="13*"/>
+        </Grid.RowDefinitions>
         <!-- Main container for the entire page -->
         <Grid.Background>
             <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
@@ -420,7 +424,7 @@
                 <BlurEffect Radius="60"/>
             </Ellipse.Effect>
         </Ellipse>
-        <Ellipse Width="320" Height="320" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-100,40" Opacity="0.25">
+        <Ellipse Width="320" Height="320" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-100,40" Opacity="0.25" Grid.RowSpan="2">
             <Ellipse.Fill>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                     <GradientStop Color="#a1c4fd" Offset="0"/>
@@ -435,8 +439,7 @@
 
         <!-- Conditional Content Display -->
         <Border x:Name="LoadingState" Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
-              Style="{StaticResource LoadingIndicatorStyle}"
-              HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="500">
+              Style="{StaticResource LoadingIndicatorStyle}" VerticalAlignment="Top" MaxWidth="500" Margin="0,261,0,0">
             <!-- Content for LoadingState defined directly here -->
             <StackPanel>
                 <TextBlock Text="Loading course information..." FontSize="19.2" Foreground="#6c757d" HorizontalAlignment="Center"/>
@@ -471,8 +474,7 @@
         </Border>
 
         <Border x:Name="ErrorState" Visibility="{Binding HasError, Converter={StaticResource BooleanToVisibilityConverter}}"
-              Style="{StaticResource ErrorMessageStyle}"
-              HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="500">
+              Style="{StaticResource ErrorMessageStyle}" VerticalAlignment="Top" MaxWidth="500" Margin="0,257,0,0">
             <!-- Content for ErrorState defined directly here -->
             <StackPanel>
                 <TextBlock Text="Oops! Something went wrong while loading the course. Please try again later." FontSize="19.2" Foreground="{StaticResource DangerColor}" HorizontalAlignment="Center"/>
@@ -481,8 +483,7 @@
         </Border>
 
         <Border x:Name="NoCourseState" Visibility="{Binding NoCourseFound, Converter={StaticResource BooleanToVisibilityConverter}}"
-              Style="{StaticResource NoCourseMessageStyle}"
-              HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="500">
+              Style="{StaticResource NoCourseMessageStyle}" VerticalAlignment="Top" MaxWidth="500" Margin="0,257,0,0">
             <!-- Content for NoCourseState defined directly here -->
             <StackPanel>
                 <TextBlock Text="No course found with the given ID. Please check the URL or try again." FontSize="19.2" Foreground="#6c757d" HorizontalAlignment="Center"/>
@@ -491,10 +492,9 @@
         </Border>
 
         <!-- NEW: Wrap the CourseContentGrid in a ScrollViewer -->
-        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,0,-28,-21" Grid.RowSpan="2">
             <Border x:Name="CourseContentGrid" Visibility="{Binding ShowCourseContent, Converter={StaticResource BooleanToVisibilityConverter}}"
-                    Style="{StaticResource CourseLayoutGridStyle}"
-                    HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,56,0,0">
+                    Style="{StaticResource CourseLayoutGridStyle}" Margin="0,56,0,0" Height="904">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="2*"/>
@@ -587,9 +587,9 @@
                                 CornerRadius="36"
                                 Padding="10 22 10 10"
                                 Effect="{StaticResource InstructorInfoEffect}"
-                                HorizontalAlignment="Left" VerticalAlignment="Center"
-                                Margin="0 0 0 36">
-                            <StackPanel Style="{StaticResource InstructorInfoStyle}">
+                                HorizontalAlignment="Left"
+                                Margin="0 0 0 76" Width="381">
+                            <StackPanel Style="{StaticResource InstructorInfoStyle}" VerticalAlignment="Top" Width="245">
                                 <!-- InstructorAvatarSmallStyle: Wrapped Image in Border for border and background -->
                                 <Border Width="48" Height="48" Margin="0 0 14 0"
                                         BorderBrush="#b6d0ff" BorderThickness="2.5" Background="White"
@@ -597,7 +597,15 @@
                                     <!-- Half of Width/Height for perfect circle -->
                                     <Image Source="{Binding CourseData.Instructor.ImageUrl}" Style="{StaticResource InstructorAvatarSmallStyle}"/>
                                 </Border>
-                                <TextBlock>
+                                <TextBlock Width="206" RenderTransformOrigin="0.528,0.489" Height="47">
+                                    <TextBlock.RenderTransform>
+                                        <TransformGroup>
+                                            <ScaleTransform/>
+                                            <SkewTransform AngleY="-0.171"/>
+                                            <RotateTransform/>
+                                            <TranslateTransform Y="0.08"/>
+                                        </TransformGroup>
+                                    </TextBlock.RenderTransform>
                                     <Run Text="Instructor: "/>
                                     <!-- MODIFIED: Changed Hyperlink to TextBlock to disable clicking -->
                                     <TextBlock Text="{Binding CourseData.Instructor.Username}" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBlue}"/>
@@ -619,7 +627,7 @@
                                             <Setter Property="Content">
                                                 <Setter.Value>
                                                     <StackPanel Orientation="Horizontal">
-                                                        <Border Width="16" Height="16" CornerRadius="8" BorderThickness="2" BorderBrush="White" Margin="0 0 5 0">
+                                                        <Border Width="16" Height="16" CornerRadius="8" BorderThickness="2" BorderBrush="White" Margin="0 0 50 30">
                                                             <Border.RenderTransform>
                                                                 <RotateTransform CenterX="8" CenterY="8"/>
                                                             </Border.RenderTransform>
@@ -660,7 +668,7 @@
                                 Style="{StaticResource GoToCourseButtonStyle}"
                                 Command="{Binding GoToCourseContentCommand}"
                                 Visibility="{Binding IsEnrolledSuccessfully, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                                HorizontalAlignment="Left" Width="232" Height="120"/>
 
                         <!-- Enrollment message display: Wrapped TextBlock in Border for background, border, padding, corner radius -->
                         <Border Padding="10 20" CornerRadius="8" HorizontalAlignment="Left" Margin="0 15 0 0"
@@ -735,7 +743,7 @@
                                         </Setter>
                                         <Setter Property="BorderBrush" Value="{StaticResource LightBlue}"/>
                                     </Trigger>
-                                    </Style.Triggers>
+                                </Style.Triggers>
                             </Style>
                         </Border.Style>
                         <Image Source="{Binding CourseData.Course.ImageUrl}" Style="{StaticResource CourseDecorativeImageStyle}"/>
