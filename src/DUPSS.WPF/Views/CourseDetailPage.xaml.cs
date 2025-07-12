@@ -16,6 +16,7 @@ using System.Windows.Input; // For ICommand
 using System.Windows.Media.Imaging; // Added for BitmapImage
 using System.IO; // Added for Path.GetExtension
 using System.Diagnostics; // Added for Debug.WriteLine
+using DUPSS.WPF; // Added to access App.static properties
 
 namespace DUPSS.WPF.Views
 {
@@ -402,9 +403,16 @@ namespace DUPSS.WPF.Views
         {
             if (CourseData?.Course?.CourseId != null)
             {
-                // Navigate to a hypothetical CourseContent page
-                // Ensure you have a CourseContent.xaml page or similar
-                NavigationService.Navigate(new Uri($"/Views/CourseContent.xaml?courseId={CourseData.Course.CourseId}", UriKind.Relative));
+                // Navigate to the new CourseContent page, passing necessary services and CourseId
+                var courseContentPage = new CourseContent(
+                    App.CourseApiService,
+                    App.CourseEnrollApiService,
+                    App.JwtAuthenticationStateProvider
+                )
+                {
+                    CourseId = CourseData.Course.CourseId
+                };
+                NavigationService.Navigate(courseContentPage);
                 Debug.WriteLine($"Navigating to course content for Course ID: {CourseData.Course.CourseId}");
             }
             else

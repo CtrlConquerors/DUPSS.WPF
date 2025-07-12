@@ -1,0 +1,1004 @@
+﻿<Page x:Class="DUPSS.WPF.Views.CourseContent"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:local="clr-namespace:DUPSS.WPF"
+      mc:Ignorable="d"
+      d:DesignHeight="720" d:DesignWidth="1280"
+      Title="CourseContent"
+      Loaded="Page_Loaded">
+
+    <Page.Resources>
+        <!-- Converters (assuming these are defined globally in App.xaml or a shared ResourceDictionary) -->
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <local:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />
+        <local:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+        <local:BooleanToChevronConverter x:Key="BooleanToChevronConverter"/>
+
+        <!-- Cubic Bezier Easing Function for animations (MOVED HERE) -->
+        <CubicEase x:Key="CubicBezierEase" EasingMode="EaseOut"/>
+
+        <!-- Colors and Brushes (adapted from your .razor.css) -->
+        <SolidColorBrush x:Key="PrimaryBlue" Color="#007bff"/>
+        <SolidColorBrush x:Key="LightBlue" Color="#7fbcff"/>
+        <SolidColorBrush x:Key="DarkText" Color="#1a2233"/>
+        <SolidColorBrush x:Key="MediumText" Color="#3b4252"/>
+        <SolidColorBrush x:Key="LightGrayBg" Color="#f0f2f5"/>
+        <SolidColorBrush x:Key="GreenIndicator" Color="#28a745"/>
+        <SolidColorBrush x:Key="GreyIndicator" Color="#6c757d"/>
+        <SolidColorBrush x:Key="BlueIndicator" Color="#007bff"/>
+        <SolidColorBrush x:Key="SuccessColor" Color="#155724"/>
+        <SolidColorBrush x:Key="SuccessBg" Color="#d4edda"/>
+        <SolidColorBrush x:Key="SuccessBorder" Color="#c3e6cb"/>
+        <SolidColorBrush x:Key="DangerColor" Color="#721c24"/>
+        <SolidColorBrush x:Key="DangerBg" Color="#f8d7da"/>
+        <SolidColorBrush x:Key="DangerBorder" Color="#f5c6cb"/>
+        <SolidColorBrush x:Key="InfoColor" Color="#0c5460"/>
+        <SolidColorBrush x:Key="InfoBg" Color="#d1ecf1"/>
+        <SolidColorBrush x:Key="InfoBorder" Color="#bee5eb"/>
+        <SolidColorBrush x:Key="White" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="Black" Color="#000000"/>
+
+        <!-- Base TextBlock Style -->
+        <Style TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Inter, Segoe UI, Arial, sans-serif"/>
+            <Setter Property="Foreground" Value="{StaticResource DarkText}"/>
+        </Style>
+
+        <!-- Full Page Loading/Error Styles -->
+        <Style x:Key="FullPageMessageStyle" TargetType="Border">
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="50"/>
+            <Setter Property="Background" Value="{StaticResource White}"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect ShadowDepth="4" Color="#000000" Opacity="0.05" BlurRadius="20"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="BorderBrush" Value="#f0f0f0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="MinWidth" Value="400"/>
+            <Setter Property="MinHeight" Value="200"/>
+        </Style>
+
+        <Style x:Key="FullPageErrorStyle" TargetType="Border" BasedOn="{StaticResource FullPageMessageStyle}">
+            <Setter Property="Background" Value="{StaticResource DangerBg}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource DangerColor}"/>
+        </Style>
+        <Style x:Key="FullPageNoCourseStyle" TargetType="Border" BasedOn="{StaticResource FullPageMessageStyle}">
+            <Setter Property="Background" Value="{StaticResource InfoBg}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource InfoColor}"/>
+        </Style>
+
+        <!-- Spinner Style -->
+        <Style x:Key="SpinnerStyle" TargetType="Border">
+            <Setter Property="Width" Value="40"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="CornerRadius" Value="20"/>
+            <Setter Property="BorderThickness" Value="4"/>
+            <Setter Property="BorderBrush" Value="#E0E0E0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <RotateTransform Angle="0"/>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsVisible" Value="True">
+                    <Trigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard RepeatBehavior="Forever">
+                                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
+                                                 From="0" To="360" Duration="0:0:1" />
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </Trigger.EnterActions>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Sidebar Styles -->
+        <Style x:Key="SidebarColumnStyle" TargetType="Border">
+            <Setter Property="Width" Value="280"/>
+            <Setter Property="Background" Value="{StaticResource White}"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect ShadowDepth="2" Color="#000000" Opacity="0.05" BlurRadius="10"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="VerticalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="CornerRadius" Value="0 12 12 0"/>
+        </Style>
+
+        <!-- MODIFIED: Changed TargetType to Border to support Padding, BorderThickness, BorderBrush -->
+        <Style x:Key="CourseBrandingStyle" TargetType="Border">
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0 0 0 30"/>
+            <Setter Property="Padding" Value="0 0 0 20"/>
+            <Setter Property="BorderThickness" Value="0 0 0 1"/>
+            <Setter Property="BorderBrush" Value="#eee"/>
+        </Style>
+
+        <Style x:Key="CourseSidebarImageStyle" TargetType="Image">
+            <Setter Property="Width" Value="80"/>
+            <Setter Property="Height" Value="80"/>
+            <Setter Property="Stretch" Value="UniformToFill"/>
+            <Setter Property="Margin" Value="0 0 0 15"/>
+            <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality"/>
+            <Setter Property="Clip">
+                <Setter.Value>
+                    <EllipseGeometry Center="40,40" RadiusX="40" RadiusY="40"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SidebarCourseTitleStyle" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+            <Setter Property="FontSize" Value="25.6"/>
+            <Setter Property="Foreground" Value="#333"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0 0 0 5"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+        </Style>
+
+        <Style x:Key="SidebarCourseTopicStyle" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+            <Setter Property="FontSize" Value="15.2"/>
+            <Setter Property="Foreground" Value="#666"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+        </Style>
+
+        <Style x:Key="CourseMaterialSectionHeaderStyle" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+            <Setter Property="FontSize" Value="19.2"/>
+            <Setter Property="Foreground" Value="#333"/>
+            <Setter Property="Margin" Value="0 0 0 15"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="10 0 0 0"/>
+        </Style>
+
+        <Style x:Key="ModuleItemStyle" TargetType="Button">
+            <Setter Property="Padding" Value="12 10"/>
+            <Setter Property="Margin" Value="0 0 0 5"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="TextElement.FontSize" Value="16"/>
+            <Setter Property="TextElement.Foreground" Value="#555"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8">
+                            <!-- Set directly here -->
+                            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#e9f0f7"/>
+                    <Setter Property="TextElement.Foreground" Value="#0056b3"/>
+                </Trigger>
+                <DataTrigger Binding="{Binding IsComplete}" Value="True">
+                    <Setter Property="TextElement.FontWeight" Value="SemiBold"/>
+                    <Setter Property="TextElement.Foreground" Value="#333"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="ModuleCheckIconStyle" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+            <Setter Property="Foreground" Value="#ccc"/>
+            <Setter Property="Margin" Value="0 0 10 0"/>
+            <Setter Property="FontSize" Value="17.6"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsComplete}" Value="True">
+                    <Setter Property="Foreground" Value="{StaticResource GreenIndicator}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Main Content Styles -->
+        <Style x:Key="MainContentColumnStyle" TargetType="StackPanel">
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="VerticalAlignment" Value="Stretch"/>
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+
+        <Style x:Key="MainCourseTitleStyle" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+            <Setter Property="FontSize" Value="40"/>
+            <Setter Property="Foreground" Value="#333"/>
+            <Setter Property="FontWeight" Value="ExtraBold"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+
+        <Style x:Key="ModuleSectionStyle" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource White}"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect ShadowDepth="4" Color="#000000" Opacity="0.07" BlurRadius="15"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Margin" Value="0 0 0 30"/>
+        </Style>
+
+        <Style x:Key="ModuleHeaderStyle" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource White}"/>
+            <Setter Property="BorderThickness" Value="0 0 0 1"/>
+            <Setter Property="BorderBrush" Value="#d0e0f0"/>
+            <Setter Property="Padding" Value="20 25"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="22.4"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#333"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <ContentPresenter Grid.Column="0" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Margin="{TemplateBinding Padding}"/>
+                                <ContentPresenter Grid.Column="1" Content="{TemplateBinding Tag}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0 0 10 0"/>
+                            </Grid>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#f9f9f9"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="ModuleTitleTextStyle" TargetType="StackPanel">
+            <Setter Property="Orientation" Value="Horizontal"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0"/>
+        </Style>
+
+        <Style x:Key="ChevronIconStyle" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+            <Setter Property="FontSize" Value="20.8"/>
+            <Setter Property="Margin" Value="10 0 0 0"/>
+            <Setter Property="Foreground" Value="#666"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <RotateTransform Angle="0"/>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsExpanded}" Value="True">
+                    <Setter Property="RenderTransform">
+                        <Setter.Value>
+                            <RotateTransform Angle="180"/>
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="ModuleStatusBadgeStyle" TargetType="Border">
+            <Setter Property="Background" Value="#e2f5e7"/>
+            <Setter Property="CornerRadius" Value="20"/>
+            <Setter Property="Padding" Value="5 12"/>
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="TextElement.FontSize" Value="14.4"/>
+            <Setter Property="TextElement.FontWeight" Value="Bold"/>
+            <Setter Property="TextElement.Foreground" Value="{StaticResource GreenIndicator}"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsComplete}" Value="True">
+                    <Setter Property="Background" Value="{StaticResource GreenIndicator}"/>
+                    <Setter Property="TextElement.Foreground" Value="{StaticResource White}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="ModuleBodyStyle" TargetType="ContentControl">
+            <Setter Property="MaxHeight" Value="0"/>
+            <Setter Property="Opacity" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ContentControl">
+                        <Border>
+                            <ContentPresenter/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsExpanded}" Value="True">
+                    <DataTrigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetProperty="MaxHeight"
+                                                 To="2000" Duration="0:0:0.8" EasingFunction="{StaticResource CubicBezierEase}"/>
+                                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                 To="1" Duration="0:0:0.6" EasingFunction="{StaticResource CubicBezierEase}"/>
+                                <ThicknessAnimation Storyboard.TargetProperty="Padding"
+                                                    To="25" Duration="0:0:0.5" EasingFunction="{StaticResource CubicBezierEase}"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </DataTrigger.EnterActions>
+                    <DataTrigger.ExitActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetProperty="MaxHeight"
+                                                 To="0" Duration="0:0:0.8" EasingFunction="{StaticResource CubicBezierEase}"/>
+                                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                 To="0" Duration="0:0:0.6" EasingFunction="{StaticResource CubicBezierEase}"/>
+                                <ThicknessAnimation Storyboard.TargetProperty="Padding"
+                                                    To="0" Duration="0:0:0.5" EasingFunction="{StaticResource CubicBezierEase}"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </DataTrigger.ExitActions>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="LearningObjectivesToggleContainerStyle" TargetType="Border">
+            <Setter Property="Margin" Value="0 15 0 25"/>
+        </Style>
+
+        <Style x:Key="LearningObjectivesToggleStyle" TargetType="Button">
+            <Setter Property="Background" Value="#f9f9f9"/>
+            <Setter Property="Padding" Value="12 20"/>
+            <!-- <Setter Property="CornerRadius" Value="8"/> -->
+            <!-- This line was removed -->
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBlue}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#e0e0e0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8">
+                            <!-- Set directly here -->
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <ContentPresenter Grid.Column="0" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Margin="{TemplateBinding Padding}"/>
+                                <ContentPresenter Grid.Column="1" Content="{TemplateBinding Tag}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0 0 10 0"/>
+                            </Grid>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#e9f0f7"/>
+                    <Setter Property="BorderBrush" Value="#cceeff"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="ChevronIconObjectivesStyle" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+            <Setter Property="FontSize" Value="17.6"/>
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBlue}"/>
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <RotateTransform Angle="0"/>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding AreObjectivesExpanded}" Value="True">
+                    <Setter Property="RenderTransform">
+                        <Setter.Value>
+                            <RotateTransform Angle="180"/>
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="LearningObjectivesListStyle" TargetType="ItemsControl">
+            <Setter Property="Margin" Value="0 15 0 0"/>
+            <!-- Removed Padding, BorderThickness, BorderBrush, Background, CornerRadius from here -->
+            <Setter Property="ItemTemplate">
+                <Setter.Value>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal" Margin="0 5">
+                            <TextBlock Text="•" Foreground="{StaticResource PrimaryBlue}" FontWeight="Bold" Margin="0 0 5 0"/>
+                            <TextBlock Text="{Binding}" FontSize="15.2" Foreground="#555" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
+            <!-- Added ControlTemplate to apply Border properties -->
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ItemsControl">
+                        <Border Padding="15 20"
+                                    BorderThickness="1"
+                                    BorderBrush="#eee"
+                                    Background="#fdfdfd"
+                                    CornerRadius="8">
+                            <ItemsPresenter/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ModuleDescriptionStyle" TargetType="Border">
+            <Setter Property="Background" Value="#fcfcfc"/>
+            <Setter Property="Padding" Value="15"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#f0f0f0"/>
+            <Setter Property="Margin" Value="0 0 0 20"/>
+            <!-- Removed TextElement.FontSize, TextElement.LineHeight, TextElement.Foreground from here -->
+        </Style>
+
+        <Style x:Key="LessonCheckIconStyle" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+            <Setter Property="Foreground" Value="#ccc"/>
+            <Setter Property="Margin" Value="0 0 10 0"/>
+            <Setter Property="FontSize" Value="17.6"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsComplete}" Value="True">
+                    <Setter Property="Foreground" Value="{StaticResource GreenIndicator}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="LessonsListStyle" TargetType="ItemsControl">
+            <Setter Property="BorderThickness" Value="0 1 0 0"/>
+            <Setter Property="BorderBrush" Value="#eee"/>
+            <Setter Property="Padding" Value="0 20 0 0"/>
+            <Setter Property="ItemTemplate">
+                <Setter.Value>
+                    <DataTemplate>
+                        <StackPanel Margin="0 0 0 10">
+                            <Button Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}, Path=DataContext.ToggleLessonContentCommand}"
+                                    CommandParameter="{Binding}"
+                                    Style="{StaticResource LessonItemStyle}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="✓" Style="{StaticResource LessonCheckIconStyle}"/>
+                                    <StackPanel Grid.Column="1" Style="{StaticResource LessonDetailsStyle}">
+                                        <TextBlock Text="{Binding Title}" Style="{StaticResource LessonTitleStyle}"/>
+                                        <TextBlock Text="{Binding DurationText, StringFormat='{}{0} {1}'}" Visibility="{Binding DurationText, Converter={StaticResource StringToVisibilityConverter}}" Style="{StaticResource LessonDurationStyle}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Button>
+
+                            <!-- Lesson Content Display (Reading or Video) -->
+                            <ContentControl Visibility="{Binding IsContentExpanded, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <Grid Margin="0 10 0 0">
+                                    <Grid.Style>
+                                        <Style TargetType="Grid">
+                                            <Setter Property="MaxHeight" Value="0"/>
+                                            <Setter Property="Opacity" Value="0"/>
+                                            <!-- Animations for expand/collapse -->
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsContentExpanded}" Value="True">
+                                                    <DataTrigger.EnterActions>
+                                                        <BeginStoryboard>
+                                                            <Storyboard>
+                                                                <DoubleAnimation Storyboard.TargetProperty="MaxHeight"
+                                                                                 To="1000" Duration="0:0:0.5" EasingFunction="{StaticResource CubicBezierEase}"/>
+                                                                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                                                 To="1" Duration="0:0:0.3" EasingFunction="{StaticResource CubicBezierEase}"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </DataTrigger.EnterActions>
+                                                    <DataTrigger.ExitActions>
+                                                        <BeginStoryboard>
+                                                            <Storyboard>
+                                                                <DoubleAnimation Storyboard.TargetProperty="MaxHeight"
+                                                                                 To="0" Duration="0:0:0.5" EasingFunction="{StaticResource CubicBezierEase}"/>
+                                                                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                                                 To="0" Duration="0:0:0.3" EasingFunction="{StaticResource CubicBezierEase}"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </DataTrigger.ExitActions>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Grid.Style>
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Content}"
+                                                   Visibility="{Binding Content, Converter={StaticResource StringToVisibilityConverter}}"
+                                                   TextWrapping="Wrap" Margin="0 0 0 15"/>
+                                        <!-- MODIFIED: Replaced WebBrowser with Frame for video display -->
+                                        <Frame Source="{Binding VideoUrl}"
+                                               Visibility="{Binding VideoUrl, Converter={StaticResource StringToVisibilityConverter}}"
+                                               Width="850" Height="500" Margin="0 0 0 15"
+                                               NavigationUIVisibility="Hidden"/>
+                                    </StackPanel>
+                                </Grid>
+                            </ContentControl>
+                        </StackPanel>
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="LessonItemStyle" TargetType="Button">
+            <Setter Property="Background" Value="#fdfdfd"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#e9ecef"/>
+            <Setter Property="Padding" Value="15 20"/>
+            <Setter Property="Margin" Value="0 0 0 10"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8">
+                            <!-- Set directly here -->
+                            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#f5f8fb"/>
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect ShadowDepth="2" Color="#000000" Opacity="0.05" BlurRadius="8"/>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="LessonDetailsStyle" TargetType="StackPanel">
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0 0 15 0"/>
+        </Style>
+
+        <Style x:Key="LessonTitleStyle" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+            <Setter Property="FontSize" Value="17.6"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Foreground" Value="#333"/>
+            <Setter Property="Margin" Value="0 0 0 3"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+
+        <Style x:Key="LessonDurationStyle" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+            <Setter Property="FontSize" Value="13.6"/>
+            <Setter Property="Foreground" Value="#777"/>
+        </Style>
+
+        <!-- Bottom Navigation Styles -->
+        <Style x:Key="PrimaryButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource GreyIndicator}"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="12 25"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect ShadowDepth="4" Color="#000000" Opacity="0.1" BlurRadius="10"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <TranslateTransform/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8">
+                            <!-- Set directly here -->
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#5a6268"/>
+                    <Setter Property="RenderTransform">
+                        <Setter.Value>
+                            <TranslateTransform Y="-2"/>
+                        </Setter.Value>
+                    </Setter>
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect ShadowDepth="6" Color="#000000" Opacity="0.15" BlurRadius="15"/>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="BottomNavigationStyle" TargetType="StackPanel">
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0 40 0 0"/>
+            <Setter Property="Orientation" Value="Horizontal"/>
+        </Style>
+
+        <Style x:Key="CompleteCourseButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
+            <Setter Property="Background" Value="{StaticResource GreenIndicator}"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect ShadowDepth="4" Color="#28a745" Opacity="0.25" BlurRadius="10"/>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#218838"/>
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect ShadowDepth="6" Color="#28a745" Opacity="0.35" BlurRadius="15"/>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value="0.7"/>
+                    <Setter Property="Cursor" Value="Arrow"/>
+                </Trigger>
+                <!-- Moved DataTrigger here -->
+                <DataTrigger Binding="{Binding CurrentEnrollment.Status}" Value="Completed">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Message Box Styles (for completionMessage) -->
+        <Style x:Key="CompletionMessageStyle" TargetType="Border">
+            <Setter Property="Padding" Value="10 15"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Margin" Value="0 15 0 0"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <!-- Removed TextElement.FontSize, TextElement.FontWeight, TextElement.TextWrapping from here -->
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding CompletionMessageClass}" Value="alert-success">
+                    <Setter Property="Background" Value="{StaticResource SuccessBg}"/>
+                    <Setter Property="BorderBrush" Value="{StaticResource SuccessBorder}"/>
+                    <Setter Property="BorderThickness" Value="1"/>
+                    <Setter Property="TextElement.Foreground" Value="{StaticResource SuccessColor}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding CompletionMessageClass}" Value="alert-danger">
+                    <Setter Property="Background" Value="{StaticResource DangerBg}"/>
+                    <Setter Property="BorderBrush" Value="{StaticResource DangerBorder}"/>
+                    <Setter Property="BorderThickness" Value="1"/>
+                    <Setter Property="TextElement.Foreground" Value="{StaticResource DangerColor}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding CompletionMessageClass}" Value="alert-info">
+                    <Setter Property="Background" Value="{StaticResource InfoBg}"/>
+                    <Setter Property="BorderBrush" Value="{StaticResource InfoBorder}"/>
+                    <Setter Property="BorderThickness" Value="1"/>
+                    <Setter Property="TextElement.Foreground" Value="{StaticResource InfoColor}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+
+    </Page.Resources>
+
+    <Grid Background="{StaticResource LightGrayBg}">
+        <!-- Conditional Content Display for Loading/Error/No Course -->
+        <Border x:Name="LoadingState" Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
+                Style="{StaticResource FullPageMessageStyle}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock Text="Loading course content..." FontSize="19.2" Foreground="#6c757d" HorizontalAlignment="Center"/>
+                <Border Style="{StaticResource SpinnerStyle}" Margin="20">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Color="#0000FF" Offset="0"/>
+                            <GradientStop Color="Transparent" Offset="0.5"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
+                </Border>
+            </StackPanel>
+        </Border>
+
+        <Border x:Name="ErrorState" Visibility="{Binding HasError, Converter={StaticResource BooleanToVisibilityConverter}}"
+                Style="{StaticResource FullPageMessageStyle}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock Text="Oops! Something went wrong while loading course content. Please try again later." FontSize="19.2" Foreground="{StaticResource DangerColor}" TextWrapping="Wrap" TextAlignment="Center"/>
+                <Button Content="Back to Courses" Style="{StaticResource PrimaryButtonStyle}" Margin="0 20 0 0" Command="{Binding GoBackToCoursesCommand}" />
+            </StackPanel>
+        </Border>
+
+        <Border x:Name="NoCourseState" Visibility="{Binding NoCourseFound, Converter={StaticResource BooleanToVisibilityConverter}}"
+                Style="{StaticResource FullPageNoCourseStyle}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock Text="No course content found for this ID. It might not exist or there was a navigation issue." FontSize="19.2" Foreground="{StaticResource InfoColor}" TextWrapping="Wrap" TextAlignment="Center"/>
+                <Button Content="Back to Courses" Style="{StaticResource PrimaryButtonStyle}" Margin="0 20 0 0" Command="{Binding GoBackToCoursesCommand}" />
+            </StackPanel>
+        </Border>
+
+        <!-- Main Course Content Layout -->
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                      Visibility="{Binding ShowCourseContent, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="280"/>
+                    <!-- Sidebar fixed width -->
+                    <ColumnDefinition Width="*"/>
+                    <!-- Main content takes remaining space -->
+                </Grid.ColumnDefinitions>
+
+                <!-- Left Sidebar -->
+                <Border Grid.Column="0" Style="{StaticResource SidebarColumnStyle}">
+                    <StackPanel>
+                        <!-- MODIFIED: CourseBrandingStyle applied to a Border, which contains a StackPanel for content -->
+                        <Border Style="{StaticResource CourseBrandingStyle}">
+                            <StackPanel>
+                                <!-- Image is now wrapped in a Border to apply CornerRadius -->
+                                <Border Width="80" Height="80" CornerRadius="40" Margin="0 0 0 15"
+                                        BorderThickness="3" BorderBrush="{StaticResource PrimaryBlue}"
+                                        Background="{StaticResource White}">
+                                    <Border.Effect>
+                                        <DropShadowEffect ShadowDepth="0" Color="#000000" Opacity="0.1" BlurRadius="8"/>
+                                    </Border.Effect>
+                                    <Image Source="{Binding Course.ImageUrl}" Style="{StaticResource CourseSidebarImageStyle}"/>
+                                </Border>
+                                <TextBlock Text="{Binding Course.CourseName}" Style="{StaticResource SidebarCourseTitleStyle}"/>
+                                <TextBlock Text="{Binding Course.Topic.TopicName}" Style="{StaticResource SidebarCourseTopicStyle}"/>
+                            </StackPanel>
+                        </Border>
+
+                        <StackPanel>
+                            <TextBlock Text="Course Material" Style="{StaticResource CourseMaterialSectionHeaderStyle}"/>
+                            <ItemsControl ItemsSource="{Binding Modules}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}, Path=DataContext.ToggleModuleCommand}"
+                                                CommandParameter="{Binding}"
+                                                Style="{StaticResource ModuleItemStyle}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" Text="✓" Style="{StaticResource ModuleCheckIconStyle}"/>
+                                                <TextBlock Grid.Column="1" Text="{Binding Title}" VerticalAlignment="Center"/>
+                                            </Grid>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Main Content Column -->
+                <!-- MODIFIED: Wrapped StackPanel in a Border to apply Padding -->
+                <Border Grid.Column="1" Padding="30">
+                    <StackPanel Style="{StaticResource MainContentColumnStyle}">
+                        <!-- NEW: Border to hold the title TextBlock and its border/padding -->
+                        <Border Margin="0 0 0 30" Padding="0 0 0 15" BorderThickness="0 0 0 1" BorderBrush="#eee">
+                            <TextBlock Text="{Binding Course.CourseName}" Style="{StaticResource MainCourseTitleStyle}"/>
+                        </Border>
+
+                        <ItemsControl ItemsSource="{Binding Modules}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource ModuleSectionStyle}">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+
+                                            <!-- Module Header -->
+                                            <Button Grid.Row="0" Style="{StaticResource ModuleHeaderStyle}"
+                                                    Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}, Path=DataContext.ToggleModuleCommand}"
+                                                    CommandParameter="{Binding}">
+                                                <Button.Content>
+                                                    <StackPanel Style="{StaticResource ModuleTitleTextStyle}">
+                                                        <TextBlock Text="{Binding Title}" VerticalAlignment="Center"/>
+                                                        <TextBlock Text="{Binding IsExpanded, Converter={StaticResource BooleanToChevronConverter}}" Style="{StaticResource ChevronIconStyle}"/>
+                                                    </StackPanel>
+                                                </Button.Content>
+                                                <Button.Tag>
+                                                    <!-- Using Tag to pass status badge content -->
+                                                    <Border Style="{StaticResource ModuleStatusBadgeStyle}"
+                                                            Visibility="{Binding IsComplete, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                            <TextBlock Text="✓" FontSize="16" Margin="0 0 5 0"/>
+                                                            <TextBlock Text="Complete"/>
+                                                        </StackPanel>
+                                                    </Border>
+                                                </Button.Tag>
+                                            </Button>
+
+                                            <!-- Module Body -->
+                                            <ContentControl Grid.Row="1" Style="{StaticResource ModuleBodyStyle}"
+                                                            Visibility="{Binding IsExpanded, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                <StackPanel>
+                                                    <!-- Learning Objectives Toggle Container -->
+                                                    <Border Style="{StaticResource LearningObjectivesToggleContainerStyle}">
+                                                        <Button Style="{StaticResource LearningObjectivesToggleStyle}"
+                                                                Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}, Path=DataContext.ToggleLearningObjectivesCommand}"
+                                                                CommandParameter="{Binding}">
+                                                            <Button.Content>
+                                                                <StackPanel Orientation="Horizontal">
+                                                                    <TextBlock Text="Show Learning Objectives" Style="{StaticResource {x:Type TextBlock}}" FontWeight="Medium" Foreground="{StaticResource PrimaryBlue}"/>
+                                                                    <TextBlock Text="{Binding AreObjectivesExpanded, Converter={StaticResource BooleanToChevronConverter}}" Style="{StaticResource ChevronIconObjectivesStyle}" Margin="10 0 0 0"/>
+                                                                </StackPanel>
+                                                            </Button.Content>
+                                                        </Button>
+                                                    </Border>
+                                                    <ItemsControl ItemsSource="{Binding LearningObjectives}"
+                                                                  Visibility="{Binding AreObjectivesExpanded, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                                  Style="{StaticResource LearningObjectivesListStyle}"/>
+
+                                                    <Border Style="{StaticResource ModuleDescriptionStyle}">
+                                                        <TextBlock Text="{Binding Description}"
+                                                                   FontSize="16" LineHeight="25.6" Foreground="#444"/>
+                                                        <!-- Applied here -->
+                                                    </Border>
+
+                                                    <ItemsControl ItemsSource="{Binding Lessons}" Style="{StaticResource LessonsListStyle}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <StackPanel Margin="0 0 0 10">
+                                                                    <Button Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}, Path=DataContext.ToggleLessonContentCommand}"
+                                                                            CommandParameter="{Binding}"
+                                                                            Style="{StaticResource LessonItemStyle}">
+                                                                        <Grid>
+                                                                            <Grid.ColumnDefinitions>
+                                                                                <ColumnDefinition Width="Auto"/>
+                                                                                <ColumnDefinition Width="*"/>
+                                                                            </Grid.ColumnDefinitions>
+                                                                            <TextBlock Grid.Column="0" Text="✓" Style="{StaticResource LessonCheckIconStyle}"/>
+                                                                            <StackPanel Grid.Column="1" Style="{StaticResource LessonDetailsStyle}">
+                                                                                <TextBlock Text="{Binding Title}" Style="{StaticResource LessonTitleStyle}"/>
+                                                                                <TextBlock Text="{Binding DurationText, StringFormat='{}{0} {1}'}" Visibility="{Binding DurationText, Converter={StaticResource StringToVisibilityConverter}}" Style="{StaticResource LessonDurationStyle}"/>
+                                                                            </StackPanel>
+                                                                        </Grid>
+                                                                    </Button>
+
+                                                                    <!-- Lesson Content Display (Reading or Video) -->
+                                                                    <ContentControl Visibility="{Binding IsContentExpanded, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                                        <Grid Margin="0 10 0 0">
+                                                                            <Grid.Style>
+                                                                                <Style TargetType="Grid">
+                                                                                    <Setter Property="MaxHeight" Value="0"/>
+                                                                                    <Setter Property="Opacity" Value="0"/>
+                                                                                    <!-- Animations for expand/collapse -->
+                                                                                    <Style.Triggers>
+                                                                                        <DataTrigger Binding="{Binding IsContentExpanded}" Value="True">
+                                                                                            <DataTrigger.EnterActions>
+                                                                                                <BeginStoryboard>
+                                                                                                    <Storyboard>
+                                                                                                        <DoubleAnimation Storyboard.TargetProperty="MaxHeight"
+                                                                                                                         To="1000" Duration="0:0:0.5" EasingFunction="{StaticResource CubicBezierEase}"/>
+                                                                                                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                                                                                         To="1" Duration="0:0:0.3" EasingFunction="{StaticResource CubicBezierEase}"/>
+                                                                                                    </Storyboard>
+                                                                                                </BeginStoryboard>
+                                                                                            </DataTrigger.EnterActions>
+                                                                                            <DataTrigger.ExitActions>
+                                                                                                <BeginStoryboard>
+                                                                                                    <Storyboard>
+                                                                                                        <DoubleAnimation Storyboard.TargetProperty="MaxHeight"
+                                                                                                                         To="0" Duration="0:0:0.5" EasingFunction="{StaticResource CubicBezierEase}"/>
+                                                                                                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                                                                                         To="0" Duration="0:0:0.3" EasingFunction="{StaticResource CubicBezierEase}"/>
+                                                                                                    </Storyboard>
+                                                                                                </BeginStoryboard>
+                                                                                            </DataTrigger.ExitActions>
+                                                                                        </DataTrigger>
+                                                                                    </Style.Triggers>
+                                                                                </Style>
+                                                                            </Grid.Style>
+                                                                            <StackPanel>
+                                                                                <TextBlock Text="{Binding Content}"
+                                                                                           Visibility="{Binding Content, Converter={StaticResource StringToVisibilityConverter}}"
+                                                                                           TextWrapping="Wrap" Margin="0 0 0 15"/>
+                                                                                <!-- MODIFIED: Replaced WebBrowser with Frame for video display -->
+                                                                                <Frame Source="{Binding VideoUrl}"
+                                                                                       Visibility="{Binding VideoUrl, Converter={StaticResource StringToVisibilityConverter}}"
+                                                                                       Width="850" Height="500" Margin="0 0 0 15"
+                                                                                       NavigationUIVisibility="Hidden"/>
+                                                                            </StackPanel>
+                                                                        </Grid>
+                                                                    </ContentControl>
+                                                                </StackPanel>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </StackPanel>
+                                            </ContentControl>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <!-- Bottom Navigation -->
+                        <StackPanel Style="{StaticResource BottomNavigationStyle}">
+                            <Button Content="Back to All Courses" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding GoBackToCoursesCommand}" Margin="0 0 20 0"/>
+
+                            <Button Command="{Binding CompleteCourseCommand}" IsEnabled="{Binding IsCompletingCourse, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                                    Style="{StaticResource CompleteCourseButtonStyle}">
+                                <Button.Content>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Text="Completing..." Visibility="{Binding IsCompletingCourse, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                        <Border Width="16" Height="16" CornerRadius="8" BorderThickness="2" BorderBrush="{StaticResource White}" Margin="0 0 5 0"
+                                                Visibility="{Binding IsCompletingCourse, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                            <Border.RenderTransform>
+                                                <RotateTransform CenterX="8" CenterY="8"/>
+                                            </Border.RenderTransform>
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Style.Triggers>
+                                                        <Trigger Property="IsVisible" Value="True">
+                                                            <Trigger.EnterActions>
+                                                                <BeginStoryboard>
+                                                                    <Storyboard RepeatBehavior="Forever">
+                                                                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)" From="0" To="360" Duration="0:0:1" />
+                                                                    </Storyboard>
+                                                                </BeginStoryboard>
+                                                            </Trigger.EnterActions>
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <Border.Background>
+                                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                    <GradientStop Color="#28a745" Offset="0"/>
+                                                    <GradientStop Color="Transparent" Offset="0.5"/>
+                                                </LinearGradientBrush>
+                                            </Border.Background>
+                                        </Border>
+                                        <TextBlock Text="✓ Complete Course" Visibility="{Binding IsCompletingCourse, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+                                    </StackPanel>
+                                </Button.Content>
+                                <!-- Removed the problematic Button.Style block from here -->
+                            </Button>
+
+                            <Border Style="{StaticResource CompletionMessageStyle}"
+                                    Visibility="{Binding HasCompletionMessage, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <TextBlock Text="{Binding CompletionMessage}"
+                                           FontSize="15.2" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                <!-- Applied here -->
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</Page>
