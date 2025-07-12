@@ -480,7 +480,7 @@
                 <Setter.Value>
                     <DataTemplate>
                         <StackPanel Margin="0 0 0 10">
-                            <Button Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}, Path=DataContext.ToggleLessonContentCommand}"
+                            <Button Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type Page}}, Path=DataContext.ToggleLessonContentCommand}"
                                     CommandParameter="{Binding}"
                                     Style="{StaticResource LessonItemStyle}">
                                 <Grid>
@@ -490,8 +490,8 @@
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Grid.Column="0" Text="✓" Style="{StaticResource LessonCheckIconStyle}"/>
                                     <StackPanel Grid.Column="1" Style="{StaticResource LessonDetailsStyle}">
-                                        <TextBlock Text="{Binding Title}" Style="{StaticResource LessonTitleStyle}"/>
-                                        <TextBlock Text="{Binding DurationText, StringFormat='{}{0} {1}'}" Visibility="{Binding DurationText, Converter={StaticResource StringToVisibilityConverter}}" Style="{StaticResource LessonDurationStyle}"/>
+                                        <TextBlock Text="{Binding DurationText}" Style="{StaticResource LessonTitleStyle}"/>
+                                        <TextBlock Text="{Binding DurationText}" Visibility="{Binding DurationText, Converter={StaticResource StringToVisibilityConverter}}" Style="{StaticResource LessonDurationStyle}"/>
                                     </StackPanel>
                                 </Grid>
                             </Button>
@@ -499,11 +499,11 @@
                             <!-- Lesson Content Display (Reading or Video) -->
                             <ContentControl Visibility="{Binding IsContentExpanded, Converter={StaticResource BooleanToVisibilityConverter}}">
                                 <Grid Margin="0 10 0 0">
+                                    <!-- Re-enabled animations, ensure they are smooth -->
                                     <Grid.Style>
                                         <Style TargetType="Grid">
                                             <Setter Property="MaxHeight" Value="0"/>
                                             <Setter Property="Opacity" Value="0"/>
-                                            <!-- Animations for expand/collapse -->
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding IsContentExpanded}" Value="True">
                                                     <DataTrigger.EnterActions>
@@ -534,11 +534,26 @@
                                         <TextBlock Text="{Binding Content}"
                                                    Visibility="{Binding Content, Converter={StaticResource StringToVisibilityConverter}}"
                                                    TextWrapping="Wrap" Margin="0 0 0 15"/>
-                                        <!-- MODIFIED: Replaced WebBrowser with Frame for video display -->
-                                        <Frame Source="{Binding VideoUrl}"
+                                        <Frame x:Name="LessonVideoFrame"
                                                Visibility="{Binding VideoUrl, Converter={StaticResource StringToVisibilityConverter}}"
                                                Width="850" Height="500" Margin="0 0 0 15"
-                                               NavigationUIVisibility="Hidden"/>
+                                               NavigationUIVisibility="Hidden">
+                                            <Frame.Style>
+                                                <Style TargetType="Frame">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding VideoUrl}" Value="{x:Null}">
+                                                            <Setter Property="Source" Value="{x:Null}"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding VideoUrl}" Value="">
+                                                            <Setter Property="Source" Value="{x:Null}"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding VideoUrl, Converter={StaticResource StringToVisibilityConverter}}" Value="Visible">
+                                                            <Setter Property="Source" Value="{Binding VideoUrl}"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Frame.Style>
+                                        </Frame>
                                     </StackPanel>
                                 </Grid>
                             </ContentControl>
@@ -873,7 +888,7 @@
                                                         <ItemsControl.ItemTemplate>
                                                             <DataTemplate>
                                                                 <StackPanel Margin="0 0 0 10">
-                                                                    <Button Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}, Path=DataContext.ToggleLessonContentCommand}"
+                                                                    <Button Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type Page}}, Path=DataContext.ToggleLessonContentCommand}"
                                                                             CommandParameter="{Binding}"
                                                                             Style="{StaticResource LessonItemStyle}">
                                                                         <Grid>
@@ -884,7 +899,7 @@
                                                                             <TextBlock Grid.Column="0" Text="✓" Style="{StaticResource LessonCheckIconStyle}"/>
                                                                             <StackPanel Grid.Column="1" Style="{StaticResource LessonDetailsStyle}">
                                                                                 <TextBlock Text="{Binding Title}" Style="{StaticResource LessonTitleStyle}"/>
-                                                                                <TextBlock Text="{Binding DurationText, StringFormat='{}{0} {1}'}" Visibility="{Binding DurationText, Converter={StaticResource StringToVisibilityConverter}}" Style="{StaticResource LessonDurationStyle}"/>
+                                                                                <TextBlock Text="{Binding DurationText}" Visibility="{Binding DurationText, Converter={StaticResource StringToVisibilityConverter}}" Style="{StaticResource LessonDurationStyle}"/>
                                                                             </StackPanel>
                                                                         </Grid>
                                                                     </Button>
@@ -892,11 +907,11 @@
                                                                     <!-- Lesson Content Display (Reading or Video) -->
                                                                     <ContentControl Visibility="{Binding IsContentExpanded, Converter={StaticResource BooleanToVisibilityConverter}}">
                                                                         <Grid Margin="0 10 0 0">
+                                                                            <!-- Re-enabled animations, ensure they are smooth -->
                                                                             <Grid.Style>
                                                                                 <Style TargetType="Grid">
                                                                                     <Setter Property="MaxHeight" Value="0"/>
                                                                                     <Setter Property="Opacity" Value="0"/>
-                                                                                    <!-- Animations for expand/collapse -->
                                                                                     <Style.Triggers>
                                                                                         <DataTrigger Binding="{Binding IsContentExpanded}" Value="True">
                                                                                             <DataTrigger.EnterActions>
@@ -927,11 +942,26 @@
                                                                                 <TextBlock Text="{Binding Content}"
                                                                                            Visibility="{Binding Content, Converter={StaticResource StringToVisibilityConverter}}"
                                                                                            TextWrapping="Wrap" Margin="0 0 0 15"/>
-                                                                                <!-- MODIFIED: Replaced WebBrowser with Frame for video display -->
-                                                                                <Frame Source="{Binding VideoUrl}"
+                                                                                <Frame x:Name="LessonVideoFrame"
                                                                                        Visibility="{Binding VideoUrl, Converter={StaticResource StringToVisibilityConverter}}"
                                                                                        Width="850" Height="500" Margin="0 0 0 15"
-                                                                                       NavigationUIVisibility="Hidden"/>
+                                                                                       NavigationUIVisibility="Hidden">
+                                                                                    <Frame.Style>
+                                                                                        <Style TargetType="Frame">
+                                                                                            <Style.Triggers>
+                                                                                                <DataTrigger Binding="{Binding VideoUrl}" Value="{x:Null}">
+                                                                                                    <Setter Property="Source" Value="{x:Null}"/>
+                                                                                                </DataTrigger>
+                                                                                                <DataTrigger Binding="{Binding VideoUrl}" Value="">
+                                                                                                    <Setter Property="Source" Value="{x:Null}"/>
+                                                                                                </DataTrigger>
+                                                                                                <DataTrigger Binding="{Binding VideoUrl, Converter={StaticResource StringToVisibilityConverter}}" Value="Visible">
+                                                                                                    <Setter Property="Source" Value="{Binding VideoUrl}"/>
+                                                                                                </DataTrigger>
+                                                                                            </Style.Triggers>
+                                                                                        </Style>
+                                                                                    </Frame.Style>
+                                                                                </Frame>
                                                                             </StackPanel>
                                                                         </Grid>
                                                                     </ContentControl>
