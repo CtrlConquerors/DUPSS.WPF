@@ -252,7 +252,16 @@
                                        Style="{StaticResource BaseTextStyle}" FontSize="16" FontStyle="Normal"
                                        Foreground="{StaticResource TextMutedBrush}" Margin="0 0 0 20" LineHeight="1.5"/>
                             <Button Content="READ THE STORY →" Style="{StaticResource ReadStoryButtonStyle}"
-                                    HorizontalAlignment="Left" Click="ReadTheStory_Click"/>
+                                    HorizontalAlignment="Left" Click="ReadTheStory_Click" Width="139" Height="29" RenderTransformOrigin="0.5,0.5">
+                                <Button.RenderTransform>
+                                    <TransformGroup>
+                                        <ScaleTransform/>
+                                        <SkewTransform AngleY="-0.301"/>
+                                        <RotateTransform/>
+                                        <TranslateTransform Y="-0.365"/>
+                                    </TransformGroup>
+                                </Button.RenderTransform>
+                            </Button>
                         </StackPanel>
                     </Border>
                 </Grid>
@@ -328,7 +337,7 @@
                                                    Style="{StaticResource HeadingTextStyle}" FontSize="20" Margin="0 0 0 5"/>
                                         <TextBlock Text="Misinformation fuels risky behavior. Learn how evidence-based drug education in schools and communities empowers young people to make informed, healthy choices."
                                                    Style="{StaticResource BaseTextStyle}" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" Margin="0 0 0 10"/>
-                                        <Border Style="{StaticResource BadgeStyle}" HorizontalAlignment="Left">
+                                        <Border Style="{StaticResource BadgeStyle}" HorizontalAlignment="Left" Height="32" Width="66">
                                             <TextBlock Text="Education" Style="{StaticResource BaseTextStyle}" Foreground="{StaticResource WhiteBrush}" FontSize="12" FontWeight="SemiBold"/>
                                         </Border>
                                         <TextBlock Margin="0 5 0 0" Style="{StaticResource BaseTextStyle}" Foreground="{StaticResource TextMutedBrush}" FontSize="12">
@@ -393,7 +402,7 @@
 
                                 <!-- Previous Button -->
                                 <Button Grid.Column="0" Content="&lt;" Style="{StaticResource CarouselControlButton}"
-                                        Click="PrevImage_Click" HorizontalAlignment="Right" Margin="0,0,15,0"/>
+                                        Click="PrevImage_Click" HorizontalAlignment="Right" Margin="0,178,15,175" RenderTransformOrigin="0.48,0.477"/>
 
                                 <!-- Carousel Slides -->
                                 <Grid Grid.Column="1" x:Name="CarouselImageSlidesContainer"
