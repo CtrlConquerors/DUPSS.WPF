@@ -9,6 +9,32 @@
     
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="Videos\Communication.mp4" />
+    <None Remove="Videos\Intro.mp4" />
+    <None Remove="Videos\Reflect.mp4" />
+    <None Remove="Videos\Sober.mp4" />
+    <None Remove="Videos\Walkthrough.mp4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Videos\Communication.mp4">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Videos\Intro.mp4">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Videos\Reflect.mp4">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Videos\Sober.mp4">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Videos\Walkthrough.mp4">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
  
   <ItemGroup>
 
@@ -17,10 +43,10 @@
     <Resource Include="images\Others\3.jpg" />
     <Resource Include="images\Others\4.jpg" />
 
-    <Resource Include="images\Others\login-background.png"/>
+    <Resource Include="images\Others\login-background.png" />
       
    
-    <Resource Include="images\Others\logo2.png"/>
+    <Resource Include="images\Others\logo2.png" />
      
     
 

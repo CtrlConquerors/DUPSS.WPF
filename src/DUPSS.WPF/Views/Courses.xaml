@@ -8,8 +8,8 @@
     </Page.Resources>
 
     <!-- Wrap the main content with a ScrollViewer -->
-    <ScrollViewer x:Name="MainScrollViewer" VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="40" HorizontalAlignment="Center" Width="800">
+    <ScrollViewer x:Name="MainScrollViewer" VerticalScrollBarVisibility="Auto" Height="639">
+        <StackPanel Margin="50" HorizontalAlignment="Center" Width="800">
 
             <!-- Tiêu đề -->
             <TextBlock Text="Our Most Popular Courses"
@@ -49,7 +49,7 @@
                         <Border Margin="10" Padding="10" Background="#F7F7F7" CornerRadius="8" Width="220" Height="300"
                                 Cursor="Hand" MouseLeftButtonUp="CourseCard_Click">
                             <StackPanel>
-                                <Image Height="120" Stretch="UniformToFill" Margin="0,0,0,10">
+                                <Image Height="180" Stretch="UniformToFill" Margin="0,0,0,10">
                                     <Image.Source>
                                         <BitmapImage UriSource="{Binding ImageUrl}" />
                                     </Image.Source>
@@ -69,9 +69,69 @@
             <!-- Buttons -->
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
                 <Button x:Name="ExploreMoreButton" Content="Explore More"
-                        Click="ExploreMoreButton_Click" Visibility="Collapsed" Margin="5"/>
+            Click="ExploreMoreButton_Click" Visibility="Collapsed" Margin="5"
+            Background="#1e68ff"
+            Foreground="White"
+            FontWeight="SemiBold"
+            FontSize="16"
+            Padding="18,8"
+            BorderThickness="0"
+            Width="110"
+            Height="30"            
+            Cursor="Hand">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}" CornerRadius="6">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#1554c0"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Background" Value="#e0e0e0"/>
+                                    <Setter Property="Foreground" Value="#888"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
                 <Button x:Name="ShowLessButton" Content="Show Less"
-                        Click="ShowLessButton_Click" Visibility="Collapsed" Margin="5"/>
+            Click="ShowLessButton_Click" Visibility="Collapsed" Margin="5"
+            Background="#1e68ff"
+            Foreground="White"
+            FontWeight="SemiBold"
+            FontSize="16"
+            Padding="18,8"
+            BorderThickness="0"
+            Width="110"
+            Height="30"              
+            Cursor="Hand">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}" CornerRadius="6">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#1554c0"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Background" Value="#e0e0e0"/>
+                                    <Setter Property="Foreground" Value="#888"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
             </StackPanel>
         </StackPanel>
     </ScrollViewer>
