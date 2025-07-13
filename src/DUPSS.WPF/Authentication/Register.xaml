@@ -146,7 +146,7 @@
             </Setter>
         </Style>
 
-        <!-- Style for DatePicker (using TextBox style for consistency for now) -->
+        <!-- Style for DatePicker -->
         <Style TargetType="DatePicker" x:Key="RegisterDatePickerStyle">
             <Setter Property="Padding" Value="12"/>
             <Setter Property="Background" Value="#B3FFFFFF"/>
@@ -159,34 +159,7 @@
                     <DropShadowEffect ShadowDepth="1" Direction="270" Color="#000000" Opacity="0.04" BlurRadius="4"/>
                 </Setter.Value>
             </Setter>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="DatePicker">
-                        <Border Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="8">
-                            <Grid>
-                                <DatePickerTextBox x:Name="PART_TextBox"
-                                                   Background="Transparent"
-                                                   BorderThickness="0"
-                                                   Foreground="{TemplateBinding Foreground}"
-                                                   Padding="{TemplateBinding Padding}"
-                                                   VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                                                   HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"/>
-                                <Border Height="2" VerticalAlignment="Bottom" Background="#007bff" x:Name="FocusBorder"/>
-                            </Grid>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsFocused" Value="True">
-                                <Setter TargetName="FocusBorder" Property="Background" Value="#005bea"/>
-                                <Setter TargetName="FocusBorder" Property="Height" Value="2.5"/>
-                                <Setter Property="Background" Value="White"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
+            <!-- REMOVED: The custom ControlTemplate to allow default calendar functionality -->
         </Style>
 
 
