@@ -275,7 +275,7 @@
 
                     <!-- Blog Topics (col-md-3) -->
                     <Border Grid.Column="0" Background="{StaticResource WhiteBrush}" CornerRadius="18" Padding="40,24,32,24"
-                            MinWidth="220" MaxWidth="320" Margin="-80,5,13,0">
+                            MinWidth="220" MaxWidth="320" Margin="-108,11,13,0">
                         <Border.Effect>
                             <DropShadowEffect ShadowDepth="0" BlurRadius="24" Opacity="0.07" Color="#1e60ff"/>
                         </Border.Effect>
@@ -297,7 +297,7 @@
                                 </Rectangle.Fill>
                             </Rectangle>
 
-                            <ListBox BorderThickness="0" Background="Transparent" Padding="0" Margin="0">
+                            <ListBox BorderThickness="0" Background="Transparent" Padding="0" Margin="0" Height="479" Width="161">
                                 <ListBoxItem Content="Health &amp; Wellness" Style="{StaticResource BlogTopicListItemStyle}"/>
                                 <ListBoxItem Content="Education" Style="{StaticResource BlogTopicListItemStyle}"/>
                                 <ListBoxItem Content="Science &amp; Research" Style="{StaticResource BlogTopicListItemStyle}"/>
@@ -324,9 +324,9 @@
                             </Rectangle.Fill>
                         </Rectangle>
 
-                        <StackPanel Orientation="Vertical" Margin="0 0 0 30">
+                        <StackPanel Orientation="Vertical" Margin="0 0 0 30" Width="846">
                             <!-- Blog Card 1 -->
-                            <Border Style="{StaticResource CardBaseStyle}" Width="801" MaxWidth="800" HorizontalAlignment="Left" Height="183">
+                            <Border Style="{StaticResource CardBaseStyle}" Width="842" MaxWidth="800" HorizontalAlignment="Left" Height="183">
                                 <Grid Margin="50 0 0 0">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="2*"/>
@@ -352,7 +352,7 @@
                             </Border>
 
                             <!-- Blog Card 2 -->
-                            <Border Style="{StaticResource CardBaseStyle}" Width="817" MaxWidth="800" HorizontalAlignment="Left" Margin="0,30,0,0">
+                            <Border Style="{StaticResource CardBaseStyle}" Width="837" MaxWidth="800" HorizontalAlignment="Left" Margin="0,30,0,0" Height="180">
                                 <Grid Margin="50 0 0 0">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="2*"/>
@@ -360,7 +360,7 @@
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0" Margin="0 0 20 0">
                                         <TextBlock Text="Building Resilience: Protective Factors Against Substance Use"
-                                                   Style="{StaticResource HeadingTextStyle}" FontSize="20" Margin="0 0 0 5"/>
+                                                   Style="{StaticResource HeadingTextStyle}" FontSize="20" Margin="0 0 0 5" Width="461"/>
                                         <TextBlock Text="Strong family bonds, peer support, and extracurricular activities can shield teens from addiction. Discover practical ways to foster resilience in your community."
                                                    Style="{StaticResource BaseTextStyle}" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" Margin="0 0 0 10"/>
                                         <Border Style="{StaticResource BadgeStyle}" HorizontalAlignment="Left">
@@ -402,134 +402,65 @@
 
                                 <!-- Previous Button -->
                                 <Button Grid.Column="0" Content="&lt;" Style="{StaticResource CarouselControlButton}"
-                                        Click="PrevImage_Click" HorizontalAlignment="Right" Margin="0,178,15,175" RenderTransformOrigin="0.48,0.477"/>
+                                        Click="PrevImage_Click" HorizontalAlignment="Right" Margin="0,179,29,176" RenderTransformOrigin="0.48,0.477" Width="42"/>
 
                                 <!-- Carousel Slides -->
-                                <Grid Grid.Column="1" x:Name="CarouselImageSlidesContainer"
-                                      Width="auto" Height="auto" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Grid Background="#fbfbff" Margin="0 0 0 50">
                                     <Grid.Effect>
-                                        <DropShadowEffect ShadowDepth="0" BlurRadius="30" Opacity="0.15" Color="Black"/>
+                                        <DropShadowEffect ShadowDepth="0" BlurRadius="100" Opacity="0.1" Color="Black"/>
                                     </Grid.Effect>
-                                    <Border CornerRadius="15" Background="{StaticResource WhiteBrush}" Margin="-12,-28,-11,0"/>
-
-                                    <!-- Slide 1 -->
-                                    <StackPanel x:Name="Slide1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                                Visibility="Visible" Opacity="1">
-                                        <!-- Updated Image Source -->
-                                        <Image Source="pack://application:,,,/DUPSS.WPF;component/Images/Others/1.jpg" Width="346" Height="222" Stretch="UniformToFill" Margin="20" VerticalAlignment="Center">
-                                            <Image.Style>
-                                                <Style TargetType="Image">
-                                                    <Setter Property="RenderTransform">
-                                                        <Setter.Value>
-                                                            <RotateTransform Angle="-10"/>
-                                                        </Setter.Value>
-                                                    </Setter>
-                                                    <Style.Triggers>
-                                                        <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter Property="RenderTransform">
-                                                                <Setter.Value>
-                                                                    <RotateTransform Angle="-18"/>
-                                                                </Setter.Value>
-                                                            </Setter>
-                                                            <Setter Property="Effect">
-                                                                <Setter.Value>
-                                                                    <DropShadowEffect ShadowDepth="0" Color="#1e60ff" Opacity="0.15" BlurRadius="32"/>
-                                                                </Setter.Value>
-                                                            </Setter>
-                                                        </Trigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Image.Style>
-                                        </Image>
-                                        <!-- Updated Image Source -->
-                                        <Image Source="pack://application:,,,/DUPSS.WPF;component/Images/Others/2.jpg" Width="279" Height="174" Stretch="UniformToFill">
-                                            <Image.Style>
-                                                <Style TargetType="{x:Type Image}">
-                                                    <Setter Property="RenderTransform">
-                                                        <Setter.Value>
-                                                            <RotateTransform Angle="10"/>
-                                                        </Setter.Value>
-                                                    </Setter>
-                                                    <Style.Triggers>
-                                                        <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter Property="RenderTransform">
-                                                                <Setter.Value>
-                                                                    <RotateTransform Angle="18"/>
-                                                                </Setter.Value>
-                                                            </Setter>
-                                                            <Setter Property="Effect">
-                                                                <Setter.Value>
-                                                                    <DropShadowEffect ShadowDepth="0" Color="#1e60ff" Opacity="0.15" BlurRadius="32"/>
-                                                                </Setter.Value>
-                                                            </Setter>
-                                                        </Trigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Image.Style>
-                                        </Image>
-                                    </StackPanel>
-
-                                    <!-- Slide 2 -->
-                                    <StackPanel x:Name="Slide2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                                Visibility="Collapsed" Opacity="0">
-                                        <!-- Updated Image Source -->
-                                        <Image Source="pack://application:,,,/DUPSS.WPF;component/Images/Others/3.jpg" Width="380" Height="300" Stretch="UniformToFill" Margin="20" HorizontalAlignment="Left" VerticalAlignment="Center">
-                                            <Image.Style>
-                                                <Style TargetType="Image">
-                                                    <Setter Property="RenderTransform">
-                                                        <Setter.Value>
-                                                            <RotateTransform Angle="-10"/>
-                                                        </Setter.Value>
-                                                    </Setter>
-                                                    <Style.Triggers>
-                                                        <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter Property="RenderTransform">
-                                                                <Setter.Value>
-                                                                    <RotateTransform Angle="-18"/>
-                                                                </Setter.Value>
-                                                            </Setter>
-                                                            <Setter Property="Effect">
-                                                                <Setter.Value>
-                                                                    <DropShadowEffect ShadowDepth="0" Color="#1e60ff" Opacity="0.15" BlurRadius="32"/>
-                                                                </Setter.Value>
-                                                            </Setter>
-                                                        </Trigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Image.Style>
-                                        </Image>
-                                        <!-- Updated Image Source -->
-                                        <Image Source="pack://application:,,,/DUPSS.WPF;component/Images/Others/4.jpg" Width="380" Height="300" Stretch="UniformToFill" Margin="20" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                            <Image.Style>
-                                                <Style TargetType="Image">
-                                                    <Setter Property="RenderTransform">
-                                                        <Setter.Value>
-                                                            <RotateTransform Angle="10"/>
-                                                        </Setter.Value>
-                                                    </Setter>
-                                                    <Style.Triggers>
-                                                        <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter Property="RenderTransform">
-                                                                <Setter.Value>
-                                                                    <RotateTransform Angle="18"/>
-                                                                </Setter.Value>
-                                                            </Setter>
-                                                            <Setter Property="Effect">
-                                                                <Setter.Value>
-                                                                    <DropShadowEffect ShadowDepth="0" Color="#1e60ff" Opacity="0.15" BlurRadius="32"/>
-                                                                </Setter.Value>
-                                                            </Setter>
-                                                        </Trigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Image.Style>
-                                        </Image>
-                                    </StackPanel>
+                                    <Border Padding="60 0">
+                                        <StackPanel MaxWidth="1200" HorizontalAlignment="Center">
+                                            <TextBlock Text="Our Impact in Pictures"
+                       Style="{StaticResource HeadingTextStyle}"
+                       FontSize="24"
+                       Foreground="{StaticResource PrimaryBlueBrush}"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,24"/>
+                                            <Grid Height="400" MaxWidth="900" HorizontalAlignment="Center" Margin="0 20 0 0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <!-- Previous Button -->
+                                                <Button Grid.Column="0" Content="⮜" Style="{StaticResource CarouselControlButton}"
+                        Click="PrevImage_Click" HorizontalAlignment="Right" Margin="0,179,29,176" Width="42"/>
+                                                <!-- Carousel Slides -->
+                                                <Grid Grid.Column="1" x:Name="CarouselImageSlidesContainer"
+                      Width="auto" Height="auto" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                    <Grid.Effect>
+                                                        <DropShadowEffect ShadowDepth="0" BlurRadius="30" Opacity="0.15" Color="Black"/>
+                                                    </Grid.Effect>
+                                                    <Border CornerRadius="15" Background="{StaticResource WhiteBrush}" Margin="-12,-28,-11,0"/>
+                                                    <!-- Slide 1 -->
+                                                    <StackPanel x:Name="Slide1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                Visibility="Visible" Opacity="1">
+                                                        <Image Source="pack://application:,,,/DUPSS.WPF;component/Images/Others/1.jpg"
+                               Width="282" Height="162" Stretch="UniformToFill" Margin="20" VerticalAlignment="Center"/>
+                                                        <Image Source="pack://application:,,,/DUPSS.WPF;component/Images/Others/2.jpg"
+                               Width="303" Height="176" Stretch="UniformToFill" Margin="20" VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                    <!-- Slide 2 -->
+                                                    <StackPanel x:Name="Slide2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                Visibility="Collapsed" Opacity="0">
+                                                        <Image Source="pack://application:,,,/DUPSS.WPF;component/Images/Others/3.jpg"
+                               Width="380" Height="300" Stretch="UniformToFill" Margin="20" VerticalAlignment="Center"/>
+                                                        <Image Source="pack://application:,,,/DUPSS.WPF;component/Images/Others/4.jpg"
+                               Width="380" Height="300" Stretch="UniformToFill" Margin="20" VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                                <!-- Next Button -->
+                                                <Button Grid.Column="2" Content="⮞" Style="{StaticResource CarouselControlButton}"
+                        Click="NextImage_Click" HorizontalAlignment="Left" Margin="26,178,0,177" Width="43"/>
+                                            </Grid>
+                                        </StackPanel>
+                                    </Border>
                                 </Grid>
 
                                 <!-- Next Button -->
                                 <Button Grid.Column="2" Content="&gt;" Style="{StaticResource CarouselControlButton}"
-                                        Click="NextImage_Click" HorizontalAlignment="Left" Margin="15,178,0,178" Width="40"/>
+                                        Click="NextImage_Click" HorizontalAlignment="Left" Margin="26,178,0,177" Width="43"/>
 
                             </Grid>
                         </StackPanel>

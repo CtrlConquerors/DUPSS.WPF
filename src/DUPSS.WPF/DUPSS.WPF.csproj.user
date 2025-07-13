@@ -34,6 +34,9 @@
     <Compile Update="Views\Blog.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Views\BlogDetail.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Views\BookAppointment.xaml.cs">
       <SubType>Code</SubType>
     </Compile>

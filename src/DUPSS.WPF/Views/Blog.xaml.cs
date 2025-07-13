@@ -177,7 +177,8 @@ namespace DUPSS.WPF.Views
         {
             if (sender is Border border && border.DataContext is BlogDTO blog)
             {
-                MessageBox.Show($"Navigate to detail for blog: {blog.BlogId}");
+                // Navigate to BlogDetail page, passing the BlogId
+                NavigationService?.Navigate(new BlogDetail(blog.BlogId));
             }
         }
 
