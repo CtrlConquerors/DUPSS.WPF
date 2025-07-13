@@ -137,11 +137,31 @@ namespace DUPSS.WPF.Authentication // Namespace updated to match XAML
                 ErrorMessage = "Password is required.";
                 return;
             }
-            if (!string.IsNullOrWhiteSpace(NewUser.PhoneNumber) && !IsValidPhoneNumber(NewUser.PhoneNumber))
+
+            // Phone Number Validation: Must be exactly 10 digits and cannot be null/empty
+            if (string.IsNullOrWhiteSpace(NewUser.PhoneNumber))
             {
-                ErrorMessage = "Invalid phone number format.";
+                ErrorMessage = "Phone number is required.";
                 return;
             }
+            if (!IsValidPhoneNumber(NewUser.PhoneNumber))
+            {
+                ErrorMessage = "Phone number must be exactly 10 digits.";
+                return;
+            }
+
+            // Date of Birth Validation: Cannot be null and cannot be in the future
+            if (!NewUser.DoB.HasValue)
+            {
+                ErrorMessage = "Date of Birth is required.";
+                return;
+            }
+            if (NewUser.DoB.Value > DateOnly.FromDateTime(DateTime.Now))
+            {
+                ErrorMessage = "Date of Birth cannot be in the future.";
+                return;
+            }
+
 
             try
             {
@@ -217,11 +237,10 @@ namespace DUPSS.WPF.Authentication // Namespace updated to match XAML
 
         private static bool IsValidPhoneNumber(string phoneNumber)
         {
-            // This regex allows 10 to 20 digits. Adjust as per your specific requirements.
+            // Regex for exactly 10 digits
             return Regex.IsMatch(
                 phoneNumber,
-                @"^\d{10,20}$",
-                RegexOptions.IgnoreCase
+                @"^\d{10}$"
             );
         }
 

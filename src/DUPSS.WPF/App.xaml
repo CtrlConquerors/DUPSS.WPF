@@ -17,9 +17,8 @@
             <local:HalfWidthConverter x:Key="HalfWidthConverter"/>
             <local:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
             <local:BooleanToChevronConverter x:Key="BooleanToChevronConverter"/>
-           
             <local:StringToUriConverter x:Key="StringToUriConverter"/>
-
+            <local:DateTimeToDateOnlyConverter x:Key="DateTimeToDateOnlyConverter"/>
             <!-- Merged Styles -->
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Styles.xaml"/>
