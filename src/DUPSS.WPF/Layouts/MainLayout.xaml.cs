@@ -216,22 +216,37 @@ namespace DUPSS.WPF.Layouts
         private void SidebarToggleButton_Click(object sender, RoutedEventArgs e)
         {
             _isSidebarExpanded = !_isSidebarExpanded;
-            if (_isSidebarExpanded) // If it's now expanded
+            double from = SidebarColumn.Width.Value;
+            double to = _isSidebarExpanded ? 250 : 50;
+
+            var animation = new DoubleAnimation
             {
-                _sidebarAnimation.To = 250; // Original width
-                SidebarColumn.BeginAnimation(ColumnDefinition.WidthProperty, _sidebarAnimation);
-                SidebarContentPanel.Visibility = Visibility.Visible; // Show content
-                SidebarToggleButton.Content = "⮜"; // Left arrow
-                SidebarToggleButton.HorizontalAlignment = HorizontalAlignment.Right;
-            }
-            else // If it's now collapsed
+                From = from,
+                To = to,
+                Duration = new Duration(TimeSpan.FromSeconds(0.3)),
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+            };
+
+            AnimationClock clock = animation.CreateClock();
+            clock.CurrentTimeInvalidated += (s, ev) =>
             {
-                _sidebarAnimation.To = 50; // Collapsed width
-                SidebarColumn.BeginAnimation(ColumnDefinition.WidthProperty, _sidebarAnimation);
-                SidebarContentPanel.Visibility = Visibility.Collapsed; // Hide content
-                SidebarToggleButton.Content = "⮞"; // Right arrow
-                SidebarToggleButton.HorizontalAlignment = HorizontalAlignment.Center;
-            }
+                if (clock.CurrentProgress.HasValue)
+                {
+                    double current = from + (to - from) * clock.CurrentProgress.Value;
+                    SidebarColumn.Width = new GridLength(current, GridUnitType.Pixel);
+                }
+            };
+            clock.Completed += (s, ev) =>
+            {
+                SidebarColumn.Width = new GridLength(to, GridUnitType.Pixel);
+            };
+
+            // Start the animation
+            clock.Controller.Begin();
+
+            SidebarContentPanel.Visibility = _isSidebarExpanded ? Visibility.Visible : Visibility.Collapsed;
+            SidebarToggleButton.Content = _isSidebarExpanded ? "⮜" : "⮞";
+            SidebarToggleButton.HorizontalAlignment = _isSidebarExpanded ? HorizontalAlignment.Right : HorizontalAlignment.Center;
         }
     }
 }

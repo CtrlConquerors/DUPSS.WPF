@@ -18,6 +18,7 @@ namespace DUPSS.WPF
         // Declare static properties for your API services
         public static CourseApiService CourseApiService { get; private set; } = null!;
         public static CourseEnrollApiService CourseEnrollApiService { get; private set; } = null!;
+        public static BlogApiService? BlogApiService { get; private set; }
         public static UserApiService UserApiService { get; private set; } = null!;
         public static JwtAuthenticationStateProvider JwtAuthenticationStateProvider { get; private set; } = null!;
         public static AuthApiService AuthApiService { get; private set; } = null!; // ADDED: Static property for AuthApiService
@@ -50,6 +51,8 @@ namespace DUPSS.WPF
 
             // Initialize AuthApiService and assign to static property
             AuthApiService = new AuthApiService(HttpClient); // Initialized here
+                                                             // Initialize BlogApiService and assign to static property
+            BlogApiService = new BlogApiService(HttpClient);
 
             // Initialize your static API service properties
             CourseApiService = new CourseApiService(HttpClient);

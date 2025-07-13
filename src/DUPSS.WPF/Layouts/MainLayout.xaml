@@ -37,7 +37,8 @@
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="Padding" Value="10 15"/>
-            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="FontSize" Value="16"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Margin" Value="0 5"/>
@@ -46,12 +47,12 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="5">
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="5">
                             <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                              Margin="{TemplateBinding Padding}"/>
+                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                      Margin="{TemplateBinding Padding}"/>
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
@@ -98,12 +99,50 @@
             <StackPanel>
                 <!-- Collapse Button -->
                 <Button x:Name="SidebarToggleButton"
-                        Content="⮜"
-                        Width="30" Height="30"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Top"
-                        Click="SidebarToggleButton_Click"
-                        ToolTip="Collapse/Expand Sidebar"/>
+        Content="⮜"
+        Width="36"
+        Height="36"
+        HorizontalAlignment="Right"
+        VerticalAlignment="Top"
+        Click="SidebarToggleButton_Click"
+        ToolTip="Collapse/Expand Sidebar"
+        FontSize="18"
+        FontWeight="Bold"
+        Background="#fff"
+        Foreground="#1a237e"
+        BorderBrush="#e0e0e0"
+        BorderThickness="1"
+        Cursor="Hand"
+        Margin="0,8,8,0">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="border"
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="18"
+                    SnapsToDevicePixels="True">
+                                <ContentPresenter HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="border" Property="Background" Value="#fdd835"/>
+                                    <Setter Property="Foreground" Value="#1a237e"/>
+                                    <Setter TargetName="border" Property="BorderBrush" Value="#fbc02d"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="border" Property="Background" Value="#ffe082"/>
+                                    <Setter TargetName="border" Property="BorderBrush" Value="#fbc02d"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter TargetName="border" Property="Background" Value="#eee"/>
+                                    <Setter Property="Foreground" Value="#aaa"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
                 <StackPanel x:Name="SidebarContentPanel">
                     <!-- Application Logo/Title -->
                     <TextBlock Text="DUPSS"
