@@ -212,7 +212,7 @@
                 <Grid Height="500" Margin="-7">
                     <Grid.Background>
                         <!-- Updated Image Source -->
-                        <ImageBrush ImageSource="pack://application:,,,/DUPSS.WPF;component/Images/Others/test2.gif" Stretch="UniformToFill"/>
+                        <ImageBrush ImageSource="pack://application:,,,/DUPSS.WPF;component/Images/Others/giphy.gif" Stretch="UniformToFill"/>
                     </Grid.Background>
                     <!-- Overlay -->
                     <Rectangle Fill="Black" Opacity="0.2" Grid.ZIndex="1"/>

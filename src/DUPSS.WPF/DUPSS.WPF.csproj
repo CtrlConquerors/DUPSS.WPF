@@ -75,7 +75,7 @@
     <Resource Include="images\Campaigns\CAM0004.jpg" />
 
     <Resource Include="images\Others\Logo.png" />
-
+<Resource Include="images\Others\giphy.gif" />
    
 
     <Resource Include="images\Others\placeholder.png" />
