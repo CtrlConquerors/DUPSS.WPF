@@ -10,6 +10,7 @@ using System.Windows.Controls;
 using System.Windows.Media.Animation;
 using System.Windows.Navigation;
 using System.Windows.Data;
+using DUPSS.WPF.Layouts; // Add this namespace to access MainLayout
 
 namespace DUPSS.WPF.Views
 {
@@ -101,14 +102,9 @@ namespace DUPSS.WPF.Views
                 return;
             }
 
-            // Initialize AuthApiService
-            _authApiService = new AuthApiService(App.HttpClient);
-
-            // Initialize WpfSecureStorageService from DUPSS.Common
-            var wpfSecureStorage = new WpfSecureStorageService();
-
-            // Initialize JwtAuthenticationStateProvider with your WPF secure storage implementation
-            _authStateProvider = new JwtAuthenticationStateProvider(_authApiService, wpfSecureStorage);
+            // Initialize AuthApiService and JwtAuthenticationStateProvider from App's static properties
+            _authApiService = App.AuthApiService;
+            _authStateProvider = App.JwtAuthenticationStateProvider;
         }
 
         // Event handler for the Login button click
@@ -141,21 +137,23 @@ namespace DUPSS.WPF.Views
                 await Task.Delay(2000); // Wait for 2 seconds
 
                 // Navigate to the home page
-                // Check if NavigationService is available (e.g., if hosted in a Frame)
-                if (NavigationService.CanGoBack)
+                // The NavigationService here is provided by the Frame in MainLayout.xaml
+                // Use the full relative path to Home.xaml from the application root.
+                if (NavigationService != null)
                 {
-                    // Navigate to the root URI. In a WPF NavigationWindow/Frame,
-                    // this typically means navigating to the default page set in App.xaml
-                    // or a specific page. Adjust the Uri as per your application's navigation setup.
-                    NavigationService.Navigate(new Uri("/", UriKind.Relative));
+                    NavigationService.Navigate(new Uri("/Views/Home.xaml", UriKind.Relative));
+
+                    // Optionally, update the MainLayout's login/logout visibility
+                    // Get the parent window (MainLayout) and call its public method
+                    if (Window.GetWindow(this) is MainLayout mainLayout)
+                    {
+                        // This call requires UpdateUIForAuthStateAsync to be public in MainLayout.xaml.cs
+                        await mainLayout.UpdateUIForAuthStateAsync();
+                    }
                 }
                 else
                 {
-                    // Fallback for direct window or if NavigationService is not available
-                    // You might need to set the MainWindow's content directly or restart.
-                    MessageBox.Show("Login successful! Navigation service not available for direct navigation. Please restart or manually navigate.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                    // Example if your main window is a NavigationWindow:
-                    // ((NavigationWindow)Application.Current.MainWindow).Navigate(new Uri("/", UriKind.Relative));
+                    MessageBox.Show("Login successful! Navigation service is not available.", "Navigation Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (UnauthorizedAccessException ex)
@@ -184,15 +182,14 @@ namespace DUPSS.WPF.Views
         // Event handler for Hyperlink navigation
         private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
         {
-            // Navigate to the specified URI
-            if (NavigationService.CanGoBack)
+            // Navigate to the specified URI using the page's NavigationService
+            if (NavigationService != null)
             {
                 NavigationService.Navigate(e.Uri);
             }
             else
             {
-                // Fallback for direct window or if NavigationService is not available
-                MessageBox.Show($"Navigate to: {e.Uri.OriginalString}", "Navigation", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show($"Cannot navigate to: {e.Uri.OriginalString}. Navigation service not available.", "Navigation Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             e.Handled = true; // Mark the event as handled
         }

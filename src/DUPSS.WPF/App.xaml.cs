@@ -20,8 +20,7 @@ namespace DUPSS.WPF
         public static CourseEnrollApiService CourseEnrollApiService { get; private set; } = null!;
         public static UserApiService UserApiService { get; private set; } = null!;
         public static JwtAuthenticationStateProvider JwtAuthenticationStateProvider { get; private set; } = null!;
-
-        public static string? CurrentMemberId { get; set; }
+        public static AuthApiService AuthApiService { get; private set; } = null!; // ADDED: Static property for AuthApiService
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -49,14 +48,15 @@ namespace DUPSS.WPF
             // Use your provided WpfSecureStorageService for secure local storage
             var localStorage = new WpfSecureStorageService();
 
-            // Initialize AuthApiService (assuming it exists in DUPSS.ApiClients and takes HttpClient)
-            var authApiService = new AuthApiService(HttpClient);
+            // Initialize AuthApiService and assign to static property
+            AuthApiService = new AuthApiService(HttpClient); // Initialized here
 
             // Initialize your static API service properties
             CourseApiService = new CourseApiService(HttpClient);
             CourseEnrollApiService = new CourseEnrollApiService(HttpClient);
             UserApiService = new UserApiService(HttpClient);
-            JwtAuthenticationStateProvider = new JwtAuthenticationStateProvider(authApiService, localStorage);
+            // Ensure JwtAuthenticationStateProvider uses the static AuthApiService
+            JwtAuthenticationStateProvider = new JwtAuthenticationStateProvider(AuthApiService, localStorage);
 
             // Call the base OnStartup method to ensure normal WPF startup processes
             base.OnStartup(e);

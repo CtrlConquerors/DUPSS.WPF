@@ -1,23 +1,26 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Navigation; // Required for Frame navigation
-using DUPSS.WPF.Views; // For Login page
+using System.Windows.Media.Animation;
+using System.Windows.Navigation; // Required for NavigationService
+using DUPSS.WPF.Views; // Required to reference Login and Home pages directly for initial navigation
 using DUPSS.ApiClients; // For AuthApiService, UserApiService, JwtAuthenticationStateProvider
 using DUPSS.Common; // For WpfSecureStorageService, UserDTO
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Authorization; // For AuthenticationState
 using System.Security.Claims; // For ClaimTypes
 
-namespace DUPSS.WPF.Layouts // Namespace matches the folder structure
+namespace DUPSS.WPF.Layouts
 {
     /// <summary>
     /// Interaction logic for MainLayout.xaml
     /// </summary>
     public partial class MainLayout : Window
     {
-        private bool _sidebarCollapsed = false;
+        private bool _isSidebarExpanded = true;
+        private DoubleAnimation _sidebarAnimation;
 
+        // Dependency injected services (or accessed via App.cs static properties)
         private readonly AuthApiService _authApiService;
         private readonly UserApiService _userApiService;
         private readonly JwtAuthenticationStateProvider _authStateProvider;
@@ -25,7 +28,7 @@ namespace DUPSS.WPF.Layouts // Namespace matches the folder structure
         public MainLayout()
         {
             InitializeComponent();
-            this.Loaded += MainLayout_Loaded; // Attach event handler for when the window is loaded
+            this.Loaded += MainLayout_Loaded; // Attach the Loaded event handler
 
             // Ensure App.HttpClient is initialized (from your App.xaml.cs or similar)
             if (App.HttpClient == null)
@@ -35,105 +38,120 @@ namespace DUPSS.WPF.Layouts // Namespace matches the folder structure
                 return;
             }
 
-            // Initialize API services
-            _authApiService = new AuthApiService(App.HttpClient);
-            _userApiService = new UserApiService(App.HttpClient);
+            // Initialize API services using App's static HttpClient
+            _authApiService = App.AuthApiService; // Access static instance from App.xaml.cs
+            _userApiService = App.UserApiService; // Access static instance from App.xaml.cs
+            _authStateProvider = App.JwtAuthenticationStateProvider; // Access static instance from App.xaml.cs
 
-            // Initialize secure storage and authentication state provider
-            // WpfSecureStorageService needs to be available in DUPSS.Common or a referenced project
-            var wpfSecureStorage = new WpfSecureStorageService();
-            _authStateProvider = new JwtAuthenticationStateProvider(_authApiService, wpfSecureStorage);
-
-            // Subscribe to authentication state changes
+            // Subscribe to authentication state changes to update UI
             _authStateProvider.AuthenticationStateChanged += AuthStateProvider_AuthenticationStateChanged;
 
-            // Initial UI update based on current state (don't await in constructor directly)
-            _ = UpdateUIForAuthStateAsync();
+            // Initialize sidebar animation for future use
+            _sidebarAnimation = new DoubleAnimation
+            {
+                Duration = new Duration(TimeSpan.FromSeconds(0.3)),
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+            };
         }
 
+        /// <summary>
+        /// Handles the Loaded event for the MainLayout window.
+        /// Performs initial UI updates and navigates to the appropriate starting page.
+        /// </summary>
         private async void MainLayout_Loaded(object sender, RoutedEventArgs e)
         {
             // Perform initial UI update based on authentication state
             await UpdateUIForAuthStateAsync();
 
-            // Navigate to the appropriate page based on authentication status
-            var authState = await _authStateProvider.GetAuthenticationStateAsync();
-            if (authState.User.Identity?.IsAuthenticated == true)
-            {
-                NavigateToPage("Home"); // Navigate to Home if already logged in
-            }
-            else
-            {
-                MainFrame.Navigate(new Uri("/Views/Home.xaml", UriKind.Relative)); // Navigate to Login if not logged in
-            }
+            // Always navigate to the Home page first, regardless of authentication status.
+            // If authentication is required for certain features, it should be handled within Home.xaml.cs
+            // or by redirecting from Home.xaml.cs if a protected resource is accessed.
+            MainFrame.Navigate(new Uri("/Views/Home.xaml", UriKind.Relative));
         }
 
         /// <summary>
-        /// Handles authentication state changes and updates the UI accordingly.
+        /// Handles authentication state changes and triggers UI updates.
         /// </summary>
+        /// <param name="authenticationStateTask">The task representing the new authentication state.</param>
         private async void AuthStateProvider_AuthenticationStateChanged(Task<AuthenticationState> authenticationStateTask)
         {
             await UpdateUIForAuthStateAsync();
         }
 
         /// <summary>
-        /// Updates the visibility of login/logout buttons and the welcome message.
+        /// Updates the visibility of login/logout buttons and the welcome message based on authentication state.
         /// Fetches username from the database if authenticated.
         /// </summary>
-        private async Task UpdateUIForAuthStateAsync()
+        public async Task UpdateUIForAuthStateAsync() // Made public for access from Login.xaml.cs
         {
             var authState = await _authStateProvider.GetAuthenticationStateAsync();
             var user = authState.User;
 
-            if (user.Identity?.IsAuthenticated == true)
+            // Ensure UI updates happen on the UI thread
+            Application.Current.Dispatcher.Invoke(() =>
             {
-                // User is logged in
-                LoginButton.Visibility = Visibility.Collapsed;
-                LogoutButton.Visibility = Visibility.Visible;
-                WelcomeTextBlock.Visibility = Visibility.Visible;
-
-                // Attempt to get UserId from claims
-                string? userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (!string.IsNullOrEmpty(userId))
+                if (user.Identity?.IsAuthenticated == true)
                 {
-                    try
+                    // User is logged in
+                    LoginButton.Visibility = Visibility.Collapsed;
+                    LogoutButton.Visibility = Visibility.Visible;
+                    WelcomeTextBlock.Visibility = Visibility.Visible;
+
+                    // Attempt to get UserId from claims
+                    string? userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                    if (!string.IsNullOrEmpty(userId))
                     {
                         // Fetch user details from the database using UserApiService
-                        var userDto = await _userApiService.GetByIdAsync(userId);
-                        if (userDto != null)
+                        // Use .Result or await if necessary, but be careful with deadlocks
+                        // For simplicity, directly accessing static App.UserApiService
+                        _ = Task.Run(async () => // Run on a background thread to avoid blocking UI
                         {
-                            WelcomeTextBlock.Text = $"Welcome, {userDto.Username}!";
-                    
-                        }
-                        else
-                        {
-                            WelcomeTextBlock.Text = "Welcome, Authenticated User!"; // Fallback if user not found in DB
-                        }
+                            try
+                            {
+                                var userDto = await _userApiService.GetByIdAsync(userId);
+                                Application.Current.Dispatcher.Invoke(() => // Update UI on UI thread
+                                {
+                                    if (userDto != null)
+                                    {
+                                        WelcomeTextBlock.Text = $"Welcome, {userDto.Username}!";
+                                    }
+                                    else
+                                    {
+                                        WelcomeTextBlock.Text = "Welcome, Authenticated User!"; // Fallback if user not found in DB
+                                    }
+                                });
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"Error fetching user details in MainLayout: {ex.Message}");
+                                Application.Current.Dispatcher.Invoke(() => // Update UI on UI thread
+                                {
+                                    WelcomeTextBlock.Text = "Welcome, User (Error)!"; // Show error if fetching fails
+                                });
+                            }
+                        });
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        Console.WriteLine($"Error fetching user details in MainLayout: {ex.Message}");
-                        WelcomeTextBlock.Text = "Welcome, User (Error)!"; // Show error if fetching fails
+                        WelcomeTextBlock.Text = "Welcome, Authenticated User!"; // Fallback if UserId claim is missing
                     }
                 }
                 else
                 {
-                    WelcomeTextBlock.Text = "Welcome, Authenticated User!"; // Fallback if UserId claim is missing
+                    // User is logged out
+                    LoginButton.Visibility = Visibility.Visible;
+                    LogoutButton.Visibility = Visibility.Collapsed;
+                    WelcomeTextBlock.Visibility = Visibility.Collapsed;
                 }
-            }
-            else
-            {
-                // User is logged out
-                LoginButton.Visibility = Visibility.Visible;
-                LogoutButton.Visibility = Visibility.Collapsed;
-                WelcomeTextBlock.Visibility = Visibility.Collapsed;
-            }
+            });
         }
 
         /// <summary>
         /// Handles navigation clicks from the sidebar buttons.
         /// The Tag property of the button is used to determine the target page.
         /// </summary>
+        /// <param name="sender">The button that was clicked.</param>
+        /// <param name="e">Event arguments.</param>
         private void Navigate_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button button && button.Tag is string pageName)
@@ -150,7 +168,6 @@ namespace DUPSS.WPF.Layouts // Namespace matches the folder structure
         {
             // Construct the URI for the page.
             // Assuming your pages (like Home.xaml) are in a "Views" folder.
-            // Example: "Views/Home.xaml"
             string uriString = $"/Views/{pageName}.xaml";
 
             try
@@ -167,42 +184,53 @@ namespace DUPSS.WPF.Layouts // Namespace matches the folder structure
         /// <summary>
         /// Handles the Logout button click.
         /// </summary>
+        /// <param name="sender">The button that was clicked.</param>
+        /// <param name="e">Event arguments.</param>
         private async void Logout_Click(object sender, RoutedEventArgs e)
         {
-            await _authStateProvider.Logout(); // Perform logout
+            await _authStateProvider.Logout(); // Corrected: Changed from LogoutAsync() to Logout()
+            MessageBox.Show("You have been logged out.", "Logout Successful", MessageBoxButton.OK, MessageBoxImage.Information);
+
+            // Update UI visibility immediately after logout
+            await UpdateUIForAuthStateAsync(); // Corrected: Changed to await UpdateUIForAuthStateAsync()
+
             // Navigate back to the login page after logout
             MainFrame.Navigate(new Uri("/Views/Login.xaml", UriKind.Relative));
-            MessageBox.Show("You have been logged out.", "Logout", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         /// <summary>
         /// Handles the Login button click, navigating to the Login page.
         /// </summary>
+        /// <param name="sender">The button that was clicked.</param>
+        /// <param name="e">Event arguments.</param>
         private void LoginButton_Click(object sender, RoutedEventArgs e)
         {
             MainFrame.Navigate(new Uri("/Views/Login.xaml", UriKind.Relative));
         }
 
         /// <summary>
-        /// Handles the click event for the sidebar toggle button.
-        /// Collapses or expands the sidebar.
+        /// Handles the click event for the sidebar toggle button, collapsing or expanding the sidebar.
         /// </summary>
+        /// <param name="sender">The button that was clicked.</param>
+        /// <param name="e">Event arguments.</param>
         private void SidebarToggleButton_Click(object sender, RoutedEventArgs e)
         {
-            _sidebarCollapsed = !_sidebarCollapsed;
-            if (_sidebarCollapsed)
+            _isSidebarExpanded = !_isSidebarExpanded;
+            if (_isSidebarExpanded) // If it's now expanded
             {
-                SidebarColumn.Width = new GridLength(40); // Thin bar
-                SidebarContentPanel.Visibility = Visibility.Collapsed;
-                SidebarToggleButton.Content = "⮞"; // Right arrow
-                SidebarToggleButton.HorizontalAlignment = HorizontalAlignment.Center;
-            }
-            else
-            {
-                SidebarColumn.Width = new GridLength(250);
-                SidebarContentPanel.Visibility = Visibility.Visible;
+                _sidebarAnimation.To = 250; // Original width
+                SidebarColumn.BeginAnimation(ColumnDefinition.WidthProperty, _sidebarAnimation);
+                SidebarContentPanel.Visibility = Visibility.Visible; // Show content
                 SidebarToggleButton.Content = "⮜"; // Left arrow
                 SidebarToggleButton.HorizontalAlignment = HorizontalAlignment.Right;
+            }
+            else // If it's now collapsed
+            {
+                _sidebarAnimation.To = 50; // Collapsed width
+                SidebarColumn.BeginAnimation(ColumnDefinition.WidthProperty, _sidebarAnimation);
+                SidebarContentPanel.Visibility = Visibility.Collapsed; // Hide content
+                SidebarToggleButton.Content = "⮞"; // Right arrow
+                SidebarToggleButton.HorizontalAlignment = HorizontalAlignment.Center;
             }
         }
     }
