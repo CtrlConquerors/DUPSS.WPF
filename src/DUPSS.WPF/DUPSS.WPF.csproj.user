@@ -7,6 +7,12 @@
     <ActiveDebugProfile>DUPSS.WPF</ActiveDebugProfile>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Update="Authentication\ForgotPassword.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Authentication\Register.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Layouts\MainLayout.xaml.cs">
       <SubType>Code</SubType>
     </Compile>

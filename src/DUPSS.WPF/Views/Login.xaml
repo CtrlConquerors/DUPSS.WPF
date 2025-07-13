@@ -115,8 +115,8 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border Background="{TemplateBinding Background}"
-                            CornerRadius="6" 
-                            BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                BorderThickness="{TemplateBinding BorderThickness}"
                                 BorderBrush="{TemplateBinding BorderBrush}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
@@ -188,7 +188,7 @@
                     <!-- Login Header -->
                     <StackPanel HorizontalAlignment="Center" Margin="0 0 0 24">
                         <Image Source="/images/Others/logo2.png" AutomationProperties.Name="ALPHA Logo" Width="130" Height="120" Margin="0 0 0 16"
-                               RenderTransformOrigin="0.5,0.5" Cursor="Hand">
+                               RenderTransformOrigin="0.5,0.5">
                             <Image.RenderTransform>
                                 <TransformGroup>
                                     <ScaleTransform/>
@@ -213,12 +213,12 @@
                             <Label Content="Email" Foreground="White" HorizontalAlignment="Left" Margin="0 0 0 4"/>
                             <TextBox x:Name="EmailTextBox" Text="{Binding Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      Style="{StaticResource {x:Type TextBox}}"
-                                    />
+                                     />
                         </StackPanel>
                         <StackPanel Margin="0 0 0 16">
                             <Label Content="Password" Foreground="White" HorizontalAlignment="Left" Margin="0 0 0 4"/>
                             <PasswordBox x:Name="PasswordBox" Style="{StaticResource {x:Type PasswordBox}}"
-                                   />
+                                       />
                         </StackPanel>
 
                         <!-- Error Message -->
@@ -247,7 +247,7 @@
 
                         <!-- Forgot Password Link -->
                         <TextBlock HorizontalAlignment="Right" Margin="0 0 0 16">
-                            <Hyperlink NavigateUri="/forgot-password" RequestNavigate="Hyperlink_RequestNavigate" Style="{StaticResource FooterHyperlinkStyle}">
+                            <Hyperlink NavigateUri="/Authentication/ForgotPassword.xaml" RequestNavigate="Hyperlink_RequestNavigate" Style="{StaticResource FooterHyperlinkStyle}" ToolTip="Click to reset your password.">
                                 Forgot password?
                             </Hyperlink>
                         </TextBlock>
@@ -259,7 +259,7 @@
                     <!-- Sign Up Link -->
                     <TextBlock HorizontalAlignment="Center" Margin="0 16 0 0">
                         <Run Text="Not a member? " Foreground="White"/>
-                        <Hyperlink NavigateUri="/register" RequestNavigate="Hyperlink_RequestNavigate" Style="{StaticResource Footer2HyperlinkStyle}">
+                        <Hyperlink NavigateUri="/Authentication/Register.xaml" RequestNavigate="Hyperlink_RequestNavigate" Style="{StaticResource Footer2HyperlinkStyle}">
                             Sign up now
                         </Hyperlink>
                     </TextBlock>

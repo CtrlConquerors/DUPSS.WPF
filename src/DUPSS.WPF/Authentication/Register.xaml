@@ -1,0 +1,457 @@
+﻿<Page x:Class="DUPSS.WPF.Authentication.Register"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:local="clr-namespace:DUPSS.WPF"
+      mc:Ignorable="d"
+      d:DesignHeight="720" d:DesignWidth="1280"
+      Title="Register">
+
+    <Page.Resources>
+        <!-- Storyboard for Popup Fade In Animation -->
+        <Storyboard x:Key="PopupFadeIn">
+            <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.35"/>
+            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" From="30" To="0" Duration="0:0:0.35">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseOut"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" From="0.92" To="1" Duration="0:0:0.35">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseOut"/>
+                    </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" From="0.92" To="1" Duration="0:0:0.35">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseOut"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+        </Storyboard>
+
+        <!-- Style for the main glass card container -->
+        <Style x:Key="GlassCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="#1AFFFFFF"/>
+            <!-- rgba(255,255,255,0.10) -->
+            <Setter Property="CornerRadius" Value="60"/>
+            <Setter Property="Padding" Value="40,32,32,32"/>
+            <Setter Property="MaxWidth" Value="810"/>
+            <!-- Max-width for register form -->
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect ShadowDepth="8" Direction="270" Color="#000000" Opacity="0.13" BlurRadius="32"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="BorderBrush" Value="#59FFFFFF"/>
+            <!-- rgba(255,255,255,0.35) -->
+            <Setter Property="BorderThickness" Value="1.5"/>
+            <Setter Property="TextElement.Foreground" Value="#222222"/>
+            <!-- Corresponds to color: #222 -->
+        </Style>
+
+        <!-- Local style for the glass card's :before and :after effects -->
+        <Style TargetType="Border" x:Key="GlassCardPseudoElementStyle">
+            <Setter Property="Background">
+                <Setter.Value>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Color="#40FFFFFF" Offset="0"/>
+                        <!-- rgba(255,255,255,0.25) -->
+                        <GradientStop Color="#0DFFFFFF" Offset="1"/>
+                        <!-- rgba(255,255,255,0.05) -->
+                    </LinearGradientBrush>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="IsHitTestVisible" Value="False"/>
+            <Setter Property="Panel.ZIndex" Value="1"/>
+            <Setter Property="CornerRadius" Value="100"/>
+            <!-- Default for round shapes -->
+        </Style>
+
+        <!-- Style for form-control inputs (TextBox) -->
+        <Style TargetType="TextBox" x:Key="RegisterTextBoxStyle">
+            <Setter Property="Width" Value="Auto"/>
+            <Setter Property="Padding" Value="12"/>
+            <Setter Property="Background" Value="#B3FFFFFF"/>
+            <!-- rgba(255,255,255,0.7) -->
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="0 0 0 2"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect ShadowDepth="1" Direction="270" Color="#000000" Opacity="0.04" BlurRadius="4"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8">
+                            <Grid>
+                                <ScrollViewer x:Name="PART_ContentHost" Focusable="False" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
+                                <Border Height="2" VerticalAlignment="Bottom" Background="#007bff" x:Name="FocusBorder"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="FocusBorder" Property="Background" Value="#005bea"/>
+                                <Setter TargetName="FocusBorder" Property="Height" Value="2.5"/>
+                                <Setter Property="Background" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Style for form-control inputs (PasswordBox) -->
+        <Style TargetType="PasswordBox" x:Key="RegisterPasswordBoxStyle">
+            <Setter Property="Width" Value="Auto"/>
+            <Setter Property="Padding" Value="12"/>
+            <Setter Property="Background" Value="#B3FFFFFF"/>
+            <!-- rgba(255,255,255,0.7) -->
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="0 0 0 2"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect ShadowDepth="1" Direction="270" Color="#000000" Opacity="0.04" BlurRadius="4"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="PasswordBox">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8">
+                            <Grid>
+                                <ScrollViewer x:Name="PART_ContentHost" Focusable="False" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
+                                <Border Height="2" VerticalAlignment="Bottom" Background="#007bff" x:Name="FocusBorder"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="FocusBorder" Property="Background" Value="#005bea"/>
+                                <Setter TargetName="FocusBorder" Property="Height" Value="2.5"/>
+                                <Setter Property="Background" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Style for DatePicker (using TextBox style for consistency for now) -->
+        <Style TargetType="DatePicker" x:Key="RegisterDatePickerStyle">
+            <Setter Property="Padding" Value="12"/>
+            <Setter Property="Background" Value="#B3FFFFFF"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="0 0 0 2"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect ShadowDepth="1" Direction="270" Color="#000000" Opacity="0.04" BlurRadius="4"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DatePicker">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8">
+                            <Grid>
+                                <DatePickerTextBox x:Name="PART_TextBox"
+                                                   Background="Transparent"
+                                                   BorderThickness="0"
+                                                   Foreground="{TemplateBinding Foreground}"
+                                                   Padding="{TemplateBinding Padding}"
+                                                   VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                   HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+                                <Border Height="2" VerticalAlignment="Bottom" Background="#007bff" x:Name="FocusBorder"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="FocusBorder" Property="Background" Value="#005bea"/>
+                                <Setter TargetName="FocusBorder" Property="Height" Value="2.5"/>
+                                <Setter Property="Background" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+
+        <!-- Style for register button -->
+        <Style x:Key="RegisterButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="Auto"/>
+            <Setter Property="Padding" Value="14 0"/>
+            <Setter Property="Height" Value="45"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="18"/>
+            <!-- Corresponds to 1.13rem -->
+            <Setter Property="Margin" Value="0 8 0 0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect ShadowDepth="2" Direction="270" Color="#007bff" Opacity="0.13" BlurRadius="8"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border CornerRadius="22.5">
+                            <!-- Half of height for pill shape -->
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                    <GradientStop Color="#007bff" Offset="0"/>
+                                    <GradientStop Color="#00c6fb" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background">
+                                    <Setter.Value>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                            <GradientStop Color="#005bea" Offset="0"/>
+                                            <GradientStop Color="#00c6fb" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="RenderTransform">
+                                    <Setter.Value>
+                                        <TranslateTransform Y="-2"/>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect ShadowDepth="6" Direction="270" Color="#007bff" Opacity="0.18" BlurRadius="24"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="RenderTransform">
+                                    <Setter.Value>
+                                        <ScaleTransform ScaleX="0.98" ScaleY="0.98"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <ScaleTransform/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Style for error alert -->
+        <Style x:Key="ErrorAlertStyle" TargetType="Border">
+            <Setter Property="Background" Value="#1A007BFF"/>
+            <!-- rgba(0, 123, 255, 0.10) -->
+            <Setter Property="BorderBrush" Value="#B6D0FF"/>
+            <!-- #b6d0ff -->
+            <Setter Property="BorderThickness" Value="1.5"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="Margin" Value="0 10 0 0"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <!-- REMOVED: <Setter Property="Child"> as it causes XDG0041 error -->
+        </Style>
+
+        <!-- Style for success popup board -->
+        <Style x:Key="SuccessPopupBoardStyle" TargetType="Border">
+            <Setter Property="Background" Value="#2EFFFFFF"/>
+            <!-- rgba(255, 255, 255, 0.18) -->
+            <Setter Property="BorderBrush" Value="#59FFFFFF"/>
+            <!-- rgba(255,255,255,0.35) -->
+            <Setter Property="BorderThickness" Value="1.5"/>
+            <Setter Property="CornerRadius" Value="32"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect ShadowDepth="8" Direction="270" Color="#000000" Opacity="0.22" BlurRadius="32"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Padding" Value="36 32 28 32"/>
+            <Setter Property="MinWidth" Value="320"/>
+            <Setter Property="MaxWidth" Value="400"/>
+            <Setter Property="TextElement.Foreground" Value="#1e293b"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Style for footer hyperlinks -->
+        <Style x:Key="RegisterFooterHyperlinkStyle" TargetType="Hyperlink">
+            <Setter Property="Foreground" Value="#007bff"/>
+            <Setter Property="TextDecorations" Value="{x:Null}"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Foreground" Value="#005bea"/>
+                    <Setter Property="TextDecorations" Value="Underline"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Converter for string to visibility (from CommonConverters.cs) -->
+        <local:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+        <local:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+
+        <!-- Style for the Register Logo Shadow Effect -->
+        <Style x:Key="RegisterLogoShadowEffect" TargetType="Image">
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect ShadowDepth="2" Direction="270" Color="#007bff" Opacity="0.08" BlurRadius="12"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+    </Page.Resources>
+
+    <Grid>
+        <!-- Background image -->
+        <Image Source="/images/Others/sign1.jpg" Stretch="UniformToFill" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+
+        <!-- Register Container - Centers the card -->
+        <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
+            <!-- ADDED ScrollViewer around the Border -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <!-- Glass Card -->
+                <Border Style="{StaticResource GlassCardStyle}">
+                    <Border.Resources>
+                        <!-- Local style for the glass card's :before and :after effects -->
+                        <Style TargetType="Border" x:Key="GlassCardPseudoElementStyle">
+                            <Setter Property="Background">
+                                <Setter.Value>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                        <GradientStop Color="#40FFFFFF" Offset="0"/>
+                                        <!-- rgba(255,255,255,0.25) -->
+                                        <GradientStop Color="#0DFFFFFF" Offset="1"/>
+                                        <!-- rgba(255,255,255,0.05) -->
+                                    </LinearGradientBrush>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="IsHitTestVisible" Value="False"/>
+                            <Setter Property="Panel.ZIndex" Value="1"/>
+                            <Setter Property="CornerRadius" Value="60 60 0 0"/>
+                            <!-- Top corners only for :before -->
+                        </Style>
+                    </Border.Resources>
+                    <StackPanel>
+                        <!-- Pseudo-element :before effect -->
+                        <Border Style="{StaticResource GlassCardPseudoElementStyle}" Height="18" VerticalAlignment="Top"/>
+
+                        <!-- Register Header -->
+                        <StackPanel HorizontalAlignment="Center" Margin="0 0 0 24">
+                            <Image Source="/images/Others/logo.png" AutomationProperties.Name="ALPHA Logo" Width="60" Height="60" Margin="0 0 0 10"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   RenderTransformOrigin="0.5,0.5" Cursor="Hand"
+                                   Stretch="UniformToFill"
+                                   Style="{StaticResource RegisterLogoShadowEffect}">
+                                <!-- Applied the style here -->
+                                <Image.RenderTransform>
+                                    <TransformGroup>
+                                        <ScaleTransform/>
+                                        <RotateTransform/>
+                                    </TransformGroup>
+                                </Image.RenderTransform>
+                                <!-- No explicit hover animations defined in CSS, so omitting for now -->
+                            </Image>
+                            <TextBlock Text="ALPHA Sign Up" Foreground="White" FontSize="26" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        </StackPanel>
+
+                        <!-- Register Form -->
+                        <StackPanel x:Name="RegisterFormPanel" Margin="0 0 0 16">
+                            <StackPanel Margin="0 0 0 16">
+                                <Label Content="Username" Foreground="White" HorizontalAlignment="Left" Margin="0 0 0 4"/>
+                                <TextBox x:Name="UsernameTextBox" Text="{Binding Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource RegisterTextBoxStyle}"
+                                         ToolTip="Enter your desired username."/>
+                            </StackPanel>
+
+                            <StackPanel Margin="0 0 0 16">
+                                <Label Content="Email" Foreground="White" HorizontalAlignment="Left" Margin="0 0 0 4"/>
+                                <TextBox x:Name="EmailTextBox" Text="{Binding Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource RegisterTextBoxStyle}"
+                                         ToolTip="Enter your email address."/>
+                            </StackPanel>
+
+                            <StackPanel Margin="0 0 0 16">
+                                <Label Content="Password" Foreground="White" HorizontalAlignment="Left" Margin="0 0 0 4"/>
+                                <PasswordBox x:Name="PasswordBox" Style="{StaticResource RegisterPasswordBoxStyle}"
+                                             ToolTip="Enter your password."/>
+                            </StackPanel>
+
+                            <StackPanel Margin="0 0 0 16">
+                                <Label Content="Phone Number" Foreground="White" HorizontalAlignment="Left" Margin="0 0 0 4"/>
+                                <TextBox x:Name="PhoneNumberTextBox" Text="{Binding PhoneNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource RegisterTextBoxStyle}"
+                                         ToolTip="Enter your phone number (optional)."/>
+                            </StackPanel>
+
+                            <StackPanel Margin="0 0 0 16">
+                                <Label Content="Date of Birth" Foreground="White" HorizontalAlignment="Left" Margin="0 0 0 4"/>
+                                <DatePicker x:Name="DobDatePicker" SelectedDate="{Binding DoB, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            Style="{StaticResource RegisterDatePickerStyle}"
+                                            ToolTip="Select your date of birth (optional)."/>
+                            </StackPanel>
+
+                            <!-- Error Message -->
+                            <Border x:Name="ErrorMessageBorder" Visibility="{Binding HasErrorMessage, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                    Style="{StaticResource ErrorAlertStyle}">
+                                <TextBlock Text="{Binding ErrorMessage}"/>
+                            </Border>
+
+                            <!-- Success Message Popup -->
+                            <Border x:Name="SuccessPopupBoard" Visibility="{Binding HasMessage, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                    Style="{StaticResource SuccessPopupBoardStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Message}" Foreground="White" FontSize="22" FontWeight="Bold" Margin="0 0 0 12" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="Redirecting to login page..." Foreground="White" FontSize="16" Margin="0 0 0 18" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Button Content="Sign Up" Click="SignUpButton_Click" Style="{StaticResource RegisterButtonStyle}"/>
+                        </StackPanel>
+
+                        <!-- Pseudo-element :after effect (placed at the bottom of the StackPanel) -->
+                        <Border Style="{StaticResource GlassCardPseudoElementStyle}" Height="8" Margin="0 18 0 0"
+                                HorizontalAlignment="Center" Width="648"/>
+
+                        <!-- Already have an account? Log in Link -->
+                        <TextBlock HorizontalAlignment="Center" Margin="0 16 0 0">
+                            <Run Text="Already have an account? " Foreground="White"/>
+                            <Hyperlink NavigateUri="/Views/Login.xaml" RequestNavigate="Hyperlink_RequestNavigate" Style="{StaticResource RegisterFooterHyperlinkStyle}">
+                                Log in
+                            </Hyperlink>
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+            </ScrollViewer>
+        </Grid>
+    </Grid>
+</Page>
