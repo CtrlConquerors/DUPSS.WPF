@@ -20,7 +20,7 @@
             <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" From="0.92" To="1" Duration="0:0:0.35">
                 <DoubleAnimation.EasingFunction>
                     <CubicEase EasingMode="EaseOut"/>
-                    </DoubleAnimation.EasingFunction>
+                </DoubleAnimation.EasingFunction>
             </DoubleAnimation>
             <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" From="0.92" To="1" Duration="0:0:0.35">
                 <DoubleAnimation.EasingFunction>
@@ -289,9 +289,10 @@
             </Style.Triggers>
         </Style>
 
-        <!-- Converter for string to visibility (from CommonConverters.cs) -->
+        <!-- Converters -->
         <local:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
         <local:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <local:DateTimeToDateOnlyConverter x:Key="DateTimeToDateOnlyConverter"/>
 
         <!-- Style for the Register Logo Shadow Effect -->
         <Style x:Key="RegisterLogoShadowEffect" TargetType="Image">
@@ -306,7 +307,7 @@
 
     <Grid>
         <!-- Background image -->
-        <Image Source="/images/Others/sign1.jpg" Stretch="UniformToFill" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+        <Image Source="/images/Others/login-background.png" Stretch="UniformToFill" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
 
         <!-- Register Container - Centers the card -->
         <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -361,14 +362,14 @@
                         <StackPanel x:Name="RegisterFormPanel" Margin="0 0 0 16">
                             <StackPanel Margin="0 0 0 16">
                                 <Label Content="Username" Foreground="White" HorizontalAlignment="Left" Margin="0 0 0 4"/>
-                                <TextBox x:Name="UsernameTextBox" Text="{Binding Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                <TextBox x:Name="UsernameTextBox" Text="{Binding NewUser.Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                          Style="{StaticResource RegisterTextBoxStyle}"
                                          ToolTip="Enter your desired username."/>
                             </StackPanel>
 
                             <StackPanel Margin="0 0 0 16">
                                 <Label Content="Email" Foreground="White" HorizontalAlignment="Left" Margin="0 0 0 4"/>
-                                <TextBox x:Name="EmailTextBox" Text="{Binding Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                <TextBox x:Name="EmailTextBox" Text="{Binding NewUser.Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                          Style="{StaticResource RegisterTextBoxStyle}"
                                          ToolTip="Enter your email address."/>
                             </StackPanel>
@@ -381,14 +382,14 @@
 
                             <StackPanel Margin="0 0 0 16">
                                 <Label Content="Phone Number" Foreground="White" HorizontalAlignment="Left" Margin="0 0 0 4"/>
-                                <TextBox x:Name="PhoneNumberTextBox" Text="{Binding PhoneNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                <TextBox x:Name="PhoneNumberTextBox" Text="{Binding NewUser.PhoneNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                          Style="{StaticResource RegisterTextBoxStyle}"
                                          ToolTip="Enter your phone number (optional)."/>
                             </StackPanel>
 
                             <StackPanel Margin="0 0 0 16">
                                 <Label Content="Date of Birth" Foreground="White" HorizontalAlignment="Left" Margin="0 0 0 4"/>
-                                <DatePicker x:Name="DobDatePicker" SelectedDate="{Binding DoB, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                <DatePicker x:Name="DobDatePicker" SelectedDate="{Binding NewUser.DoB, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource DateTimeToDateOnlyConverter}}"
                                             Style="{StaticResource RegisterDatePickerStyle}"
                                             ToolTip="Select your date of birth (optional)."/>
                             </StackPanel>
