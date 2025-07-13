@@ -97,43 +97,54 @@ namespace DUPSS.WPF.Layouts
                     LogoutButton.Visibility = Visibility.Visible;
                     WelcomeTextBlock.Visibility = Visibility.Visible;
 
-                    // Attempt to get UserId from claims
                     string? userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
                     if (!string.IsNullOrEmpty(userId))
                     {
-                        // Fetch user details from the database using UserApiService
-                        // Use .Result or await if necessary, but be careful with deadlocks
-                        // For simplicity, directly accessing static App.UserApiService
-                        _ = Task.Run(async () => // Run on a background thread to avoid blocking UI
+                        BtnAppointmentHome.Visibility = Visibility.Collapsed;
+                        BtnAppointmentConsultant.Visibility = Visibility.Collapsed;
+
+                        _ = Task.Run(async () =>
                         {
                             try
                             {
                                 var userDto = await _userApiService.GetByIdAsync(userId);
-                                Application.Current.Dispatcher.Invoke(() => // Update UI on UI thread
+                                Application.Current.Dispatcher.Invoke(() =>
                                 {
                                     if (userDto != null)
                                     {
                                         WelcomeTextBlock.Text = $"Welcome, {userDto.Username}!";
+                                        if (userDto.RoleId == "CO")
+                                        {
+                                            BtnAppointmentConsultant.Visibility = Visibility.Visible;
+                                        }
+                                        else
+                                        {
+                                            BtnAppointmentHome.Visibility = Visibility.Visible;
+                                        }
                                     }
                                     else
                                     {
-                                        WelcomeTextBlock.Text = "Welcome, Authenticated User!"; // Fallback if user not found in DB
+                                        WelcomeTextBlock.Text = "Welcome, Authenticated User!";
                                     }
                                 });
                             }
                             catch (Exception ex)
                             {
-                                Console.WriteLine($"Error fetching user details in MainLayout: {ex.Message}");
-                                Application.Current.Dispatcher.Invoke(() => // Update UI on UI thread
+                                Console.WriteLine($"Error fetching user details: {ex.Message}");
+                                Application.Current.Dispatcher.Invoke(() =>
                                 {
-                                    WelcomeTextBlock.Text = "Welcome, User (Error)!"; // Show error if fetching fails
+                                    WelcomeTextBlock.Text = "Welcome, User (Error)!";
                                 });
                             }
                         });
                     }
                     else
                     {
-                        WelcomeTextBlock.Text = "Welcome, Authenticated User!"; // Fallback if UserId claim is missing
+                        // Không có userId thì đừng hiển thị
+                        BtnAppointmentHome.Visibility = Visibility.Collapsed;
+                        BtnAppointmentConsultant.Visibility = Visibility.Collapsed;
+                        WelcomeTextBlock.Text = "Welcome, Authenticated User!";
                     }
                 }
                 else
@@ -142,7 +153,12 @@ namespace DUPSS.WPF.Layouts
                     LoginButton.Visibility = Visibility.Visible;
                     LogoutButton.Visibility = Visibility.Collapsed;
                     WelcomeTextBlock.Visibility = Visibility.Collapsed;
+
+                    // Hide both buttons
+                    BtnAppointmentHome.Visibility = Visibility.Collapsed;
+                    BtnAppointmentConsultant.Visibility = Visibility.Collapsed;
                 }
+
             });
         }
 

@@ -6,51 +6,56 @@
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" Width="700" Height="500">
         <Grid Margin="20">
-            <Border Padding="30" Background="White" CornerRadius="20"
-                    BorderBrush="#2d5fa4" BorderThickness="3">
+            <Border Padding="30" Background="White" CornerRadius="16"
+                    BorderBrush="#2d5fa4" BorderThickness="2">
                 <Border.Effect>
-                    <DropShadowEffect Color="Black" BlurRadius="10" ShadowDepth="3" Opacity="0.3"/>
+                    <DropShadowEffect Color="Black" BlurRadius="8" ShadowDepth="2" Opacity="0.25"/>
                 </Border.Effect>
 
                 <StackPanel>
-                    <TextBlock Text="🎨 Booking appointment with consultant"
-                               FontSize="24" FontWeight="Bold" Foreground="#2d5fa4"
-                               Margin="0 0 0 20" HorizontalAlignment="Center"/>
+                    <!-- Header -->
+                    <TextBlock Text="🎨 Book an Appointment"
+                               FontSize="26" FontWeight="Bold" Foreground="#2d5fa4"
+                               HorizontalAlignment="Center" Margin="0,0,0,20"/>
 
+                    <!-- Warning -->
                     <TextBlock x:Name="WarningText"
                                Text="⚠️ You already have active appointment(s). Please cancel or finish them before booking new."
                                Foreground="#b45309" FontWeight="Bold"
                                Visibility="Collapsed"
-                               TextWrapping="Wrap" Margin="0 0 0 10"/>
+                               TextWrapping="Wrap" Margin="0,0,0,15"/>
 
-                    <StackPanel Margin="0 0 0 15">
-                        <TextBlock Text="Choose date" FontWeight="Bold" Foreground="#2d5fa4"/>
-                        <ComboBox x:Name="DateComboBox" SelectionChanged="DateComboBox_SelectionChanged"/>
+                    <!-- Date -->
+                    <StackPanel Margin="0,0,0,12">
+                        <TextBlock Text="📅 Choose date" FontWeight="SemiBold" Foreground="#2d5fa4" Margin="0,0,0,4"/>
+                        <ComboBox x:Name="DateComboBox" Height="32" Background="#F0F2F5" BorderThickness="0" Padding="6"
+                                  SelectionChanged="DateComboBox_SelectionChanged"/>
                     </StackPanel>
 
-                    <StackPanel Margin="0 0 0 15">
-                        <TextBlock Text="Choose time slot" FontWeight="Bold" Foreground="#2d5fa4"/>
-                        <ComboBox x:Name="SlotComboBox"/>
+                    <!-- Time Slot -->
+                    <StackPanel Margin="0,0,0,12">
+                        <TextBlock Text="🕒 Choose time slot" FontWeight="SemiBold" Foreground="#2d5fa4" Margin="0,0,0,4"/>
+                        <ComboBox x:Name="SlotComboBox" Height="32" Background="#F0F2F5" BorderThickness="0" Padding="6"/>
                     </StackPanel>
 
-                    <StackPanel Margin="0 0 0 15">
-                        <TextBlock Text="Topic (Describe what you'd like to discuss)" FontWeight="Bold" Foreground="#2d5fa4"/>
-                        <TextBox x:Name="TopicTextBox"/>
+                    <!-- Topic -->
+                    <StackPanel Margin="0,0,0,18">
+                        <TextBlock Text="💡 Topic (What would you like to discuss?)" FontWeight="SemiBold" Foreground="#2d5fa4" Margin="0,0,0,4"/>
+                        <TextBox x:Name="TopicTextBox" Height="70" Background="#F0F2F5" BorderThickness="0" TextWrapping="Wrap" Padding="6"/>
                     </StackPanel>
 
+                    <!-- Button -->
                     <Button Content="🖌️ Book Now"
-                        Background="#2d5fa4"
-                        Foreground="White"
-                        FontWeight="Bold"
-                        Padding="10"
-                        Click="BookNow_Click"
-                        HorizontalAlignment="Center"
-                        Width="100"
-                        Height="20"
-                        Margin="0 10 0 0">      
+                            Background="#2d5fa4" Foreground="White"
+                            FontWeight="SemiBold"
+                            Padding="10"
+                            Width="140" Height="36"
+                            HorizontalAlignment="Center" Cursor="Hand"
+                            Click="BookNow_Click"
+                            Margin="0,10,0,0">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
-                                <Border Background="{TemplateBinding Background}" CornerRadius="20">
+                                <Border Background="{TemplateBinding Background}" CornerRadius="18">
                                     <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
                             </ControlTemplate>

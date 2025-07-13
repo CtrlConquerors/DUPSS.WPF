@@ -5,19 +5,25 @@
       Background="#F0F4FF">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <Border Padding="20" Background="White" Margin="20" MaxWidth="850" HorizontalAlignment="Center" CornerRadius="10" >
+        <Border Padding="20" Background="White" Margin="20" MaxWidth="850"
+                HorizontalAlignment="Center" CornerRadius="12">
+            <Border.Effect>
+                <DropShadowEffect Color="Black" Opacity="0.2" BlurRadius="8" Direction="270" ShadowDepth="2"/>
+            </Border.Effect>
             <StackPanel>
                 <!-- Header -->
                 <StackPanel HorizontalAlignment="Center" Margin="0,0,0,25">
-                    <TextBlock Text="📅" FontSize="48" HorizontalAlignment="Center" />
-                    <TextBlock Text="Welcome to the Appointment Center" FontSize="28" FontWeight="Bold" 
+                    <TextBlock Text="📅" FontSize="48" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Welcome to the Appointment Center"
+                               FontSize="28" FontWeight="Bold"
                                Foreground="#3554d1" HorizontalAlignment="Center" Margin="0,10,0,0"/>
                     <TextBlock Text="Book confidential 1-on-1 online sessions with our professional consultants"
                                FontSize="16" Foreground="#3554d1" HorizontalAlignment="Center" Margin="0,5,0,0"/>
                 </StackPanel>
 
                 <!-- About this feature -->
-                <GroupBox Header="💡 About this feature" Margin="0,0,0,15" FontWeight="Bold" Foreground="#3554d1">
+                <GroupBox Header="💡 About this feature" Margin="0,0,0,15"
+                          FontWeight="Bold" Foreground="#3554d1">
                     <StackPanel Margin="10,5">
                         <TextBlock TextWrapping="Wrap" FontWeight="Normal" Margin="0,0,0,8">
                             This feature lets you schedule private online consultation sessions.
@@ -30,7 +36,8 @@
                 </GroupBox>
 
                 <!-- Important Booking Rules -->
-                <GroupBox Header="📌 Important Booking Rules" Margin="0,0,0,15" FontWeight="Bold" Foreground="#3554d1">
+                <GroupBox Header="📌 Important Booking Rules" Margin="0,0,0,15"
+                          FontWeight="Bold" Foreground="#3554d1">
                     <StackPanel Margin="10,5">
                         <TextBlock Text="✅ You can have up to 1 active appointment (Pending or Accepted) at a time" Margin="10,2"/>
                         <TextBlock Text="⏰ You can cancel or reschedule at least 4 hours before the scheduled time" Margin="10,2"/>
@@ -40,7 +47,8 @@
                 </GroupBox>
 
                 <!-- Typical Consultant Availability -->
-                <GroupBox Header="🕐 Typical Consultant Availability" Margin="0,0,0,15" FontWeight="Bold" Foreground="#3554d1">
+                <GroupBox Header="🕐 Typical Consultant Availability" Margin="0,0,0,15"
+                          FontWeight="Bold" Foreground="#3554d1">
                     <StackPanel Margin="10,5">
                         <TextBlock Text="Our consultants typically offer appointments during these periods:" Margin="0,0,0,8"/>
                         <TextBlock Text="Weekdays (Monday to Friday):" FontWeight="Bold" Margin="10,0"/>
@@ -52,7 +60,8 @@
                 </GroupBox>
 
                 <!-- Popular Consultation Topics -->
-                <GroupBox Header="🧠 Popular Consultation Topics" Margin="0,0,0,20" FontWeight="Bold" Foreground="#3554d1">
+                <GroupBox Header="🧠 Popular Consultation Topics" Margin="0,0,0,20"
+                          FontWeight="Bold" Foreground="#3554d1">
                     <StackPanel Margin="10,5">
                         <TextBlock Text="🚭 Drug Use Prevention &amp; Awareness" Margin="10,2"/>
                         <TextBlock Text="💬 Stress &amp; Mental Health Support" Margin="10,2"/>
@@ -67,19 +76,21 @@
                     <ItemsControl x:Name="ConsultantsListBox" Margin="5">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <WrapPanel />
+                                <WrapPanel/>
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border Background="#f5f8ff" Padding="10" Margin="5" CornerRadius="8" BorderBrush="#3554d122" BorderThickness="1" Width="200">
+                                <Border Background="#f5f8ff" Padding="10" Margin="5"
+                                        CornerRadius="8" BorderBrush="#3554d122" BorderThickness="1" Width="200">
                                     <StackPanel>
-                                        <TextBlock Text="{Binding Username}" FontWeight="Bold" FontSize="16" Foreground="#3554d1"/>
+                                        <TextBlock Text="{Binding Username}" FontWeight="Bold"
+                                                   FontSize="16" Foreground="#3554d1"/>
                                         <TextBlock>
-                            <Run Text="Email: "/><Run Text="{Binding Email}"/>
+                                            <Run Text="Email: "/><Run Text="{Binding Email}"/>
                                         </TextBlock>
                                         <TextBlock>
-                            <Run Text="Phone: "/><Run Text="{Binding PhoneNumber}"/>
+                                            <Run Text="Phone: "/><Run Text="{Binding PhoneNumber}"/>
                                         </TextBlock>
                                     </StackPanel>
                                 </Border>
@@ -88,11 +99,16 @@
                     </ItemsControl>
                 </GroupBox>
 
-
                 <!-- Footer buttons -->
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0" >
-                    <Button Content="📖 View Your Appointment History" Width="200" Margin="10,0" Click="ViewHistory_Click"/>
-                    <Button Content="📌 Book an Appointment Now" Width="200" Margin="10,0" Background="#22c55e" Foreground="White" Click="BookAppointment_Click"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
+                    <Button Content="📖 View Your Appointment History" Width="200" Margin="10,0"
+                            Background="#e0e7ff" Foreground="#1e40af"
+                            BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"
+                            Click="ViewHistory_Click"/>
+                    <Button Content="📌 Book an Appointment Now" Width="200" Margin="10,0"
+                            Background="#22c55e" Foreground="White"
+                            BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"
+                            Click="BookAppointment_Click"/>
                 </StackPanel>
             </StackPanel>
         </Border>

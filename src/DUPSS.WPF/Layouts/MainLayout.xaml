@@ -154,12 +154,16 @@
                     <!-- Navigation Menu -->
                     <Button Content="Home" Style="{StaticResource NavButtonStyle}" Tag="Home" Click="Navigate_Click"/>
                     <Button Content="About Us" Style="{StaticResource NavButtonStyle}" Tag="AboutUs" Click="Navigate_Click"/>
-                    <Button Content="Appointments" Style="{StaticResource NavButtonStyle}" Tag="AppointmentHome" Click="Navigate_Click"/>
+                    <Button x:Name="BtnAppointmentHome" Content="Appointments" 
+        Style="{StaticResource NavButtonStyle}" Tag="AppointmentHome" Click="Navigate_Click"/>
+                    <Button x:Name="BtnAppointmentConsultant" Content="Appointment" 
+        Style="{StaticResource NavButtonStyle}" Tag="ConsultantDashboard" Click="Navigate_Click"/>
+
                     <Button Content="Campaign" Style="{StaticResource NavButtonStyle}" Tag="Campaign" Click="Navigate_Click"/>
                     <Button Content="Courses" Style="{StaticResource NavButtonStyle}" Tag="Courses" Click="Navigate_Click"/>
                     <Button Content="Assessments" Style="{StaticResource NavButtonStyle}" Tag="Assessments" Click="Navigate_Click"/>
                     <Button Content="Blog" Style="{StaticResource NavButtonStyle}" Tag="Blog" Click="Navigate_Click"/>
-                    <Button Content="Appointment Consultant" Style="{StaticResource NavButtonStyle}" Tag="AppointmentForConsultant" Click="Navigate_Click"/>
+                    
                 </StackPanel>
             </StackPanel>
         </Border>

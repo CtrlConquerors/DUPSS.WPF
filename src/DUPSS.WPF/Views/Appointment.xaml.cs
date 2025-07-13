@@ -104,9 +104,10 @@ namespace DUPSS.WPF.Views
                     var success = await _appointmentService.UpdateAppointmentStatusAsync(appt.AppointmentId, "Cancel");
                     if (success)
                     {
-                        appt.Status = "Cancel";
-                        ApplyFilter();
                         MessageBox.Show("Appointment cancelled.");
+
+                        // Reload toàn bộ từ server để đảm bảo dữ liệu mới nhất
+                        await LoadAppointmentsAsync();
                     }
                     else
                     {
@@ -115,6 +116,7 @@ namespace DUPSS.WPF.Views
                 }
             }
         }
+
 
         private void FilterButton_Click(object _, RoutedEventArgs __) => ApplyFilter();
 

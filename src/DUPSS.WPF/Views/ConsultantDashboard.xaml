@@ -1,0 +1,145 @@
+﻿<Page x:Class="DUPSS.WPF.Views.ConsultantDashboard"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="ConsultantDashboard"
+      Background="#F0F4FF">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="30">
+
+            <!-- Header -->
+            <TextBlock Text="🎯 Consultant Dashboard"
+                       FontSize="28"
+                       FontWeight="Bold"
+                       Foreground="#3554d1"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,25"/>
+
+            <!-- Dashboard cards -->
+            <UniformGrid Columns="3" Rows="2" Margin="0,0,0,25" HorizontalAlignment="Center">
+                <Border Background="#2563eb" CornerRadius="12" Margin="6" Padding="10">
+                    <Border.Effect>
+                        <DropShadowEffect Color="Black" BlurRadius="6" Opacity="0.2" />
+                    </Border.Effect>
+                    <StackPanel>
+                        <TextBlock Text="Today" Foreground="White" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="TodayCountText" Text="0" Foreground="White" FontSize="26" FontWeight="Bold" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="#0ea5e9" CornerRadius="12" Margin="6" Padding="10">
+                    <Border.Effect>
+                        <DropShadowEffect Color="Black" BlurRadius="6" Opacity="0.2" />
+                    </Border.Effect>
+                    <StackPanel>
+                        <TextBlock Text="Upcoming" Foreground="White" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="UpcomingCountText" Text="0" Foreground="White" FontSize="26" FontWeight="Bold" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="#22c55e" CornerRadius="12" Margin="6" Padding="10">
+                    <Border.Effect>
+                        <DropShadowEffect Color="Black" BlurRadius="6" Opacity="0.2" />
+                    </Border.Effect>
+                    <StackPanel>
+                        <TextBlock Text="Finished" Foreground="White" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="FinishedCountText" Text="0" Foreground="White" FontSize="26" FontWeight="Bold" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="#f59e42" CornerRadius="12" Margin="6" Padding="10">
+                    <Border.Effect>
+                        <DropShadowEffect Color="Black" BlurRadius="6" Opacity="0.2" />
+                    </Border.Effect>
+                    <StackPanel>
+                        <TextBlock Text="Missed" Foreground="White" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="MissedCountText" Text="0" Foreground="White" FontSize="26" FontWeight="Bold" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="#6b7280" CornerRadius="12" Margin="6" Padding="10">
+                    <Border.Effect>
+                        <DropShadowEffect Color="Black" BlurRadius="6" Opacity="0.2" />
+                    </Border.Effect>
+                    <StackPanel>
+                        <TextBlock Text="Cancelled" Foreground="White" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="CancelledCountText" Text="0" Foreground="White" FontSize="26" FontWeight="Bold" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="#ef4444" CornerRadius="12" Margin="6" Padding="10">
+                    <Border.Effect>
+                        <DropShadowEffect Color="Black" BlurRadius="6" Opacity="0.2" />
+                    </Border.Effect>
+                    <StackPanel>
+                        <TextBlock Text="Declined" Foreground="White" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="DeclinedCountText" Text="0" Foreground="White" FontSize="26" FontWeight="Bold" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+
+            <!-- Upcoming appointments -->
+            <TextBlock Text="📅 Upcoming Appointments"
+                       FontSize="20"
+                       FontWeight="Bold"
+                       Foreground="#3554d1"
+                       Margin="0,0,0,10"/>
+
+            <Border Background="White" CornerRadius="10" Padding="10" >
+                <DataGrid x:Name="UpcomingDataGrid"
+                          AutoGenerateColumns="False"
+                          CanUserAddRows="False"
+                          IsReadOnly="True"
+                          HeadersVisibility="Column"
+                          RowBackground="White"
+                          AlternatingRowBackground="#f5f8fe"
+                          GridLinesVisibility="None"
+                          BorderThickness="0"
+                          ColumnHeaderHeight="35"
+                          RowHeight="35"
+                          FontSize="13"
+                          VerticalGridLinesBrush="#e0e0e0">
+
+                    <DataGrid.Resources>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="Background" Value="#3554d1"/>
+                            <Setter Property="Foreground" Value="White"/>
+                            <Setter Property="FontWeight" Value="SemiBold"/>
+                            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                        </Style>
+                    </DataGrid.Resources>
+
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Date" Binding="{Binding DisplayDate}" Width="1.5*"/>
+                        <DataGridTextColumn Header="Member" Binding="{Binding MemberUsername}" Width="*"/>
+                        <DataGridTextColumn Header="Topic" Binding="{Binding Topic}" Width="*"/>
+                        <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="*"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Border>
+
+            <!-- View All Appointments button -->
+            <Button Content="📋 View All Appointments"
+                    Margin="0,20,0,0"
+                    Padding="10"
+                    Background="#3554d1"
+                    Foreground="White"
+                    FontWeight="SemiBold"
+                    Cursor="Hand"
+                    Click="ViewAllAppointments_Click"
+                    HorizontalAlignment="Center"
+                    Width="220"
+                    BorderThickness="0"
+                    Height="36">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="18">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

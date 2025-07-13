@@ -23,6 +23,11 @@ namespace DUPSS.ApiClients
             var response = await _http.DeleteAsync($"api/CampaignRegistration?memberId={memberId}&campaignId={campaignId}");
             return response.IsSuccessStatusCode;
         }
+        public async Task<bool> RegisterAsync(CampaignRegistrationDTO registration)
+        {
+            var response = await _http.PostAsJsonAsync("api/CampaignRegistration", registration);
+            return response.IsSuccessStatusCode;
+        }
 
     }
 

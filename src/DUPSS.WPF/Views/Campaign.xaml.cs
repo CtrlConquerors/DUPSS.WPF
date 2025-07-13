@@ -160,9 +160,12 @@ namespace DUPSS.WPF.Views
         {
             if (sender is Border border && border.DataContext is CampaignDTO campaign)
             {
-                MessageBox.Show($"Navigate to detail for campaign: {campaign.CampaignId}");
+                var detailPage = new CampaignDetail(campaign);  // ✅ Truyền nguyên object CampaignDTO
+                NavigationService?.Navigate(detailPage);
             }
+
         }
+
 
         private void ExploreMoreButton_Click(object sender, RoutedEventArgs e)
         {
