@@ -20,6 +20,7 @@ namespace DUPSS.WPF
         public static CourseEnrollApiService CourseEnrollApiService { get; private set; } = null!;
         public static BlogApiService? BlogApiService { get; private set; }
         public static UserApiService UserApiService { get; private set; } = null!;
+        public static AssessmentApiService AssessmentApiService { get; private set; } = null!;
         public static JwtAuthenticationStateProvider JwtAuthenticationStateProvider { get; private set; } = null!;
         public static AuthApiService AuthApiService { get; private set; } = null!; // ADDED: Static property for AuthApiService
 
@@ -58,6 +59,7 @@ namespace DUPSS.WPF
             CourseApiService = new CourseApiService(HttpClient);
             CourseEnrollApiService = new CourseEnrollApiService(HttpClient);
             UserApiService = new UserApiService(HttpClient);
+            AssessmentApiService = new AssessmentApiService(HttpClient);
             // Ensure JwtAuthenticationStateProvider uses the static AuthApiService
             JwtAuthenticationStateProvider = new JwtAuthenticationStateProvider(AuthApiService, localStorage);
 

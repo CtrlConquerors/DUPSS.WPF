@@ -16,34 +16,42 @@ namespace DUPSS.DAO.DAOs
 
         public async Task<AssessmentResultDTO> CreateAsync(AssessmentResult assessmentResult)
         {
-            _context.AssessmentResult.Add(assessmentResult);
+            _context.AssessmentResult.Add(assessmentResult); 
             await _context.SaveChangesAsync();
             return new AssessmentResultDTO
             {
                 ResultId = assessmentResult.ResultId,
                 AssessmentId = assessmentResult.AssessmentId,
                 MemberId = assessmentResult.MemberId,
-                //Score = assessmentResult.Score,
-                Recommendation = assessmentResult.Recommendation
+                TotalScore = assessmentResult.TotalScore,
+                ScoreDetails = assessmentResult.ScoreDetails,
+                Recommendation = assessmentResult.Recommendation,
+                CompletedOn = assessmentResult.CompletedOn
             };
         }
 
         public async Task<AssessmentResultDTO?> GetByIdAsync(string resultId)
         {
-            return await _context.AssessmentResult
+            return await _context.AssessmentResult 
+                .Include(ar => ar.Assessment)
+                .Include(ar => ar.Member)
                 .Where(ar => ar.ResultId == resultId)
                 .Select(ar => new AssessmentResultDTO
                 {
                     ResultId = ar.ResultId,
                     AssessmentId = ar.AssessmentId,
                     MemberId = ar.MemberId,
-                    //Score = ar.Score,
+                    TotalScore = ar.TotalScore,
+                    ScoreDetails = ar.ScoreDetails,
                     Recommendation = ar.Recommendation,
+                    CompletedOn = ar.CompletedOn,
                     Assessment = ar.Assessment != null ? new AssessmentDTO
                     {
                         AssessmentId = ar.Assessment.AssessmentId,
                         AssessmentType = ar.Assessment.AssessmentType,
-                        Description = ar.Assessment.Description
+                        Description = ar.Assessment.Description,
+                        Version = ar.Assessment.Version,
+                        Language = ar.Assessment.Language
                     } : null,
                     Member = ar.Member != null ? new UserDTO
                     {
@@ -52,7 +60,8 @@ namespace DUPSS.DAO.DAOs
                         DoB = ar.Member.DoB,
                         PhoneNumber = ar.Member.PhoneNumber,
                         Email = ar.Member.Email,
-                        RoleId = ar.Member.RoleId
+                        RoleId = ar.Member.RoleId,
+                        // PasswordHash = string.Empty 
                     } : null
                 })
                 .FirstOrDefaultAsync();
@@ -60,19 +69,25 @@ namespace DUPSS.DAO.DAOs
 
         public async Task<List<AssessmentResultDTO>> GetAllAsync()
         {
-            return await _context.AssessmentResult
+            return await _context.AssessmentResult 
+                .Include(ar => ar.Assessment)
+                .Include(ar => ar.Member)
                 .Select(ar => new AssessmentResultDTO
                 {
                     ResultId = ar.ResultId,
                     AssessmentId = ar.AssessmentId,
                     MemberId = ar.MemberId,
-                    //Score = ar.Score,
+                    TotalScore = ar.TotalScore,
+                    ScoreDetails = ar.ScoreDetails,
                     Recommendation = ar.Recommendation,
+                    CompletedOn = ar.CompletedOn,
                     Assessment = ar.Assessment != null ? new AssessmentDTO
                     {
                         AssessmentId = ar.Assessment.AssessmentId,
                         AssessmentType = ar.Assessment.AssessmentType,
-                        Description = ar.Assessment.Description
+                        Description = ar.Assessment.Description,
+                        Version = ar.Assessment.Version,
+                        Language = ar.Assessment.Language
                     } : null,
                     Member = ar.Member != null ? new UserDTO
                     {
@@ -81,8 +96,28 @@ namespace DUPSS.DAO.DAOs
                         DoB = ar.Member.DoB,
                         PhoneNumber = ar.Member.PhoneNumber,
                         Email = ar.Member.Email,
-                        RoleId = ar.Member.RoleId
+                        RoleId = ar.Member.RoleId,
+                        // PasswordHash = string.Empty 
                     } : null
+                })
+                .ToListAsync();
+        }
+
+        public async Task<List<AssessmentResultDTO>> GetByMemberIdAsync(string memberId)
+        {
+            return await _context.AssessmentResult
+                .Where(r => r.MemberId == memberId)
+                .OrderByDescending(r => r.CompletedOn)
+                .Select(r => new AssessmentResultDTO
+                {
+                    ResultId = r.ResultId,
+                    AssessmentId = r.AssessmentId,
+                    MemberId = r.MemberId,
+                    TotalScore = r.TotalScore,
+                    ScoreDetails = r.ScoreDetails,
+                    Recommendation = r.Recommendation,
+                    CompletedOn = r.CompletedOn,
+                    // Optionally include Assessment info
                 })
                 .ToListAsync();
         }
@@ -95,8 +130,10 @@ namespace DUPSS.DAO.DAOs
 
             existingResult.AssessmentId = assessmentResult.AssessmentId;
             existingResult.MemberId = assessmentResult.MemberId;
-            //existingResult.Score = assessmentResult.Score;
+            existingResult.TotalScore = assessmentResult.TotalScore;
+            existingResult.ScoreDetails = assessmentResult.ScoreDetails;
             existingResult.Recommendation = assessmentResult.Recommendation;
+            existingResult.CompletedOn = assessmentResult.CompletedOn;
 
             await _context.SaveChangesAsync();
             return new AssessmentResultDTO
@@ -104,18 +141,20 @@ namespace DUPSS.DAO.DAOs
                 ResultId = existingResult.ResultId,
                 AssessmentId = existingResult.AssessmentId,
                 MemberId = existingResult.MemberId,
-                //Score = existingResult.Score,
-                Recommendation = existingResult.Recommendation
+                TotalScore = existingResult.TotalScore,
+                ScoreDetails = existingResult.ScoreDetails,
+                Recommendation = existingResult.Recommendation,
+                CompletedOn = existingResult.CompletedOn,
             };
         }
 
         public async Task<bool> DeleteAsync(string resultId)
         {
-            var assessmentResult = await _context.AssessmentResult.FindAsync(resultId);
+            var assessmentResult = await _context.AssessmentResult.FindAsync(resultId); 
             if (assessmentResult == null)
                 return false;
 
-            _context.AssessmentResult.Remove(assessmentResult);
+            _context.AssessmentResult.Remove(assessmentResult); 
             await _context.SaveChangesAsync();
             return true;
         }

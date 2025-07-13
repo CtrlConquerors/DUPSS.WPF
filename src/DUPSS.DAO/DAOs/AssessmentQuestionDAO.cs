@@ -44,8 +44,8 @@ namespace DUPSS.DAO.DAOs
                         AssessmentId = q.Assessment.AssessmentId,
                         AssessmentType = q.Assessment.AssessmentType,
                         Description = q.Assessment.Description,
-                        //Version = q.Assessment.Version,
-                        //Language = q.Assessment.Language
+                        Version = q.Assessment.Version,
+                        Language = q.Assessment.Language
                     } : null
                 })
                 .FirstOrDefaultAsync();
@@ -67,8 +67,8 @@ namespace DUPSS.DAO.DAOs
                         AssessmentId = q.Assessment.AssessmentId,
                         AssessmentType = q.Assessment.AssessmentType,
                         Description = q.Assessment.Description,
-                        //Version = q.Assessment.Version,
-                        //Language = q.Assessment.Language
+                        Version = q.Assessment.Version,
+                        Language = q.Assessment.Language
                     } : null
                 })
                 .ToListAsync();

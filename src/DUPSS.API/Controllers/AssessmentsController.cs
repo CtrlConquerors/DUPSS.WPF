@@ -1,5 +1,6 @@
 ﻿using DUPSS.DB;
 using DUPSS.DAO.DAOs;
+using DUPSS.DAO.Interfaces;
 using DUPSS.DTO.DTOs;
 using DUPSS.Objects;
 using Microsoft.AspNetCore.Mvc;
@@ -10,10 +11,12 @@ namespace DUPSS.API.Controllers
     public class AssessmentsController : ControllerBase
     {
         private readonly AssessmentDAO _assessmentDAO;
+        private readonly IAssessmentResultDAO _assessmentResultDAO;
 
         public AssessmentsController(AppDbContext context)
         {
             _assessmentDAO = new AssessmentDAO(context);
+            _assessmentResultDAO = new AssessmentResultDAO(context);
         }
 
         [HttpGet("GetAll")]
@@ -99,6 +102,46 @@ namespace DUPSS.API.Controllers
                 if (!result)
                     return NotFound($"Assessment with ID {assessmentId} not found.");
                 return Ok(result);
+            }
+            catch (Npgsql.NpgsqlException ex)
+            {
+                return StatusCode(500, $"Database error: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        [HttpPost("{assessmentId}/submit")]
+        public async Task<ActionResult<AssessmentResultDTO>> SubmitAssessment(string assessmentId, [FromBody] AssessmentResultDTO submission)
+        {
+            try
+            {
+                // Validate input
+                if (string.IsNullOrEmpty(submission.MemberId) || string.IsNullOrEmpty(assessmentId) || string.IsNullOrEmpty(submission.ResultId))
+                    return BadRequest("Invalid member, assessment, or result ID.");
+
+                // Verify assessment exists
+                var assessment = await _assessmentDAO.GetByIdAsync(assessmentId);
+                if (assessment == null)
+                    return NotFound($"Assessment with ID {assessmentId} not found.");
+
+                // Create result object
+                var result = new AssessmentResult
+                {
+                    ResultId = submission.ResultId,
+                    AssessmentId = assessmentId,
+                    MemberId = submission.MemberId,
+                    TotalScore = submission.TotalScore ?? 0,
+                    ScoreDetails = submission.ScoreDetails,
+                    Recommendation = submission.Recommendation,
+                    CompletedOn = submission.CompletedOn ?? DateOnly.FromDateTime(DateTime.Now)
+                };
+
+                // Save result
+                var createdResult = await _assessmentResultDAO.CreateAsync(result);
+                return CreatedAtAction(nameof(AssessmentResultsController.GetById), "AssessmentResults", new { resultId = createdResult.ResultId }, createdResult);
             }
             catch (Npgsql.NpgsqlException ex)
             {
