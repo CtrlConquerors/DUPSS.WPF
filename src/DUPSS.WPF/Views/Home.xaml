@@ -385,7 +385,7 @@
                     <Grid.Effect>
                         <DropShadowEffect ShadowDepth="0" BlurRadius="100" Opacity="0.1" Color="Black"/>
                     </Grid.Effect>
-                    <Border Padding="60 0">
+                    <Border Padding="60 0" Margin="0,0,0,5">
                         <StackPanel MaxWidth="1200" HorizontalAlignment="Center">
                             <TextBlock x:Name="TypewriterTextBlock" Style="{StaticResource HeadingTextStyle}"
                                        FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" TextAlignment="Center"
@@ -405,18 +405,18 @@
                                         Click="PrevImage_Click" HorizontalAlignment="Right" Margin="0,179,29,176" RenderTransformOrigin="0.48,0.477" Width="42"/>
 
                                 <!-- Carousel Slides -->
-                                <Grid Background="#fbfbff" Margin="0 0 0 50">
+                                <Grid Background="#fbfbff" Margin="1,0,0,-4">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="375*"/>
+                                        <RowDefinition Height="26*"/>
+                                        <RowDefinition Height="2*"/>
+                                    </Grid.RowDefinitions>
                                     <Grid.Effect>
                                         <DropShadowEffect ShadowDepth="0" BlurRadius="100" Opacity="0.1" Color="Black"/>
                                     </Grid.Effect>
-                                    <Border Padding="60 0">
+                                    <Border Padding="60 0" Margin="0,0,0,-56" Grid.RowSpan="3">
                                         <StackPanel MaxWidth="1200" HorizontalAlignment="Center">
-                                            <TextBlock Text="Our Impact in Pictures"
-                       Style="{StaticResource HeadingTextStyle}"
-                       FontSize="24"
-                       Foreground="{StaticResource PrimaryBlueBrush}"
-                       HorizontalAlignment="Center"
-                       Margin="0,0,0,24"/>
+                                                 
                                             <Grid Height="400" MaxWidth="900" HorizontalAlignment="Center" Margin="0 20 0 0">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="Auto"/>
@@ -432,22 +432,22 @@
                                                     <Grid.Effect>
                                                         <DropShadowEffect ShadowDepth="0" BlurRadius="30" Opacity="0.15" Color="Black"/>
                                                     </Grid.Effect>
-                                                    <Border CornerRadius="15" Background="{StaticResource WhiteBrush}" Margin="-12,-28,-11,0"/>
+                                                    <Border CornerRadius="15" Background="{StaticResource WhiteBrush}" Margin="-12,-34,-11,21"/>
                                                     <!-- Slide 1 -->
                                                     <StackPanel x:Name="Slide1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                Visibility="Visible" Opacity="1">
+                                Visibility="Visible" Opacity="1" Height="272">
                                                         <Image Source="pack://application:,,,/DUPSS.WPF;component/Images/Others/1.jpg"
-                               Width="282" Height="162" Stretch="UniformToFill" Margin="20" VerticalAlignment="Center"/>
+                               Width="282" Height="196" Stretch="UniformToFill" Margin="20" VerticalAlignment="Center"/>
                                                         <Image Source="pack://application:,,,/DUPSS.WPF;component/Images/Others/2.jpg"
-                               Width="303" Height="176" Stretch="UniformToFill" Margin="20" VerticalAlignment="Center"/>
+                               Width="303" Height="187" Stretch="UniformToFill" Margin="20" VerticalAlignment="Center"/>
                                                     </StackPanel>
                                                     <!-- Slide 2 -->
                                                     <StackPanel x:Name="Slide2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center"
                                 Visibility="Collapsed" Opacity="0">
                                                         <Image Source="pack://application:,,,/DUPSS.WPF;component/Images/Others/3.jpg"
-                               Width="380" Height="300" Stretch="UniformToFill" Margin="20" VerticalAlignment="Center"/>
+                               Width="282" Height="162" Stretch="UniformToFill" Margin="20" VerticalAlignment="Center"/>
                                                         <Image Source="pack://application:,,,/DUPSS.WPF;component/Images/Others/4.jpg"
-                               Width="380" Height="300" Stretch="UniformToFill" Margin="20" VerticalAlignment="Center"/>
+                               Width="282" Height="162" Stretch="UniformToFill" Margin="20" VerticalAlignment="Center"/>
                                                     </StackPanel>
                                                 </Grid>
                                                 <!-- Next Button -->
