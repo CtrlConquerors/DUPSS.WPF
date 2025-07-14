@@ -26,7 +26,7 @@ namespace DUPSS.WPF.Views
         private int _currentQuestionIndex = 0;
         private List<string> _selectedAnswerIds = new();
         private string? _currentMemberId;
-        
+
 
         private readonly List<string> _substances = new()
         {
@@ -39,9 +39,9 @@ namespace DUPSS.WPF.Views
             InitializeComponent();
             _assessmentService = App.AssessmentApiService;
             AssessmentId = assessmentId;
-            
+
             var httpClient = App.HttpClient;
-            
+
             var storage = new WpfSecureStorageService();
             _authStateProvider = new JwtAuthenticationStateProvider(new AuthApiService(httpClient), storage);
         }
@@ -56,7 +56,7 @@ namespace DUPSS.WPF.Views
             await LoadMemberIdAsync();
             await LoadAssessmentAsync();
         }
-        
+
         private async Task LoadMemberIdAsync()
         {
             var authState = await _authStateProvider.GetAuthenticationStateAsync();
@@ -518,14 +518,6 @@ namespace DUPSS.WPF.Views
             {
                 if (string.IsNullOrEmpty(_currentMemberId))
                 {
-                    // // Assuming App provides a way to get current user identity
-                    // var identity = (System.Security.Principal.IIdentity)App.CurrentUser?.Identity;
-                    // if (identity?.IsAuthenticated == true)
-                    // {
-                    //     _currentMemberId = identity.Name; // Adjust based on actual claim type
-                    //     Console.WriteLine($"Retrieved MemberId: {_currentMemberId}");
-                    // }
-
                     if (string.IsNullOrEmpty(_currentMemberId))
                     {
                         MessageBox.Show("Failed to retrieve Member ID. Please login again.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -587,12 +579,13 @@ namespace DUPSS.WPF.Views
                     case "CRAFFT":
                         Console.WriteLine($"CRAFFT Submission - Q1: {_userAnswers.GetValueOrDefault("CRAFFT_Q1", "None")}, Q2: {_userAnswers.GetValueOrDefault("CRAFFT_Q2", "None")}, Q3: {_userAnswers.GetValueOrDefault("CRAFFT_Q3", "None")}");
                         bool allZero = _userAnswers.GetValueOrDefault("CRAFFT_Q1", "").EndsWith("_0") &&
-                                      _userAnswers.GetValueOrDefault("CRAFFT_Q2", "").EndsWith("_0") &&
-                                      _userAnswers.GetValueOrDefault("CRAFFT_Q3", "").EndsWith("_0");
+                                       _userAnswers.GetValueOrDefault("CRAFFT_Q2", "").EndsWith("_0") &&
+                                       _userAnswers.GetValueOrDefault("CRAFFT_Q3", "").EndsWith("_0");
 
                         foreach (var question in _questions)
                         {
-                            if (!question.QuestionId.StartsWith("CRAFFT_Q") || (allZero && question.QuestionId != "CRAFFT_Q4"))
+                            // Include Q1-Q4 if allZero, otherwise include all answered questions
+                            if (!question.QuestionId.StartsWith("CRAFFT_Q") || (allZero && question.QuestionId.CompareTo("CRAFFT_Q4") > 0))
                                 continue;
                             if (!_userAnswers.TryGetValue(question.QuestionId, out var answerId) || string.IsNullOrEmpty(answerId))
                                 continue;
@@ -657,7 +650,8 @@ namespace DUPSS.WPF.Views
             {
                 _isSubmitting = false;
                 SubmitButton.Content = "✓ Submit Assessment";
-                ShowPanels();
+                // Ensure Results panel is shown if submission was successful
+                ShowPanels(results: _showResults, assessment: !_showResults && !_hasError);
             }
         }
 
