@@ -27,7 +27,6 @@ namespace DUPSS.WPF.Views
         private List<string> _selectedAnswerIds = new();
         private string? _currentMemberId;
 
-
         private readonly List<string> _substances = new()
         {
             "Tobacco", "Alcohol", "Cannabis", "Cocaine", "Amphetamines",
@@ -41,7 +40,6 @@ namespace DUPSS.WPF.Views
             AssessmentId = assessmentId;
 
             var httpClient = App.HttpClient;
-
             var storage = new WpfSecureStorageService();
             _authStateProvider = new JwtAuthenticationStateProvider(new AuthApiService(httpClient), storage);
         }
@@ -67,7 +65,7 @@ namespace DUPSS.WPF.Views
             }
             else
             {
-                MessageBox.Show("Plsease login to continue.", "Authentication Required", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Please login to continue.", "Authentication Required", MessageBoxButton.OK, MessageBoxImage.Warning);
                 NavigationService?.Navigate(new Uri("/Views/Login.xaml", UriKind.Relative));
             }
         }
@@ -81,20 +79,15 @@ namespace DUPSS.WPF.Views
 
             try
             {
-                Console.WriteLine($"Loading assessment with ID: {AssessmentId}");
-
-                // Load assessment metadata
                 _assessment = await _assessmentService.GetByIdAsync(AssessmentId);
                 if (_assessment == null)
                 {
                     _hasError = true;
                     _errorMessage = "Assessment not found.";
                     ShowPanels(error: true);
-                    Console.WriteLine($"[LoadAssessmentAsync] Assessment not found, _hasError: {_hasError}, _errorMessage: {_errorMessage}");
                     return;
                 }
 
-                // Load questions and answers
                 if (AssessmentId == "ASSIST")
                 {
                     LoadAssistQuestions();
@@ -108,7 +101,6 @@ namespace DUPSS.WPF.Views
                     _hasError = true;
                     _errorMessage = "Unsupported assessment type.";
                     ShowPanels(error: true);
-                    Console.WriteLine($"[LoadAssessmentAsync] Unsupported assessment type, _hasError: {_hasError}, _errorMessage: {_errorMessage}");
                     return;
                 }
 
@@ -117,11 +109,9 @@ namespace DUPSS.WPF.Views
                     _hasError = true;
                     _errorMessage = "No questions defined for this assessment.";
                     ShowPanels(noContent: true);
-                    Console.WriteLine($"[LoadAssessmentAsync] No questions defined, _hasError: {_hasError}, _errorMessage: {_errorMessage}");
                     return;
                 }
 
-                // Initialize user answers with default "No" for Q1 to allow skipping
                 foreach (var question in _questions)
                 {
                     if (question.QuestionId.EndsWith("_Q1"))
@@ -136,11 +126,9 @@ namespace DUPSS.WPF.Views
 
                 LoadCurrentQuestionAnswers();
                 UpdateAssessmentUI();
-                Console.WriteLine($"[LoadAssessmentAsync] Successfully loaded {_assessment.AssessmentType} with {_questions.Count} questions, _currentQuestionIndex: {_currentQuestionIndex}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[LoadAssessmentAsync] Error loading assessment: {ex.Message}, StackTrace: {ex.StackTrace}");
                 _hasError = true;
                 _errorMessage = $"Failed to load assessment: {ex.Message}";
                 ShowPanels(error: true);
@@ -148,9 +136,7 @@ namespace DUPSS.WPF.Views
             finally
             {
                 _isLoading = false;
-                // Only show AssessmentPanel if no errors and questions are loaded
                 ShowPanels(assessment: !_hasError && _questions.Any());
-                Console.WriteLine($"[LoadAssessmentAsync] Final state - _isLoading: {_isLoading}, _hasError: {_hasError}, _showResults: {_showResults}, _showExitConfirmation: {_showExitConfirmation}");
             }
         }
 
@@ -241,8 +227,6 @@ namespace DUPSS.WPF.Views
                     ScoreValue = a.ScoreValue
                 }).ToList();
             }
-
-            Console.WriteLine($"Loaded ASSIST questions: {_questions.Count} total, {_questionAnswers.Count} question-answer sets");
         }
 
         private void LoadCrafftQuestions()
@@ -326,8 +310,6 @@ namespace DUPSS.WPF.Views
                     }
                 }
             };
-
-            Console.WriteLine($"Loaded {_questions.Count} CRAFFT questions, {_questionAnswers.Count} answer sets.");
         }
 
         private void LoadCurrentQuestionAnswers()
@@ -340,11 +322,9 @@ namespace DUPSS.WPF.Views
 
         private void UpdateAssessmentUI()
         {
-            Console.WriteLine($"[UpdateAssessmentUI] Starting - _assessment: {(_assessment != null ? _assessment.AssessmentType : "null")}, _questions.Count: {_questions.Count}, _currentQuestionIndex: {_currentQuestionIndex}");
             if (_assessment == null || !_questions.Any())
             {
                 ShowPanels(noContent: true);
-                Console.WriteLine($"[UpdateAssessmentUI] No assessment or questions, showing NoContentPanel");
                 return;
             }
 
@@ -369,7 +349,6 @@ namespace DUPSS.WPF.Views
             SubmitButton.IsEnabled = IsAnswerSelected() && !_isSubmitting;
 
             ShowPanels(assessment: true);
-            Console.WriteLine($"[UpdateAssessmentUI] Completed - AssessmentPanel.Visible: {AssessmentPanel.Visibility}, NextButton.Visible: {NextButton.Visibility}, SubmitButton.Visible: {SubmitButton.Visibility}");
         }
 
         private void UpdateQuestionUI()
@@ -452,19 +431,16 @@ namespace DUPSS.WPF.Views
             {
                 if (IsCrafftQ1ToQ3AllZero())
                 {
-                    Console.WriteLine("CRAFFT Q1-Q3 all '0', submitting after Q4");
                     await SubmitAssessmentAsync();
                     return;
                 }
                 _currentQuestionIndex++;
-                Console.WriteLine($"CRAFFT Q4 answered, Q1-Q3 not all '0', navigating to Q5, Index: {_currentQuestionIndex}, QuestionId: {_questions[_currentQuestionIndex].QuestionId}");
             }
             else
             {
                 _currentQuestionIndex++;
             }
 
-            Console.WriteLine($"Navigating to QuestionId: {_questions[_currentQuestionIndex].QuestionId}, Index: {_currentQuestionIndex}");
             LoadCurrentQuestionAnswers();
             UpdateAssessmentUI();
         }
@@ -518,12 +494,9 @@ namespace DUPSS.WPF.Views
             {
                 if (string.IsNullOrEmpty(_currentMemberId))
                 {
-                    if (string.IsNullOrEmpty(_currentMemberId))
-                    {
-                        MessageBox.Show("Failed to retrieve Member ID. Please login again.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                        NavigationService?.Navigate(new Uri("/Views/Login.xaml", UriKind.Relative));
-                        return;
-                    }
+                    MessageBox.Show("Failed to retrieve Member ID. Please login again.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    NavigationService?.Navigate(new Uri("/Views/Login.xaml", UriKind.Relative));
+                    return;
                 }
 
                 var scoreDetails = new List<string>();
@@ -555,10 +528,7 @@ namespace DUPSS.WPF.Views
                                     continue;
                                 var answer = _questionAnswers[questionId].FirstOrDefault(a => a.AnswerId == answerId);
                                 if (answer == null)
-                                {
-                                    Console.WriteLine($"Invalid AnswerId for {questionId}: {answerId}");
                                     continue;
-                                }
                                 substanceScore += answer.ScoreValue;
                                 substanceDetails.Add($"Q{i}:{answer.Answer}");
                             }
@@ -577,24 +547,19 @@ namespace DUPSS.WPF.Views
                         }
                         break;
                     case "CRAFFT":
-                        Console.WriteLine($"CRAFFT Submission - Q1: {_userAnswers.GetValueOrDefault("CRAFFT_Q1", "None")}, Q2: {_userAnswers.GetValueOrDefault("CRAFFT_Q2", "None")}, Q3: {_userAnswers.GetValueOrDefault("CRAFFT_Q3", "None")}");
                         bool allZero = _userAnswers.GetValueOrDefault("CRAFFT_Q1", "").EndsWith("_0") &&
                                        _userAnswers.GetValueOrDefault("CRAFFT_Q2", "").EndsWith("_0") &&
                                        _userAnswers.GetValueOrDefault("CRAFFT_Q3", "").EndsWith("_0");
 
                         foreach (var question in _questions)
                         {
-                            // Include Q1-Q4 if allZero, otherwise include all answered questions
                             if (!question.QuestionId.StartsWith("CRAFFT_Q") || (allZero && question.QuestionId.CompareTo("CRAFFT_Q4") > 0))
                                 continue;
                             if (!_userAnswers.TryGetValue(question.QuestionId, out var answerId) || string.IsNullOrEmpty(answerId))
                                 continue;
                             var answer = _questionAnswers[question.QuestionId].FirstOrDefault(a => a.AnswerId == answerId);
                             if (answer == null)
-                            {
-                                Console.WriteLine($"Invalid AnswerId for {question.QuestionId}: {answerId}");
                                 continue;
-                            }
                             totalScore += answer.ScoreValue;
                             scoreDetails.Add($"{question.QuestionId}: {answer.Answer}");
                         }
@@ -615,33 +580,28 @@ namespace DUPSS.WPF.Views
 
                 if (string.IsNullOrEmpty(_assessmentResult.MemberId) || string.IsNullOrEmpty(_assessmentResult.AssessmentId) || string.IsNullOrEmpty(_assessmentResult.ResultId))
                 {
-                    Console.WriteLine("Invalid submission: Missing required fields.");
                     _hasError = true;
                     _errorMessage = "Invalid submission details.";
                     ShowPanels(error: true);
                     return;
                 }
 
-                Console.WriteLine($"Submission Payload: MemberId={_assessmentResult.MemberId}, ResultId={_assessmentResult.ResultId}, TotalScore={_assessmentResult.TotalScore}");
                 var result = await _assessmentService.SubmitAssessmentAsync(AssessmentId, _assessmentResult);
 
                 if (result != null)
                 {
                     _showResults = true;
                     UpdateResultsUI();
-                    Console.WriteLine($"Assessment submitted successfully. ResultId: {result.ResultId}");
                 }
                 else
                 {
                     _hasError = true;
                     _errorMessage = "Failed to submit assessment. Please check your answers and try again.";
-                    Console.WriteLine("Submission failed. Check API response logs for details.");
                     ShowPanels(error: true);
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Submission Exception: {ex.Message}, StackTrace: {ex.StackTrace}");
                 _hasError = true;
                 _errorMessage = $"Failed to submit assessment: {ex.Message}";
                 ShowPanels(error: true);
@@ -650,7 +610,6 @@ namespace DUPSS.WPF.Views
             {
                 _isSubmitting = false;
                 SubmitButton.Content = "✓ Submit Assessment";
-                // Ensure Results panel is shown if submission was successful
                 ShowPanels(results: _showResults, assessment: !_showResults && !_hasError);
             }
         }
@@ -721,8 +680,6 @@ namespace DUPSS.WPF.Views
             ResultsPanel.Visibility = results && _showResults ? Visibility.Visible : Visibility.Collapsed;
             AssessmentPanel.Visibility = assessment && !_showResults ? Visibility.Visible : Visibility.Collapsed;
             ExitConfirmationPanel.Visibility = _showExitConfirmation ? Visibility.Visible : Visibility.Collapsed;
-
-            Console.WriteLine($"[ShowPanels] Panel States - Loading: {LoadingPanel.Visibility}, Error: {ErrorPanel.Visibility}, NoContent: {NoContentPanel.Visibility}, Results: {ResultsPanel.Visibility}, Assessment: {AssessmentPanel.Visibility}, ExitConfirmation: {ExitConfirmationPanel.Visibility}");
 
             if (_hasError)
             {
