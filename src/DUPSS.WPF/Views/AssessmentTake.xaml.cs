@@ -65,6 +65,11 @@ namespace DUPSS.WPF.Views
             {
                 _currentMemberId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             }
+            else
+            {
+                MessageBox.Show("Plsease login to continue.", "Authentication Required", MessageBoxButton.OK, MessageBoxImage.Warning);
+                NavigationService?.Navigate(new Uri("/Views/Login.xaml", UriKind.Relative));
+            }
         }
 
         private async Task LoadAssessmentAsync()
@@ -85,6 +90,7 @@ namespace DUPSS.WPF.Views
                     _hasError = true;
                     _errorMessage = "Assessment not found.";
                     ShowPanels(error: true);
+                    Console.WriteLine($"[LoadAssessmentAsync] Assessment not found, _hasError: {_hasError}, _errorMessage: {_errorMessage}");
                     return;
                 }
 
@@ -102,6 +108,7 @@ namespace DUPSS.WPF.Views
                     _hasError = true;
                     _errorMessage = "Unsupported assessment type.";
                     ShowPanels(error: true);
+                    Console.WriteLine($"[LoadAssessmentAsync] Unsupported assessment type, _hasError: {_hasError}, _errorMessage: {_errorMessage}");
                     return;
                 }
 
@@ -110,6 +117,7 @@ namespace DUPSS.WPF.Views
                     _hasError = true;
                     _errorMessage = "No questions defined for this assessment.";
                     ShowPanels(noContent: true);
+                    Console.WriteLine($"[LoadAssessmentAsync] No questions defined, _hasError: {_hasError}, _errorMessage: {_errorMessage}");
                     return;
                 }
 
@@ -128,11 +136,11 @@ namespace DUPSS.WPF.Views
 
                 LoadCurrentQuestionAnswers();
                 UpdateAssessmentUI();
-                Console.WriteLine($"Successfully loaded {_assessment.AssessmentType} with {_questions.Count} questions");
+                Console.WriteLine($"[LoadAssessmentAsync] Successfully loaded {_assessment.AssessmentType} with {_questions.Count} questions, _currentQuestionIndex: {_currentQuestionIndex}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error loading assessment: {ex.Message}");
+                Console.WriteLine($"[LoadAssessmentAsync] Error loading assessment: {ex.Message}, StackTrace: {ex.StackTrace}");
                 _hasError = true;
                 _errorMessage = $"Failed to load assessment: {ex.Message}";
                 ShowPanels(error: true);
@@ -140,7 +148,9 @@ namespace DUPSS.WPF.Views
             finally
             {
                 _isLoading = false;
-                ShowPanels();
+                // Only show AssessmentPanel if no errors and questions are loaded
+                ShowPanels(assessment: !_hasError && _questions.Any());
+                Console.WriteLine($"[LoadAssessmentAsync] Final state - _isLoading: {_isLoading}, _hasError: {_hasError}, _showResults: {_showResults}, _showExitConfirmation: {_showExitConfirmation}");
             }
         }
 
@@ -330,9 +340,11 @@ namespace DUPSS.WPF.Views
 
         private void UpdateAssessmentUI()
         {
+            Console.WriteLine($"[UpdateAssessmentUI] Starting - _assessment: {(_assessment != null ? _assessment.AssessmentType : "null")}, _questions.Count: {_questions.Count}, _currentQuestionIndex: {_currentQuestionIndex}");
             if (_assessment == null || !_questions.Any())
             {
                 ShowPanels(noContent: true);
+                Console.WriteLine($"[UpdateAssessmentUI] No assessment or questions, showing NoContentPanel");
                 return;
             }
 
@@ -357,6 +369,7 @@ namespace DUPSS.WPF.Views
             SubmitButton.IsEnabled = IsAnswerSelected() && !_isSubmitting;
 
             ShowPanels(assessment: true);
+            Console.WriteLine($"[UpdateAssessmentUI] Completed - AssessmentPanel.Visible: {AssessmentPanel.Visibility}, NextButton.Visible: {NextButton.Visibility}, SubmitButton.Visible: {SubmitButton.Visibility}");
         }
 
         private void UpdateQuestionUI()
@@ -516,7 +529,7 @@ namespace DUPSS.WPF.Views
                     if (string.IsNullOrEmpty(_currentMemberId))
                     {
                         MessageBox.Show("Failed to retrieve Member ID. Please login again.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                        NavigationService?.Navigate(new Uri("/Login.xaml", UriKind.Relative));
+                        NavigationService?.Navigate(new Uri("/Views/Login.xaml", UriKind.Relative));
                         return;
                     }
                 }
@@ -674,9 +687,9 @@ namespace DUPSS.WPF.Views
             }
         }
 
-        private void RetryLoadAssessment_Click(object sender, RoutedEventArgs e)
+        private async void RetryLoadAssessment_Click(object sender, RoutedEventArgs e)
         {
-            LoadAssessmentAsync();
+            await LoadAssessmentAsync();
         }
 
         private void ConfirmExit_Click(object sender, RoutedEventArgs e)
@@ -693,17 +706,17 @@ namespace DUPSS.WPF.Views
 
         private void ExitAssessment_Click(object sender, RoutedEventArgs e)
         {
-            NavigationService?.Navigate(new Uri("/Assessment.xaml", UriKind.Relative));
+            NavigationService?.Navigate(new Uri("/Views/Assessment.xaml", UriKind.Relative));
         }
 
         private void GoBackToAssessments_Click(object sender, RoutedEventArgs e)
         {
-            NavigationService?.Navigate(new Uri("/Assessment.xaml", UriKind.Relative));
+            NavigationService?.Navigate(new Uri("/Views/Assessment.xaml", UriKind.Relative));
         }
 
         private void TakeAnotherAssessment_Click(object sender, RoutedEventArgs e)
         {
-            NavigationService?.Navigate(new Uri("/Assessment.xaml", UriKind.Relative));
+            NavigationService?.Navigate(new Uri("/Views/Assessment.xaml", UriKind.Relative));
         }
 
         private void ShowPanels(bool loading = false, bool error = false, bool noContent = false, bool results = false, bool assessment = false)
@@ -714,6 +727,8 @@ namespace DUPSS.WPF.Views
             ResultsPanel.Visibility = results && _showResults ? Visibility.Visible : Visibility.Collapsed;
             AssessmentPanel.Visibility = assessment && !_showResults ? Visibility.Visible : Visibility.Collapsed;
             ExitConfirmationPanel.Visibility = _showExitConfirmation ? Visibility.Visible : Visibility.Collapsed;
+
+            Console.WriteLine($"[ShowPanels] Panel States - Loading: {LoadingPanel.Visibility}, Error: {ErrorPanel.Visibility}, NoContent: {NoContentPanel.Visibility}, Results: {ResultsPanel.Visibility}, Assessment: {AssessmentPanel.Visibility}, ExitConfirmation: {ExitConfirmationPanel.Visibility}");
 
             if (_hasError)
             {
