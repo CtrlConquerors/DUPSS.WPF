@@ -364,38 +364,38 @@
             <Setter Property="Foreground" Value="#4b5563"/>
             <Setter Property="LineHeight" Value="29.376"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
-        </Style>
+            </Style>
 
-        <!-- Style for the main CourseLayoutGrid Border -->
-        <Style x:Key="CourseLayoutGridStyle" TargetType="Border">
-            <Setter Property="Background" Value="{StaticResource WhiteTransparent65}"/>
-            <Setter Property="CornerRadius" Value="32"/>
-            <Setter Property="Effect">
-                <Setter.Value>
-                    <DropShadowEffect ShadowDepth="12" Color="#1F2687" Opacity="0.18" BlurRadius="48"/>
-                </Setter.Value>
-            </Setter>
-            <Setter Property="Padding" Value="56 48"/>
-            <Setter Property="BorderBrush" Value="{StaticResource WhiteTransparent32}"/>
-            <Setter Property="BorderThickness" Value="2"/>
-            <Setter Property="HorizontalAlignment" Value="Center"/>
-            <Setter Property="VerticalAlignment" Value="Top"/>
-            <Setter Property="MaxWidth" Value="1200"/>
-            <Setter Property="Width" Value="Auto"/>
-        </Style>
+      
+            <Style x:Key="CourseLayoutGridStyle" TargetType="Border">
+                <Setter Property="Background" Value="{StaticResource WhiteTransparent65}"/>
+                <Setter Property="CornerRadius" Value="32"/>
+                <Setter Property="Effect">
+                    <Setter.Value>
+                        <DropShadowEffect ShadowDepth="12" Color="#1F2687" Opacity="0.18" BlurRadius="48"/>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="Padding" Value="56 48"/>
+                <Setter Property="BorderBrush" Value="{StaticResource WhiteTransparent32}"/>
+                <Setter Property="BorderThickness" Value="2"/>
+                <Setter Property="HorizontalAlignment" Value="Center"/>
+                <Setter Property="VerticalAlignment" Value="Top"/>
+                <Setter Property="MaxWidth" Value="1200"/>
+                <Setter Property="Width" Value="Auto"/>
+            </Style>
 
-        <!-- CourseDecorativeImageStyle: Removed Template. Image will be wrapped in Border in XAML. -->
-        <Style x:Key="CourseDecorativeImageStyle" TargetType="Image">
-            <Setter Property="MaxWidth" Value="400"/>
-            <Setter Property="MaxHeight" Value="440"/>
-            <Setter Property="Stretch" Value="UniformToFill"/>
-            <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality"/>
-            <!-- CornerRadius, Effect, BorderBrush, BorderThickness, Background will be on the wrapping Border -->
-            <!-- Removed Style.Triggers as they are handled by the wrapping Border -->
-        </Style>
+            <!-- CourseDecorativeImageStyle: Removed Template. Image will be wrapped in Border in XAML. -->
+            <Style x:Key="CourseDecorativeImageStyle" TargetType="Image">
+                <Setter Property="MaxWidth" Value="400"/>
+                <Setter Property="MaxHeight" Value="440"/>
+                <Setter Property="Stretch" Value="UniformToFill"/>
+                <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality"/>
+                <!-- CornerRadius, Effect, BorderBrush, BorderThickness, Background will be on the wrapping Border -->
+                <!-- Removed Style.Triggers as they are handled by the wrapping Border -->
+            </Style>
 
-        <!-- Define InstructorInfoEffect -->
-        <DropShadowEffect x:Key="InstructorInfoEffect" ShadowDepth="4" Color="#007bff" Opacity="0.10" BlurRadius="24"/>
+            <!-- Define InstructorInfoEffect -->
+            <DropShadowEffect x:Key="InstructorInfoEffect" ShadowDepth="4" Color="#007bff" Opacity="0.10" BlurRadius="24"/>
 
     </Page.Resources>
 
@@ -492,9 +492,11 @@
         </Border>
 
         <!-- NEW: Wrap the CourseContentGrid in a ScrollViewer -->
-        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,0,-28,-21" Grid.RowSpan="2">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Grid.RowSpan="2">
             <Border x:Name="CourseContentGrid" Visibility="{Binding ShowCourseContent, Converter={StaticResource BooleanToVisibilityConverter}}"
-                    Style="{StaticResource CourseLayoutGridStyle}" Margin="0,56,0,0" Height="904">
+                    Style="{StaticResource CourseLayoutGridStyle}" Margin="0,56,0,0"
+                    VerticalAlignment="Stretch">
+                <!-- REMOVED Height="904" and ADDED VerticalAlignment="Stretch" -->
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="2*"/>
@@ -671,8 +673,11 @@
                                 HorizontalAlignment="Left" Width="232" Height="120"/>
 
                         <!-- Enrollment message display: Wrapped TextBlock in Border for background, border, padding, corner radius -->
-                        <Border Padding="10 20" CornerRadius="8" HorizontalAlignment="Left" Margin="0 15 0 0"
-                                Visibility="{Binding HasEnrollmentMessage, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Border Padding="10 20" CornerRadius="8" HorizontalAlignment="Center" Margin="0 15 0 0"
+                                Visibility="{Binding HasEnrollmentMessage, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                Width="400"
+                                Panel.ZIndex="100">
+                            <!-- ADDED: Fixed width for visibility and ZIndex -->
                             <Border.Style>
                                 <Style TargetType="Border">
                                     <Style.Triggers>
@@ -699,7 +704,7 @@
                                     </Style.Triggers>
                                 </Style>
                             </Border.Style>
-                            <TextBlock Text="{Binding EnrollmentMessage}">
+                            <TextBlock Text="{Binding EnrollmentMessage}" TextWrapping="Wrap" TextAlignment="Center"> <!-- ADDED: TextWrapping and TextAlignment -->
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock" BasedOn="{StaticResource EnrollmentMessageStyle}">
                                         <Style.Triggers>

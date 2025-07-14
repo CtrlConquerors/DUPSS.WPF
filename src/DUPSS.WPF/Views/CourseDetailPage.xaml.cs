@@ -125,9 +125,13 @@ namespace DUPSS.WPF.Views
             get => _enrollmentMessage;
             set
             {
-                _enrollmentMessage = value;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(HasEnrollmentMessage));
+                if (_enrollmentMessage != value)
+                {
+                    _enrollmentMessage = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(HasEnrollmentMessage));
+                    Debug.WriteLine($"EnrollmentMessage SET: '{_enrollmentMessage}'"); // ADDED DEBUG
+                }
             }
         }
 
@@ -137,8 +141,12 @@ namespace DUPSS.WPF.Views
             get => _enrollmentMessageClass;
             set
             {
-                _enrollmentMessageClass = value;
-                OnPropertyChanged();
+                if (_enrollmentMessageClass != value)
+                {
+                    _enrollmentMessageClass = value;
+                    OnPropertyChanged();
+                    Debug.WriteLine($"EnrollmentMessageClass SET: '{_enrollmentMessageClass}'"); // ADDED DEBUG
+                }
             }
         }
 
@@ -212,15 +220,26 @@ namespace DUPSS.WPF.Views
                 var authState = await _authStateProvider.GetAuthenticationStateAsync();
                 var user = authState.User;
 
-                _currentLoggedInUserId = null;
+                _currentLoggedInUserId = null; // Reset
                 if (user.Identity?.IsAuthenticated == true)
                 {
                     _currentLoggedInUserId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                     if (string.IsNullOrEmpty(_currentLoggedInUserId))
                     {
-                        Debug.WriteLine("Warning: Authenticated user has no NameIdentifier claim for UserId.");
+                        Debug.WriteLine("Warning: Authenticated user has no NameIdentifier claim for UserId. User will be treated as not logged in for enrollment purposes.");
+                        // If authenticated but no UserID, treat as not logged in for enrollment
+                        _currentLoggedInUserId = null;
+                    }
+                    else
+                    {
+                        Debug.WriteLine($"User is authenticated. Current User ID: {_currentLoggedInUserId}"); // ADDED DEBUG
                     }
                 }
+                else
+                {
+                    Debug.WriteLine("User is NOT authenticated. Current User ID is null."); // ADDED DEBUG
+                }
+
 
                 var fetchedCourseTask = _courseApiService.GetByIdAsync(CourseId);
                 var allEnrollmentsTask = _courseEnrollApiService.GetAllAsync();
@@ -266,6 +285,7 @@ namespace DUPSS.WPF.Views
                             IsEnrolledSuccessfully = true;
                             EnrollmentMessage = "You are already enrolled in this course.";
                             EnrollmentMessageClass = "alert-info";
+                            Debug.WriteLine("User is already enrolled. Setting IsEnrolledSuccessfully to true."); // ADDED DEBUG
                         }
                     }
                 }
@@ -325,6 +345,8 @@ namespace DUPSS.WPF.Views
 
         private async Task EnrollNow()
         {
+            Debug.WriteLine($"EnrollNow() called. Current User ID: {_currentLoggedInUserId}"); // ADDED DEBUG
+
             if (CourseData?.Course == null)
             {
                 await ShowMessage("Error", "Cannot enroll. Invalid course information.", "alert-danger");
@@ -334,6 +356,7 @@ namespace DUPSS.WPF.Views
             if (string.IsNullOrEmpty(_currentLoggedInUserId))
             {
                 await ShowMessage("Authorization Required", "Please login to enroll in courses.", "alert-danger");
+                Debug.WriteLine("Enrollment blocked: User not logged in."); // ADDED DEBUG
                 // Optionally navigate to login page
                 // NavigationService.Navigate(new Uri("/Views/Login.xaml", UriKind.Relative));
                 return;
@@ -378,11 +401,13 @@ namespace DUPSS.WPF.Views
 
         private async Task ShowMessage(string title, string message, string cssClass)
         {
+            Debug.WriteLine($"ShowMessage called: Title='{title}', Message='{message}', Class='{cssClass}'"); // ADDED DEBUG
             EnrollmentMessage = message;
             EnrollmentMessageClass = cssClass;
-            Debug.WriteLine($"{title}: {message}");
+            // Debug.WriteLine($"{title}: {message}"); // Already covered by property setters
             await Task.Delay(5000); // Display message for 5 seconds
             EnrollmentMessage = string.Empty;
+            Debug.WriteLine("EnrollmentMessage cleared after delay."); // ADDED DEBUG
         }
 
         private void GoBackToCourses()
