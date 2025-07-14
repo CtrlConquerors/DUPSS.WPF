@@ -4,76 +4,170 @@
       Title="Appointment Home"
       Background="#F0F4FF">
 
+    <Page.Resources>
+        <!-- Card Style -->
+        <Style x:Key="CardStyle" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="CornerRadius" Value="14"/>
+            <Setter Property="Padding" Value="24"/>
+            <Setter Property="Margin" Value="0,0,0,24"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="#1e68ff" Opacity="0.10" BlurRadius="18" ShadowDepth="0"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <!-- Section Header -->
+        <Style x:Key="SectionHeader" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#3554d1"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+        </Style>
+        <!-- Subtle Text -->
+        <Style x:Key="SubtleText" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="#555"/>
+        </Style>
+        <!-- Consultant Card -->
+        <Style x:Key="ConsultantCard" TargetType="Border">
+            <Setter Property="Background" Value="#f5f8ff"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="12"/>
+            <Setter Property="Margin" Value="8"/>
+            <Setter Property="Width" Value="220"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="#1e68ff" Opacity="0.08" BlurRadius="8" ShadowDepth="0"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <!-- Primary Button -->
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#22c55e"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="Margin" Value="10,0,0,0"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <!-- Remove CornerRadius from Button, set in ControlTemplate -->
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <!-- Secondary Button -->
+        <Style x:Key="SecondaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#e0e7ff"/>
+            <Setter Property="Foreground" Value="#1e40af"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="Margin" Value="0,0,0,0"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <!-- Remove CornerRadius from Button, set in ControlTemplate -->
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Page.Resources>
+
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <Border Padding="20" Background="White" Margin="20" MaxWidth="850"
-                HorizontalAlignment="Center" CornerRadius="12">
-            <Border.Effect>
-                <DropShadowEffect Color="Black" Opacity="0.2" BlurRadius="8" Direction="270" ShadowDepth="2"/>
-            </Border.Effect>
-            <StackPanel>
-                <!-- Header -->
-                <StackPanel HorizontalAlignment="Center" Margin="0,0,0,25">
+        <StackPanel Margin="0,30,0,30">
+            <!-- Header Card -->
+            <Border Style="{StaticResource CardStyle}" Width="900" HorizontalAlignment="Center">
+                <StackPanel>
                     <TextBlock Text="📅" FontSize="48" HorizontalAlignment="Center"/>
                     <TextBlock Text="Welcome to the Appointment Center"
-                               FontSize="28" FontWeight="Bold"
+                               FontSize="30" FontWeight="Bold"
                                Foreground="#3554d1" HorizontalAlignment="Center" Margin="0,10,0,0"/>
                     <TextBlock Text="Book confidential 1-on-1 online sessions with our professional consultants"
                                FontSize="16" Foreground="#3554d1" HorizontalAlignment="Center" Margin="0,5,0,0"/>
                 </StackPanel>
+            </Border>
 
-                <!-- About this feature -->
-                <GroupBox Header="💡 About this feature" Margin="0,0,0,15"
-                          FontWeight="Bold" Foreground="#3554d1">
-                    <StackPanel Margin="10,5">
-                        <TextBlock TextWrapping="Wrap" FontWeight="Normal" Margin="0,0,0,8">
-                            This feature lets you schedule private online consultation sessions.
-                            Each session lasts about 40 minutes. You can:
-                        </TextBlock>
-                        <TextBlock Text="🔍 Choose a consultant manually based on your preference" Margin="10,0"/>
-                        <TextBlock Text="🤖 Let the system auto-assign the most suitable consultant who is available at your chosen time" Margin="10,0"/>
-                        <TextBlock Text="Before confirming, describe your topic so consultants can prepare better." Margin="10,8,0,0"/>
+            <!-- About Feature -->
+            <Border Style="{StaticResource CardStyle}" Width="900" HorizontalAlignment="Center">
+                <StackPanel>
+                    <TextBlock Text="💡 About this feature" Style="{StaticResource SectionHeader}"/>
+                    <TextBlock TextWrapping="Wrap" Style="{StaticResource SubtleText}" Margin="0,0,0,8">
+                        This feature lets you schedule private online consultation sessions. Each session lasts about 40 minutes. You can:
+                    </TextBlock>
+                    <StackPanel Margin="0,0,0,0">
+                        <TextBlock Text="🔍 Choose a consultant manually based on your preference" Style="{StaticResource SubtleText}" Margin="10,0"/>
+                        <TextBlock Text="🤖 Let the system auto-assign the most suitable consultant who is available at your chosen time" Style="{StaticResource SubtleText}" Margin="10,0"/>
+                        <TextBlock Text="Before confirming, describe your topic so consultants can prepare better." Style="{StaticResource SubtleText}" Margin="10,8,0,0"/>
                     </StackPanel>
-                </GroupBox>
+                </StackPanel>
+            </Border>
 
-                <!-- Important Booking Rules -->
-                <GroupBox Header="📌 Important Booking Rules" Margin="0,0,0,15"
-                          FontWeight="Bold" Foreground="#3554d1">
-                    <StackPanel Margin="10,5">
-                        <TextBlock Text="✅ You can have up to 1 active appointment (Pending or Accepted) at a time" Margin="10,2"/>
-                        <TextBlock Text="⏰ You can cancel or reschedule at least 4 hours before the scheduled time" Margin="10,2"/>
-                        <TextBlock Text="⚠️ Each time slot is exclusive: once someone books it, others can't book the same time" Margin="10,2"/>
-                        <TextBlock Text="These rules help ensure fairness and availability for everyone." Margin="10,8,0,0"/>
+            <!-- Booking Rules -->
+            <Border Style="{StaticResource CardStyle}" Width="900" HorizontalAlignment="Center">
+                <StackPanel>
+                    <TextBlock Text="📌 Important Booking Rules" Style="{StaticResource SectionHeader}"/>
+                    <StackPanel>
+                        <TextBlock Text="✅ You can have up to 1 active appointment (Pending or Accepted) at a time" Style="{StaticResource SubtleText}" Margin="10,2"/>
+                        <TextBlock Text="⏰ You can cancel or reschedule at least 4 hours before the scheduled time" Style="{StaticResource SubtleText}" Margin="10,2"/>
+                        <TextBlock Text="⚠️ Each time slot is exclusive: once someone books it, others can't book the same time" Style="{StaticResource SubtleText}" Margin="10,2"/>
+                        <TextBlock Text="These rules help ensure fairness and availability for everyone." Style="{StaticResource SubtleText}" Margin="10,8,0,0"/>
                     </StackPanel>
-                </GroupBox>
+                </StackPanel>
+            </Border>
 
-                <!-- Typical Consultant Availability -->
-                <GroupBox Header="🕐 Typical Consultant Availability" Margin="0,0,0,15"
-                          FontWeight="Bold" Foreground="#3554d1">
-                    <StackPanel Margin="10,5">
-                        <TextBlock Text="Our consultants typically offer appointments during these periods:" Margin="0,0,0,8"/>
-                        <TextBlock Text="Weekdays (Monday to Friday):" FontWeight="Bold" Margin="10,0"/>
-                        <TextBlock Text="Evening: 17:30 – 21:30" Margin="20,0"/>
-                        <TextBlock Text="Weekends (Saturday &amp; Sunday):" FontWeight="Bold" Margin="10,10,0,0"/>
-                        <TextBlock Text="Morning: 09:00 – 11:30" Margin="20,0"/>
-                        <TextBlock Text="Evening: 17:30 – 21:30" Margin="20,0"/>
-                    </StackPanel>
-                </GroupBox>
+            <!-- Consultant Availability -->
+            <Border Style="{StaticResource CardStyle}" Width="900" HorizontalAlignment="Center">
+                <StackPanel>
+                    <TextBlock Text="🕐 Typical Consultant Availability" Style="{StaticResource SectionHeader}"/>
+                    <TextBlock Text="Our consultants typically offer appointments during these periods:" Style="{StaticResource SubtleText}" Margin="0,0,0,8"/>
+                    <TextBlock Text="Weekdays (Monday to Friday):" FontWeight="Bold" Margin="10,0"/>
+                    <TextBlock Text="Evening: 17:30 – 21:30" Style="{StaticResource SubtleText}" Margin="20,0"/>
+                    <TextBlock Text="Weekends (Saturday &amp; Sunday):" FontWeight="Bold" Margin="10,10,0,0"/>
+                    <TextBlock Text="Morning: 09:00 – 11:30" Style="{StaticResource SubtleText}" Margin="20,0"/>
+                    <TextBlock Text="Evening: 17:30 – 21:30" Style="{StaticResource SubtleText}" Margin="20,0"/>
+                </StackPanel>
+            </Border>
 
-                <!-- Popular Consultation Topics -->
-                <GroupBox Header="🧠 Popular Consultation Topics" Margin="0,0,0,20"
-                          FontWeight="Bold" Foreground="#3554d1">
-                    <StackPanel Margin="10,5">
-                        <TextBlock Text="🚭 Drug Use Prevention &amp; Awareness" Margin="10,2"/>
-                        <TextBlock Text="💬 Stress &amp; Mental Health Support" Margin="10,2"/>
-                        <TextBlock Text="🏫 School or Study Challenges" Margin="10,2"/>
-                        <TextBlock Text="👥 Peer Relationships &amp; Social Skills" Margin="10,2"/>
-                        <TextBlock Text="🏠 Family Communication" Margin="10,2"/>
-                    </StackPanel>
-                </GroupBox>
+            <!-- Popular Topics -->
+            <Border Style="{StaticResource CardStyle}" Width="900" HorizontalAlignment="Center">
+                <StackPanel>
+                    <TextBlock Text="🧠 Popular Consultation Topics" Style="{StaticResource SectionHeader}"/>
+                    <WrapPanel>
+                        <Border Background="#e0e7ff" CornerRadius="8" Padding="8,4" Margin="6,6,0,0">
+                            <TextBlock Text="🚭 Drug Use Prevention &amp; Awareness" Foreground="#1e40af" FontWeight="SemiBold"/>
+                        </Border>
+                        <Border Background="#e0e7ff" CornerRadius="8" Padding="8,4" Margin="6,6,0,0">
+                            <TextBlock Text="💬 Stress &amp; Mental Health Support" Foreground="#1e40af" FontWeight="SemiBold"/>
+                        </Border>
+                        <Border Background="#e0e7ff" CornerRadius="8" Padding="8,4" Margin="6,6,0,0">
+                            <TextBlock Text="🏫 School or Study Challenges" Foreground="#1e40af" FontWeight="SemiBold"/>
+                        </Border>
+                        <Border Background="#e0e7ff" CornerRadius="8" Padding="8,4" Margin="6,6,0,0">
+                            <TextBlock Text="👥 Peer Relationships &amp; Social Skills" Foreground="#1e40af" FontWeight="SemiBold"/>
+                        </Border>
+                        <Border Background="#e0e7ff" CornerRadius="8" Padding="8,4" Margin="6,6,0,0">
+                            <TextBlock Text="🏠 Family Communication" Foreground="#1e40af" FontWeight="SemiBold"/>
+                        </Border>
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
 
-                <!-- Consultants List -->
-                <GroupBox Header="👨‍⚕️ Meet Our Consultants" FontWeight="Bold" Foreground="#3554d1">
-                    <ItemsControl x:Name="ConsultantsListBox" Margin="5">
+            <!-- Consultants List -->
+            <Border Style="{StaticResource CardStyle}" Width="900" HorizontalAlignment="Center">
+                <StackPanel>
+                    <TextBlock Text="👨‍⚕️ Meet Our Consultants" Style="{StaticResource SectionHeader}"/>
+                    <ItemsControl x:Name="ConsultantsListBox" Margin="0,10,0,0">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <WrapPanel/>
@@ -81,8 +175,7 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border Background="#f5f8ff" Padding="10" Margin="5"
-                                        CornerRadius="8" BorderBrush="#3554d122" BorderThickness="1" Width="200">
+                                <Border Style="{StaticResource ConsultantCard}">
                                     <StackPanel>
                                         <TextBlock Text="{Binding Username}" FontWeight="Bold"
                                                    FontSize="16" Foreground="#3554d1"/>
@@ -97,20 +190,18 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                </GroupBox>
-
-                <!-- Footer buttons -->
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
-                    <Button Content="📖 View Your Appointment History" Width="200" Margin="10,0"
-                            Background="#e0e7ff" Foreground="#1e40af"
-                            BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"
-                            Click="ViewHistory_Click"/>
-                    <Button Content="📌 Book an Appointment Now" Width="200" Margin="10,0"
-                            Background="#22c55e" Foreground="White"
-                            BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"
-                            Click="BookAppointment_Click"/>
                 </StackPanel>
+            </Border>
+
+            <!-- Footer Buttons -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0">
+                <Button Content="📖 View Your Appointment History" Width="220"
+                        Style="{StaticResource SecondaryButton}"
+                        Click="ViewHistory_Click"/>
+                <Button Content="📌 Book an Appointment Now" Width="220"
+                        Style="{StaticResource PrimaryButton}"
+                        Click="BookAppointment_Click"/>
             </StackPanel>
-        </Border>
+        </StackPanel>
     </ScrollViewer>
 </Page>
