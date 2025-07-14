@@ -1,29 +1,32 @@
-﻿using System.ComponentModel;
+﻿using DUPSS.ApiClients;
+using DUPSS.Common;
+using DUPSS.DTO.DTOs;
+using System.Security.Claims;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
-using DUPSS.ApiClients;
-using DUPSS.DTO.DTOs;
+using System.Windows.Media;
 
 namespace DUPSS.WPF.Views
 {
-    public partial class AssessmentTake : INotifyPropertyChanged
+    public partial class AssessmentTake : Page
     {
-        private readonly AssessmentApiService _assessmentApiService;
+        private readonly AssessmentApiService _assessmentService;
+        private readonly JwtAuthenticationStateProvider _authStateProvider;
         private AssessmentDTO? _assessment;
         private List<AssessmentQuestionDTO> _questions = new();
         private Dictionary<string, List<AssessmentAnswerDTO>> _questionAnswers = new();
         private Dictionary<string, string> _userAnswers = new();
         private AssessmentResultDTO? _assessmentResult;
         private bool _isLoading = true;
-        private bool _hasError;
-        private bool _isSubmitting;
-        private bool _showResults;
-        private bool _showExitConfirmation;
+        private bool _hasError = false;
+        private bool _isSubmitting = false;
+        private bool _showResults = false;
+        private bool _showExitConfirmation = false;
         private string _errorMessage = string.Empty;
-        private int _currentQuestionIndex;
+        private int _currentQuestionIndex = 0;
         private List<string> _selectedAnswerIds = new();
         private string? _currentMemberId;
+        
 
         private readonly List<string> _substances = new()
         {
@@ -31,214 +34,61 @@ namespace DUPSS.WPF.Views
             "Inhalants", "Sedatives", "Hallucinogens", "Opioids", "Other"
         };
 
-        public AssessmentTake(AssessmentApiService assessmentApiService, string assessmentId)
+        public AssessmentTake(string assessmentId)
         {
             InitializeComponent();
-            _assessmentApiService = assessmentApiService ?? throw new ArgumentNullException(nameof(assessmentApiService));
+            _assessmentService = App.AssessmentApiService;
             AssessmentId = assessmentId;
-            DataContext = this;
-            SelectAnswerCommand = new RelayCommand(SelectAnswer, _ => true);
-            Console.WriteLine($"[AssessmentTakePage] Constructor: AssessmentId={AssessmentId}");
-            Loaded += AssessmentTakePage_Loaded;
+            
+            var httpClient = App.HttpClient;
+            
+            var storage = new WpfSecureStorageService();
+            _authStateProvider = new JwtAuthenticationStateProvider(new AuthApiService(httpClient), storage);
         }
 
-        public string AssessmentId { get; }
+        public string AssessmentId { get; set; } = string.Empty;
 
-        public AssessmentDTO? Assessment
+        private AssessmentQuestionDTO CurrentQuestion => _questions[_currentQuestionIndex];
+        private List<AssessmentAnswerDTO> CurrentAnswers => _questionAnswers.GetValueOrDefault(CurrentQuestion.QuestionId, new List<AssessmentAnswerDTO>());
+
+        private async void Page_Loaded(object sender, RoutedEventArgs e)
         {
-            get => _assessment;
-            private set
-            {
-                _assessment = value;
-                OnPropertyChanged(nameof(Assessment));
-                OnPropertyChanged(nameof(IsAssist));
-                Console.WriteLine($"[Assessment] Updated: {(value != null ? $"AssessmentId={value.AssessmentId}" : "null")}");
-            }
-        }
-
-        public List<AssessmentQuestionDTO> Questions
-        {
-            get => _questions;
-            private set
-            {
-                _questions = value;
-                OnPropertyChanged(nameof(Questions));
-                Console.WriteLine($"[Questions] Updated: Count={value.Count}");
-            }
-        }
-
-        public bool HasError
-        {
-            get => _hasError;
-            private set
-            {
-                _hasError = value;
-                OnPropertyChanged(nameof(HasError));
-                Console.WriteLine($"[HasError] Updated: {value}");
-            }
-        }
-
-        public bool IsSubmitting
-        {
-            get => _isSubmitting;
-            private set
-            {
-                _isSubmitting = value;
-                OnPropertyChanged(nameof(IsSubmitting));
-                OnPropertyChanged(nameof(NextButtonText));
-                Console.WriteLine($"[IsSubmitting] Updated: {value}");
-            }
-        }
-
-        public bool ShowResults
-        {
-            get => _showResults;
-            private set
-            {
-                _showResults = value;
-                OnPropertyChanged(nameof(ShowResults));
-                Console.WriteLine($"[ShowResults] Updated: {value}");
-            }
-        }
-
-        public bool ShowExitConfirmation
-        {
-            get => _showExitConfirmation;
-            private set
-            {
-                _showExitConfirmation = value;
-                OnPropertyChanged(nameof(ShowExitConfirmation));
-                Console.WriteLine($"[ShowExitConfirmation] Updated: {value}");
-            }
-        }
-
-        public string ErrorMessage
-        {
-            get => _errorMessage;
-            private set
-            {
-                _errorMessage = value;
-                OnPropertyChanged(nameof(ErrorMessage));
-                Console.WriteLine($"[ErrorMessage] Updated: {value}");
-            }
-        }
-
-        public int CurrentQuestionIndex
-        {
-            get => _currentQuestionIndex;
-            private set
-            {
-                _currentQuestionIndex = value;
-                OnPropertyChanged(nameof(CurrentQuestionIndex));
-                OnPropertyChanged(nameof(CurrentQuestion));
-                OnPropertyChanged(nameof(CurrentAnswers));
-                OnPropertyChanged(nameof(ProgressPercentage));
-                OnPropertyChanged(nameof(CanGoPrevious));
-                OnPropertyChanged(nameof(NextButtonText));
-                OnPropertyChanged(nameof(CurrentSubstance));
-                Console.WriteLine($"[CurrentQuestionIndex] Updated: {value}, QuestionId={CurrentQuestion?.QuestionId}");
-            }
-        }
-
-        public AssessmentQuestionDTO? CurrentQuestion => _questions.ElementAtOrDefault(_currentQuestionIndex);
-
-        public List<AnswerViewModel> CurrentAnswers
-        {
-            get
-            {
-                var answers = _questionAnswers.GetValueOrDefault(CurrentQuestion?.QuestionId, new List<AssessmentAnswerDTO>());
-                return answers.Select(a => new AnswerViewModel
-                {
-                    AnswerId = a.AnswerId,
-                    Answer = a.Answer,
-                    IsSelected = _selectedAnswerIds.Contains(a.AnswerId)
-                }).ToList();
-            }
-        }
-
-        public AssessmentResultDTO? AssessmentResult
-        {
-            get => _assessmentResult;
-            private set
-            {
-                _assessmentResult = value;
-                OnPropertyChanged(nameof(AssessmentResult));
-                OnPropertyChanged(nameof(AssessmentResult.ScoreDetails)); // Changed from ScoreDetailsList
-                Console.WriteLine($"[AssessmentResult] Updated: {(value != null ? $"ResultId={value.ResultId}" : "null")}");
-            }
-        }
-
-        public new bool IsLoaded
-        {
-            get => !_isLoading;
-            private set
-            {
-                _isLoading = !value;
-                OnPropertyChanged(nameof(IsLoaded));
-                Console.WriteLine($"[IsLoaded] Updated: {value}");
-            }
-        }
-
-        public double ProgressPercentage
-        {
-            get => Questions.Any() ? ((double)(CurrentQuestionIndex + 1) / Questions.Count) * 100 : 0;
-        }
-
-        public bool CanGoPrevious => CurrentQuestionIndex > 0;
-
-        public string NextButtonText
-        {
-            get
-            {
-                if (IsSubmitting) return "Submitting...";
-                if (AssessmentId == "CRAFFT" && CurrentQuestion?.QuestionId == "CRAFFT_Q4" && IsCrafftQ1ToQ3AllZero())
-                    return "Submit Assessment";
-                return CurrentQuestionIndex < Questions.Count - 1 ? "Next" : "Submit Assessment";
-            }
-        }
-
-        public bool IsAnswerSelected => _userAnswers.ContainsKey(CurrentQuestion?.QuestionId) && !string.IsNullOrEmpty(_userAnswers[CurrentQuestion.QuestionId]);
-
-        public bool IsAssist => Assessment?.AssessmentType == "ASSIST";
-
-        public string CurrentSubstance
-        {
-            get
-            {
-                if (AssessmentId != "ASSIST") return string.Empty;
-                int substanceIndex = CurrentQuestionIndex / 8;
-                return _substances.ElementAtOrDefault(substanceIndex) ?? string.Empty;
-            }
-        }
-
-        public ICommand SelectAnswerCommand { get; }
-
-        private async void AssessmentTakePage_Loaded(object sender, RoutedEventArgs e)
-        {
-            if (IsLoaded)
-                return;
-            IsLoaded = true;
-            Console.WriteLine("[AssessmentTakePage] Loaded: Starting assessment load.");
+            await LoadMemberIdAsync();
             await LoadAssessmentAsync();
+        }
+        
+        private async Task LoadMemberIdAsync()
+        {
+            var authState = await _authStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            if (user.Identity?.IsAuthenticated == true)
+            {
+                _currentMemberId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            }
         }
 
         private async Task LoadAssessmentAsync()
         {
             _isLoading = true;
-            HasError = false;
-            ErrorMessage = string.Empty;
+            _hasError = false;
+            _errorMessage = string.Empty;
+            ShowPanels(loading: true);
+
             try
             {
-                Console.WriteLine($"[LoadAssessmentAsync] Loading AssessmentId={AssessmentId}");
-                Assessment = await _assessmentApiService.GetByIdAsync(AssessmentId);
-                if (Assessment == null)
+                Console.WriteLine($"Loading assessment with ID: {AssessmentId}");
+
+                // Load assessment metadata
+                _assessment = await _assessmentService.GetByIdAsync(AssessmentId);
+                if (_assessment == null)
                 {
-                    HasError = true;
-                    ErrorMessage = "Assessment not found.";
-                    Console.WriteLine($"[LoadAssessmentAsync] Assessment not found for AssessmentId={AssessmentId}");
+                    _hasError = true;
+                    _errorMessage = "Assessment not found.";
+                    ShowPanels(error: true);
                     return;
                 }
 
+                // Load questions and answers
                 if (AssessmentId == "ASSIST")
                 {
                     LoadAssistQuestions();
@@ -249,44 +99,54 @@ namespace DUPSS.WPF.Views
                 }
                 else
                 {
-                    HasError = true;
-                    ErrorMessage = "Unsupported assessment type.";
-                    Console.WriteLine("[LoadAssessmentAsync] Unsupported assessment type.");
+                    _hasError = true;
+                    _errorMessage = "Unsupported assessment type.";
+                    ShowPanels(error: true);
                     return;
                 }
 
-                if (!Questions.Any())
+                if (!_questions.Any())
                 {
-                    HasError = true;
-                    ErrorMessage = "No questions defined for this assessment.";
-                    Console.WriteLine("[LoadAssessmentAsync] No questions defined.");
+                    _hasError = true;
+                    _errorMessage = "No questions defined for this assessment.";
+                    ShowPanels(noContent: true);
                     return;
                 }
 
-                foreach (var question in Questions)
+                // Initialize user answers with default "No" for Q1 to allow skipping
+                foreach (var question in _questions)
                 {
-                    _userAnswers[question.QuestionId] = question.QuestionId.EndsWith("_Q1") ? $"{question.QuestionId}_NO" : string.Empty;
+                    if (question.QuestionId.EndsWith("_Q1"))
+                    {
+                        _userAnswers[question.QuestionId] = $"{question.QuestionId}_NO";
+                    }
+                    else
+                    {
+                        _userAnswers[question.QuestionId] = string.Empty;
+                    }
                 }
 
                 LoadCurrentQuestionAnswers();
-                Console.WriteLine($"[LoadAssessmentAsync] Successfully loaded {Assessment.AssessmentType} with {Questions.Count} questions");
+                UpdateAssessmentUI();
+                Console.WriteLine($"Successfully loaded {_assessment.AssessmentType} with {_questions.Count} questions");
             }
             catch (Exception ex)
             {
-                HasError = true;
-                ErrorMessage = $"Failed to load assessment: {ex.Message}";
-                Console.WriteLine($"[LoadAssessmentAsync] Error: {ex.Message}");
+                Console.WriteLine($"Error loading assessment: {ex.Message}");
+                _hasError = true;
+                _errorMessage = $"Failed to load assessment: {ex.Message}";
+                ShowPanels(error: true);
             }
             finally
             {
                 _isLoading = false;
-                OnPropertyChanged(nameof(_isLoading));
+                ShowPanels();
             }
         }
 
         private void LoadAssistQuestions()
         {
-            Questions = new List<AssessmentQuestionDTO>();
+            _questions = new List<AssessmentQuestionDTO>();
             _questionAnswers = new Dictionary<string, List<AssessmentAnswerDTO>>();
 
             var frequencyAnswers = new List<AssessmentAnswerDTO>
@@ -326,7 +186,7 @@ namespace DUPSS.WPF.Views
                     new() { QuestionId = $"ASSIST_{substanceId}_Q8", AssessmentId = AssessmentId, Question = $"Have you ever used {substance.ToLower()} by injection?", QuestionType = "MultipleChoice" }
                 };
 
-                Questions.AddRange(substanceQuestions);
+                _questions.AddRange(substanceQuestions);
 
                 _questionAnswers[$"ASSIST_{substanceId}_Q1"] = yesNoAnswers.Select(a => new AssessmentAnswerDTO
                 {
@@ -372,12 +232,12 @@ namespace DUPSS.WPF.Views
                 }).ToList();
             }
 
-            Console.WriteLine($"[LoadAssistQuestions] Loaded {Questions.Count} ASSIST questions, {_questionAnswers.Count} answer sets");
+            Console.WriteLine($"Loaded ASSIST questions: {_questions.Count} total, {_questionAnswers.Count} question-answer sets");
         }
 
         private void LoadCrafftQuestions()
         {
-            Questions = new List<AssessmentQuestionDTO>
+            _questions = new List<AssessmentQuestionDTO>
             {
                 new() { QuestionId = "CRAFFT_Q1", AssessmentId = AssessmentId, Question = "During the PAST 12 MONTHS, on how many days did you drink more than a few sips of beer, wine, or any drink containing alcohol? Put '0' if none.", QuestionType = "Numeric" },
                 new() { QuestionId = "CRAFFT_Q2", AssessmentId = AssessmentId, Question = "During the PAST 12 MONTHS, on how many days did you use any marijuana (cannabis, weed, oil, wax, or hash by smoking, vaping, dabbing, or in edibles) or 'synthetic marijuana' (like 'K2,' 'Spice')? Put '0' if none.", QuestionType = "Numeric" },
@@ -392,398 +252,473 @@ namespace DUPSS.WPF.Views
 
             _questionAnswers = new Dictionary<string, List<AssessmentAnswerDTO>>
             {
-                { "CRAFFT_Q1", new List<AssessmentAnswerDTO> { new() { AnswerId = "CRAFFT_Q1_0", QuestionId = "CRAFFT_Q1", Answer = "0", ScoreValue = 0 }, new() { AnswerId = "CRAFFT_Q1_1PLUS", QuestionId = "CRAFFT_Q1", Answer = "1 or more", ScoreValue = 0 } } },
-                { "CRAFFT_Q2", new List<AssessmentAnswerDTO> { new() { AnswerId = "CRAFFT_Q2_0", QuestionId = "CRAFFT_Q2", Answer = "0", ScoreValue = 0 }, new() { AnswerId = "CRAFFT_Q2_1PLUS", QuestionId = "CRAFFT_Q2", Answer = "1 or more", ScoreValue = 0 } } },
-                { "CRAFFT_Q3", new List<AssessmentAnswerDTO> { new() { AnswerId = "CRAFFT_Q3_0", QuestionId = "CRAFFT_Q3", Answer = "0", ScoreValue = 0 }, new() { AnswerId = "CRAFFT_Q3_1PLUS", QuestionId = "CRAFFT_Q3", Answer = "1 or more", ScoreValue = 0 } } },
-                { "CRAFFT_Q4", new List<AssessmentAnswerDTO> { new() { AnswerId = "CRAFFT_Q4_YES", QuestionId = "CRAFFT_Q4", Answer = "Yes", ScoreValue = 1 }, new() { AnswerId = "CRAFFT_Q4_NO", QuestionId = "CRAFFT_Q4", Answer = "No", ScoreValue = 0 } } },
-                { "CRAFFT_Q5", new List<AssessmentAnswerDTO> { new() { AnswerId = "CRAFFT_Q5_YES", QuestionId = "CRAFFT_Q5", Answer = "Yes", ScoreValue = 1 }, new() { AnswerId = "CRAFFT_Q5_NO", QuestionId = "CRAFFT_Q5", Answer = "No", ScoreValue = 0 } } },
-                { "CRAFFT_Q6", new List<AssessmentAnswerDTO> { new() { AnswerId = "CRAFFT_Q6_YES", QuestionId = "CRAFFT_Q6", Answer = "Yes", ScoreValue = 1 }, new() { AnswerId = "CRAFFT_Q6_NO", QuestionId = "CRAFFT_Q6", Answer = "No", ScoreValue = 0 } } },
-                { "CRAFFT_Q7", new List<AssessmentAnswerDTO> { new() { AnswerId = "CRAFFT_Q7_YES", QuestionId = "CRAFFT_Q7", Answer = "Yes", ScoreValue = 1 }, new() { AnswerId = "CRAFFT_Q7_NO", QuestionId = "CRAFFT_Q7", Answer = "No", ScoreValue = 0 } } },
-                { "CRAFFT_Q8", new List<AssessmentAnswerDTO> { new() { AnswerId = "CRAFFT_Q8_YES", QuestionId = "CRAFFT_Q8", Answer = "Yes", ScoreValue = 1 }, new() { AnswerId = "CRAFFT_Q8_NO", QuestionId = "CRAFFT_Q8", Answer = "No", ScoreValue = 0 } } },
-                { "CRAFFT_Q9", new List<AssessmentAnswerDTO> { new() { AnswerId = "CRAFFT_Q9_YES", QuestionId = "CRAFFT_Q9", Answer = "Yes", ScoreValue = 1 }, new() { AnswerId = "CRAFFT_Q9_NO", QuestionId = "CRAFFT_Q9", Answer = "No", ScoreValue = 0 } } }
+                {
+                    "CRAFFT_Q1", new List<AssessmentAnswerDTO>
+                    {
+                        new() { AnswerId = "CRAFFT_Q1_0", QuestionId = "CRAFFT_Q1", Answer = "0", ScoreValue = 0 },
+                        new() { AnswerId = "CRAFFT_Q1_1PLUS", QuestionId = "CRAFFT_Q1", Answer = "1 or more", ScoreValue = 0 }
+                    }
+                },
+                {
+                    "CRAFFT_Q2", new List<AssessmentAnswerDTO>
+                    {
+                        new() { AnswerId = "CRAFFT_Q2_0", QuestionId = "CRAFFT_Q2", Answer = "0", ScoreValue = 0 },
+                        new() { AnswerId = "CRAFFT_Q2_1PLUS", QuestionId = "CRAFFT_Q2", Answer = "1 or more", ScoreValue = 0 }
+                    }
+                },
+                {
+                    "CRAFFT_Q3", new List<AssessmentAnswerDTO>
+                    {
+                        new() { AnswerId = "CRAFFT_Q3_0", QuestionId = "CRAFFT_Q3", Answer = "0", ScoreValue = 0 },
+                        new() { AnswerId = "CRAFFT_Q3_1PLUS", QuestionId = "CRAFFT_Q3", Answer = "1 or more", ScoreValue = 0 }
+                    }
+                },
+                {
+                    "CRAFFT_Q4", new List<AssessmentAnswerDTO>
+                    {
+                        new() { AnswerId = "CRAFFT_Q4_YES", QuestionId = "CRAFFT_Q4", Answer = "Yes", ScoreValue = 1 },
+                        new() { AnswerId = "CRAFFT_Q4_NO", QuestionId = "CRAFFT_Q4", Answer = "No", ScoreValue = 0 }
+                    }
+                },
+                {
+                    "CRAFFT_Q5", new List<AssessmentAnswerDTO>
+                    {
+                        new() { AnswerId = "CRAFFT_Q5_YES", QuestionId = "CRAFFT_Q5", Answer = "Yes", ScoreValue = 1 },
+                        new() { AnswerId = "CRAFFT_Q5_NO", QuestionId = "CRAFFT_Q5", Answer = "No", ScoreValue = 0 }
+                    }
+                },
+                {
+                    "CRAFFT_Q6", new List<AssessmentAnswerDTO>
+                    {
+                        new() { AnswerId = "CRAFFT_Q6_YES", QuestionId = "CRAFFT_Q6", Answer = "Yes", ScoreValue = 1 },
+                        new() { AnswerId = "CRAFFT_Q6_NO", QuestionId = "CRAFFT_Q6", Answer = "No", ScoreValue = 0 }
+                    }
+                },
+                {
+                    "CRAFFT_Q7", new List<AssessmentAnswerDTO>
+                    {
+                        new() { AnswerId = "CRAFFT_Q7_YES", QuestionId = "CRAFFT_Q7", Answer = "Yes", ScoreValue = 1 },
+                        new() { AnswerId = "CRAFFT_Q7_NO", QuestionId = "CRAFFT_Q7", Answer = "No", ScoreValue = 0 }
+                    }
+                },
+                {
+                    "CRAFFT_Q8", new List<AssessmentAnswerDTO>
+                    {
+                        new() { AnswerId = "CRAFFT_Q8_YES", QuestionId = "CRAFFT_Q8", Answer = "Yes", ScoreValue = 1 },
+                        new() { AnswerId = "CRAFFT_Q8_NO", QuestionId = "CRAFFT_Q8", Answer = "No", ScoreValue = 0 }
+                    }
+                },
+                {
+                    "CRAFFT_Q9", new List<AssessmentAnswerDTO>
+                    {
+                        new() { AnswerId = "CRAFFT_Q9_YES", QuestionId = "CRAFFT_Q9", Answer = "Yes", ScoreValue = 1 },
+                        new() { AnswerId = "CRAFFT_Q9_NO", QuestionId = "CRAFFT_Q9", Answer = "No", ScoreValue = 0 }
+                    }
+                }
             };
 
-            Console.WriteLine($"[LoadCrafftQuestions] Loaded {Questions.Count} CRAFFT questions, {_questionAnswers.Count} answer sets");
+            Console.WriteLine($"Loaded {_questions.Count} CRAFFT questions, {_questionAnswers.Count} answer sets.");
         }
 
         private void LoadCurrentQuestionAnswers()
         {
-            _selectedAnswerIds = _userAnswers.ContainsKey(CurrentQuestion?.QuestionId) && !string.IsNullOrEmpty(_userAnswers[CurrentQuestion.QuestionId])
+            _selectedAnswerIds = _userAnswers.ContainsKey(CurrentQuestion.QuestionId) && !string.IsNullOrEmpty(_userAnswers[CurrentQuestion.QuestionId])
                 ? new List<string> { _userAnswers[CurrentQuestion.QuestionId] }
                 : new List<string>();
-            OnPropertyChanged(nameof(CurrentAnswers));
-            Console.WriteLine($"[LoadCurrentQuestionAnswers] Loaded answers for QuestionId={CurrentQuestion?.QuestionId}, SelectedAnswerIds={string.Join(",", _selectedAnswerIds)}");
+            UpdateQuestionUI();
         }
 
-        private void SelectAnswer(object parameter)
+        private void UpdateAssessmentUI()
         {
-            if (parameter is string answerId && CurrentQuestion != null)
+            if (_assessment == null || !_questions.Any())
             {
-                _selectedAnswerIds = new List<string> { answerId };
-                _userAnswers[CurrentQuestion.QuestionId] = answerId;
-
-                if (AssessmentId == "ASSIST" && CurrentQuestion.QuestionId.EndsWith("_Q1") && answerId.EndsWith("_NO"))
-                {
-                    var substanceId = CurrentQuestion.QuestionId.Split('_')[1];
-                    for (int i = 2; i <= 7; i++)
-                    {
-                        _userAnswers[$"ASSIST_{substanceId}_Q{i}"] = $"ASSIST_{substanceId}_Q{i}_NO";
-                    }
-                    _userAnswers[$"ASSIST_{substanceId}_Q8"] = $"ASSIST_{substanceId}_Q8_NEVER";
-                    Console.WriteLine($"[SelectAnswer] ASSIST Q1 answered 'NO' for {substanceId}, auto-set Q2-Q8");
-                }
-
-                OnPropertyChanged(nameof(CurrentAnswers));
-                OnPropertyChanged(nameof(IsAnswerSelected));
-                Console.WriteLine($"[SelectAnswer] Selected AnswerId={answerId} for QuestionId={CurrentQuestion.QuestionId}");
+                ShowPanels(noContent: true);
+                return;
             }
+
+            AssessmentType.Text = _assessment.AssessmentType;
+            AssessmentDescription.Text = _assessment.Description;
+            SubstanceInfo.Visibility = AssessmentId == "ASSIST" ? Visibility.Visible : Visibility.Collapsed;
+            if (AssessmentId == "ASSIST")
+            {
+                int substanceIndex = _currentQuestionIndex / 8;
+                SubstanceInfo.Text = $"Current Section: {_substances[substanceIndex]}";
+            }
+
+            ProgressText.Text = $"Question {_currentQuestionIndex + 1} of {_questions.Count}";
+            ProgressPercentage.Text = $"{Math.Round(((double)(_currentQuestionIndex + 1) / _questions.Count) * 100, 0)}%";
+            ProgressBar.Value = ((double)(_currentQuestionIndex + 1) / _questions.Count) * 100;
+
+            UpdateQuestionUI();
+            PreviousButton.IsEnabled = _currentQuestionIndex > 0;
+            NextButton.Visibility = _currentQuestionIndex < _questions.Count - 1 ? Visibility.Visible : Visibility.Collapsed;
+            SubmitButton.Visibility = _currentQuestionIndex == _questions.Count - 1 || (AssessmentId == "CRAFFT" && CurrentQuestion.QuestionId == "CRAFFT_Q4" && IsCrafftQ1ToQ3AllZero()) ? Visibility.Visible : Visibility.Collapsed;
+            NextButton.IsEnabled = IsAnswerSelected();
+            SubmitButton.IsEnabled = IsAnswerSelected() && !_isSubmitting;
+
+            ShowPanels(assessment: true);
+        }
+
+        private void UpdateQuestionUI()
+        {
+            QuestionHeader.Text = $"Question {_currentQuestionIndex + 1}";
+            QuestionText.Text = CurrentQuestion.Question;
+            AnswersContainer.Children.Clear();
+
+            foreach (var answer in CurrentAnswers)
+            {
+                var radio = new RadioButton
+                {
+                    Content = answer.Answer,
+                    GroupName = $"answer-{CurrentQuestion.QuestionId}",
+                    Tag = answer.AnswerId,
+                    IsChecked = _selectedAnswerIds.Contains(answer.AnswerId)
+                };
+                radio.Checked += (s, e) => SelectSingleAnswer(answer.AnswerId);
+                var stackPanel = new StackPanel { Margin = new Thickness(0, 5, 0, 5) };
+                stackPanel.Children.Add(radio);
+                if (!string.IsNullOrEmpty(answer.AnswerDetails))
+                {
+                    stackPanel.Children.Add(new TextBlock { Text = answer.AnswerDetails, Foreground = Brushes.Gray, Margin = new Thickness(20, 0, 0, 0) });
+                }
+                AnswersContainer.Children.Add(stackPanel);
+            }
+        }
+
+        private void SelectSingleAnswer(string answerId)
+        {
+            _selectedAnswerIds = new List<string> { answerId };
+            _userAnswers[CurrentQuestion.QuestionId] = answerId;
+
+            if (AssessmentId == "ASSIST" && CurrentQuestion.QuestionId.EndsWith("_Q1") && answerId.EndsWith("_NO"))
+            {
+                var substanceId = CurrentQuestion.QuestionId.Split('_')[1];
+                for (int i = 2; i <= 7; i++)
+                {
+                    _userAnswers[$"ASSIST_{substanceId}_Q{i}"] = $"ASSIST_{substanceId}_Q{i}_NO";
+                }
+                _userAnswers[$"ASSIST_{substanceId}_Q8"] = $"ASSIST_{substanceId}_Q8_NEVER";
+            }
+
+            UpdateAssessmentUI();
         }
 
         private bool IsCrafftQ1ToQ3AllZero()
         {
-            bool allZero = _userAnswers.GetValueOrDefault("CRAFFT_Q1", "").EndsWith("_0") &&
-                           _userAnswers.GetValueOrDefault("CRAFFT_Q2", "").EndsWith("_0") &&
-                           _userAnswers.GetValueOrDefault("CRAFFT_Q3", "").EndsWith("_0");
-            Console.WriteLine($"[IsCrafftQ1ToQ3AllZero] Result: {allZero}");
-            return allZero;
+            return _userAnswers.GetValueOrDefault("CRAFFT_Q1", "").EndsWith("_0") &&
+                   _userAnswers.GetValueOrDefault("CRAFFT_Q2", "").EndsWith("_0") &&
+                   _userAnswers.GetValueOrDefault("CRAFFT_Q3", "").EndsWith("_0");
         }
 
-        private async void NextOrSubmit_Click(object sender, RoutedEventArgs e)
+        private bool IsAnswerSelected()
         {
-            if (!IsAnswerSelected || IsSubmitting)
-                return;
+            return _userAnswers.ContainsKey(CurrentQuestion.QuestionId) && !string.IsNullOrEmpty(_userAnswers[CurrentQuestion.QuestionId]);
+        }
 
+        private void SaveCurrentAnswer()
+        {
+            _userAnswers[CurrentQuestion.QuestionId] = _selectedAnswerIds.FirstOrDefault() ?? string.Empty;
+        }
+
+        private async void NextQuestion_Click(object sender, RoutedEventArgs e)
+        {
+            if (_currentQuestionIndex >= _questions.Count - 1 || !IsAnswerSelected())
+                return;
             SaveCurrentAnswer();
-            if (AssessmentId == "CRAFFT" && CurrentQuestion?.QuestionId == "CRAFFT_Q4" && IsCrafftQ1ToQ3AllZero())
-            {
-                Console.WriteLine("[NextOrSubmit] CRAFFT Q4, Q1-Q3 all '0', submitting");
-                await SubmitAssessmentAsync();
-                return;
-            }
 
-            if (CurrentQuestionIndex < Questions.Count - 1)
+            if (AssessmentId == "ASSIST" && CurrentQuestion.QuestionId.EndsWith("_Q1") && _userAnswers[CurrentQuestion.QuestionId].EndsWith("_NO"))
             {
-                if (AssessmentId == "ASSIST" && (bool)CurrentQuestion?.QuestionId.EndsWith("_Q1") && _userAnswers[CurrentQuestion.QuestionId].EndsWith("_NO"))
+                int substanceIndex = _currentQuestionIndex / 8;
+                _currentQuestionIndex = (substanceIndex + 1) * 8;
+                if (_currentQuestionIndex >= _questions.Count)
                 {
-                    int substanceIndex = CurrentQuestionIndex / 8;
-                    CurrentQuestionIndex = (substanceIndex + 1) * 8;
-                    if (CurrentQuestionIndex >= Questions.Count)
-                    {
-                        CurrentQuestionIndex = Questions.Count - 1;
-                    }
+                    _currentQuestionIndex = _questions.Count - 1;
                 }
-                else
+            }
+            else if (AssessmentId == "CRAFFT" && CurrentQuestion.QuestionId == "CRAFFT_Q4")
+            {
+                if (IsCrafftQ1ToQ3AllZero())
                 {
-                    CurrentQuestionIndex++;
+                    Console.WriteLine("CRAFFT Q1-Q3 all '0', submitting after Q4");
+                    await SubmitAssessmentAsync();
+                    return;
                 }
-                Console.WriteLine($"[NextOrSubmit] Navigating to QuestionId={Questions[CurrentQuestionIndex].QuestionId}, Index={CurrentQuestionIndex}");
-                LoadCurrentQuestionAnswers();
+                _currentQuestionIndex++;
+                Console.WriteLine($"CRAFFT Q4 answered, Q1-Q3 not all '0', navigating to Q5, Index: {_currentQuestionIndex}, QuestionId: {_questions[_currentQuestionIndex].QuestionId}");
             }
             else
             {
-                Console.WriteLine("[NextOrSubmit] Submitting assessment");
-                await SubmitAssessmentAsync();
+                _currentQuestionIndex++;
             }
+
+            Console.WriteLine($"Navigating to QuestionId: {_questions[_currentQuestionIndex].QuestionId}, Index: {_currentQuestionIndex}");
+            LoadCurrentQuestionAnswers();
+            UpdateAssessmentUI();
         }
 
         private void PreviousQuestion_Click(object sender, RoutedEventArgs e)
         {
-            if (CurrentQuestionIndex <= 0)
+            if (_currentQuestionIndex <= 0)
                 return;
-
             SaveCurrentAnswer();
-            if (AssessmentId == "ASSIST" && (bool)CurrentQuestion?.QuestionId.EndsWith("_Q1"))
+
+            if (AssessmentId == "ASSIST" && CurrentQuestion.QuestionId.EndsWith("_Q1"))
             {
-                int substanceIndex = CurrentQuestionIndex / 8;
+                int substanceIndex = _currentQuestionIndex / 8;
                 if (substanceIndex > 0)
                 {
                     var prevSubstanceIndex = substanceIndex - 1;
                     var prevSubstanceQ1Id = $"ASSIST_{_substances[prevSubstanceIndex].ToUpper().Replace(" ", "_")}_Q1";
                     var prevQ1Answer = _userAnswers.GetValueOrDefault(prevSubstanceQ1Id, string.Empty);
-                    CurrentQuestionIndex = prevQ1Answer.EndsWith("_NO") ? prevSubstanceIndex * 8 : (prevSubstanceIndex * 8) + 7;
+                    _currentQuestionIndex = prevQ1Answer.EndsWith("_NO") ? prevSubstanceIndex * 8 : ((prevSubstanceIndex * 8) + 7);
                 }
                 else
                 {
-                    CurrentQuestionIndex = 0;
+                    _currentQuestionIndex = 0;
                 }
             }
             else
             {
-                CurrentQuestionIndex--;
+                _currentQuestionIndex--;
             }
 
-            Console.WriteLine($"[PreviousQuestion] Navigating to QuestionId={Questions[CurrentQuestionIndex].QuestionId}, Index={CurrentQuestionIndex}");
             LoadCurrentQuestionAnswers();
+            UpdateAssessmentUI();
         }
 
-        private async void RetryLoadAssessment_Click(object sender, RoutedEventArgs e)
+        private async void SubmitAssessment_Click(object sender, RoutedEventArgs e)
         {
-            Console.WriteLine("[RetryLoadAssessment] Retrying assessment load.");
-            await LoadAssessmentAsync();
-        }
-
-        private void ConfirmExit_Click(object sender, RoutedEventArgs e)
-        {
-            ShowExitConfirmation = true;
-            Console.WriteLine("[ConfirmExit] Showing exit confirmation.");
-        }
-
-        private void CancelExit_Click(object sender, RoutedEventArgs e)
-        {
-            ShowExitConfirmation = false;
-            Console.WriteLine("[CancelExit] Exit confirmation cancelled.");
-        }
-
-        private void ExitAssessment_Click(object sender, RoutedEventArgs e)
-        {
-            Console.WriteLine("[ExitAssessment] Navigating back to /Assessment");
-            NavigationService?.Navigate(new Uri("/Views/Assessment.xaml", UriKind.Relative));
-        }
-
-        private void GoBackToAssessments_Click(object sender, RoutedEventArgs e)
-        {
-            Console.WriteLine("[GoBackToAssessments] Navigating back to /Assessment");
-            NavigationService?.Navigate(new Uri("/Views/Assessment.xaml", UriKind.Relative));
-        }
-
-        private void TakeAnotherAssessment_Click(object sender, RoutedEventArgs e)
-        {
-            Console.WriteLine("[TakeAnotherAssessment] Navigating back to /Assessment");
-            NavigationService?.Navigate(new Uri("/Views/Assessment.xaml", UriKind.Relative));
-        }
-
-        private void SaveCurrentAnswer()
-        {
-            if (CurrentQuestion != null)
-            {
-                _userAnswers[CurrentQuestion.QuestionId] = _selectedAnswerIds.FirstOrDefault() ?? string.Empty;
-                Console.WriteLine($"[SaveCurrentAnswer] Saved AnswerId={_userAnswers[CurrentQuestion.QuestionId]} for QuestionId={CurrentQuestion.QuestionId}");
-            }
+            await SubmitAssessmentAsync();
         }
 
         private async Task SubmitAssessmentAsync()
         {
-            if (!IsAnswerSelected || IsSubmitting)
+            if (!IsAnswerSelected() || _isSubmitting)
                 return;
 
             SaveCurrentAnswer();
-            IsSubmitting = true;
+            _isSubmitting = true;
+            SubmitButton.IsEnabled = false;
+            SubmitButton.Content = "Submitting...";
+
             try
             {
                 if (string.IsNullOrEmpty(_currentMemberId))
                 {
-                    _currentMemberId = GetCurrentMemberId();
+                    // // Assuming App provides a way to get current user identity
+                    // var identity = (System.Security.Principal.IIdentity)App.CurrentUser?.Identity;
+                    // if (identity?.IsAuthenticated == true)
+                    // {
+                    //     _currentMemberId = identity.Name; // Adjust based on actual claim type
+                    //     Console.WriteLine($"Retrieved MemberId: {_currentMemberId}");
+                    // }
+
                     if (string.IsNullOrEmpty(_currentMemberId))
                     {
-                        HasError = true;
-                        ErrorMessage = "Failed to retrieve Member ID. Please login again.";
-                        Console.WriteLine("[SubmitAssessment] Failed to retrieve MemberId.");
                         MessageBox.Show("Failed to retrieve Member ID. Please login again.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                        NavigationService?.Navigate(new Uri("/Views/Login.xaml", UriKind.Relative));
+                        NavigationService?.Navigate(new Uri("/Login.xaml", UriKind.Relative));
                         return;
                     }
-                    Console.WriteLine($"[SubmitAssessment] Retrieved MemberId: {_currentMemberId}");
                 }
 
-                // Create AssessmentSubmissionDTO
-                var submission = new AssessmentSubmissionDTO
+                var scoreDetails = new List<string>();
+                var recommendations = new List<string>();
+                int totalScore = 0;
+
+                switch (AssessmentId)
                 {
+                    case "ASSIST":
+                        var substanceScores = new Dictionary<string, int>();
+                        foreach (var substance in _substances)
+                        {
+                            var substanceId = substance.ToUpper().Replace(" ", "_");
+                            if (_userAnswers[$"ASSIST_{substanceId}_Q1"] == $"ASSIST_{substanceId}_Q1_NO")
+                            {
+                                substanceScores[substance] = 0;
+                                scoreDetails.Add($"{substance}: No use reported");
+                                recommendations.Add($"{substance}: No intervention needed.");
+                                continue;
+                            }
+
+                            int substanceScore = 0;
+                            var substanceDetails = new List<string>();
+
+                            for (int i = 2; i <= 8; i++)
+                            {
+                                var questionId = $"ASSIST_{substanceId}_Q{i}";
+                                if (!_userAnswers.TryGetValue(questionId, out var answerId) || string.IsNullOrEmpty(answerId))
+                                    continue;
+                                var answer = _questionAnswers[questionId].FirstOrDefault(a => a.AnswerId == answerId);
+                                if (answer == null)
+                                {
+                                    Console.WriteLine($"Invalid AnswerId for {questionId}: {answerId}");
+                                    continue;
+                                }
+                                substanceScore += answer.ScoreValue;
+                                substanceDetails.Add($"Q{i}:{answer.Answer}");
+                            }
+
+                            substanceScores[substance] = substanceScore;
+                            totalScore += substanceScore;
+                            scoreDetails.Add($"{substance}: Score={substanceScore}; {string.Join(", ", substanceDetails)}");
+
+                            var substanceRecommendation = substanceScore switch
+                            {
+                                <= 10 => "Low risk: Brief education recommended.",
+                                <= 26 => "Moderate risk: Brief intervention recommended.",
+                                _ => "High risk: Referral to treatment recommended."
+                            };
+                            recommendations.Add($"{substance}: {substanceRecommendation}");
+                        }
+                        break;
+                    case "CRAFFT":
+                        Console.WriteLine($"CRAFFT Submission - Q1: {_userAnswers.GetValueOrDefault("CRAFFT_Q1", "None")}, Q2: {_userAnswers.GetValueOrDefault("CRAFFT_Q2", "None")}, Q3: {_userAnswers.GetValueOrDefault("CRAFFT_Q3", "None")}");
+                        bool allZero = _userAnswers.GetValueOrDefault("CRAFFT_Q1", "").EndsWith("_0") &&
+                                      _userAnswers.GetValueOrDefault("CRAFFT_Q2", "").EndsWith("_0") &&
+                                      _userAnswers.GetValueOrDefault("CRAFFT_Q3", "").EndsWith("_0");
+
+                        foreach (var question in _questions)
+                        {
+                            if (!question.QuestionId.StartsWith("CRAFFT_Q") || (allZero && question.QuestionId != "CRAFFT_Q4"))
+                                continue;
+                            if (!_userAnswers.TryGetValue(question.QuestionId, out var answerId) || string.IsNullOrEmpty(answerId))
+                                continue;
+                            var answer = _questionAnswers[question.QuestionId].FirstOrDefault(a => a.AnswerId == answerId);
+                            if (answer == null)
+                            {
+                                Console.WriteLine($"Invalid AnswerId for {question.QuestionId}: {answerId}");
+                                continue;
+                            }
+                            totalScore += answer.ScoreValue;
+                            scoreDetails.Add($"{question.QuestionId}: {answer.Answer}");
+                        }
+                        recommendations.Add(totalScore >= 2 ? "Further evaluation recommended." : "Low risk.");
+                        break;
+                }
+
+                _assessmentResult = new AssessmentResultDTO
+                {
+                    ResultId = Guid.NewGuid().ToString(),
+                    AssessmentId = AssessmentId,
                     MemberId = _currentMemberId,
-                    Answers = new List<AnswerSubmissionDTO>(),
-                    TextAnswers = new List<TextAnswerSubmissionDTO>(),
-                    EarlyTextScore = 0
+                    TotalScore = totalScore,
+                    ScoreDetails = string.Join(";", scoreDetails),
+                    Recommendation = string.Join(" ", recommendations),
+                    CompletedOn = DateOnly.FromDateTime(DateTime.Now)
                 };
 
-                if (AssessmentId == "ASSIST")
+                if (string.IsNullOrEmpty(_assessmentResult.MemberId) || string.IsNullOrEmpty(_assessmentResult.AssessmentId) || string.IsNullOrEmpty(_assessmentResult.ResultId))
                 {
-                    foreach (var substance in _substances)
-                    {
-                        var substanceId = substance.ToUpper().Replace(" ", "_");
-                        for (int i = 1; i <= 8; i++)
-                        {
-                            var questionId = $"ASSIST_{substanceId}_Q{i}";
-                            if (_userAnswers.TryGetValue(questionId, out var answerId) && !string.IsNullOrEmpty(answerId))
-                            {
-                                submission.Answers.Add(new AnswerSubmissionDTO { AnswerId = answerId });
-                                Console.WriteLine($"[SubmitAssessment] Added ASSIST answer: QuestionId={questionId}, AnswerId={answerId}");
-                            }
-                        }
-                    }
-                }
-                else if (AssessmentId == "CRAFFT")
-                {
-                    bool allZero = IsCrafftQ1ToQ3AllZero();
-                    foreach (var question in Questions)
-                    {
-                        if (!question.QuestionId.StartsWith("CRAFFT_Q") || (allZero && question.QuestionId != "CRAFFT_Q4"))
-                            continue;
-                        if (!_userAnswers.TryGetValue(question.QuestionId, out var answerId) || string.IsNullOrEmpty(answerId))
-                            continue;
-
-                        if (question.QuestionId is "CRAFFT_Q1" or "CRAFFT_Q2" or "CRAFFT_Q3")
-                        {
-                            var answer = _questionAnswers[question.QuestionId].FirstOrDefault(a => a.AnswerId == answerId)?.Answer;
-                            submission.TextAnswers.Add(new TextAnswerSubmissionDTO
-                            {
-                                QuestionId = question.QuestionId,
-                                Answer = answer ?? "0"
-                            });
-                            Console.WriteLine($"[SubmitAssessment] Added CRAFFT text answer: QuestionId={question.QuestionId}, Answer={answer}");
-                        }
-                        else
-                        {
-                            submission.Answers.Add(new AnswerSubmissionDTO { AnswerId = answerId });
-                            Console.WriteLine($"[SubmitAssessment] Added CRAFFT answer: QuestionId={question.QuestionId}, AnswerId={answerId}");
-                        }
-                    }
+                    Console.WriteLine("Invalid submission: Missing required fields.");
+                    _hasError = true;
+                    _errorMessage = "Invalid submission details.";
+                    ShowPanels(error: true);
+                    return;
                 }
 
-                // Calculate EarlyTextScore for CRAFFT (sum of Q1-Q3 numeric answers)
-                if (AssessmentId == "CRAFFT")
-                {
-                    submission.EarlyTextScore = submission.TextAnswers
-                        .Where(ta => ta.QuestionId is "CRAFFT_Q1" or "CRAFFT_Q2" or "CRAFFT_Q3")
-                        .Sum(ta => int.TryParse(ta.Answer, out var score) ? score : 0);
-                    Console.WriteLine($"[SubmitAssessment] CRAFFT EarlyTextScore: {submission.EarlyTextScore}");
-                }
+                Console.WriteLine($"Submission Payload: MemberId={_assessmentResult.MemberId}, ResultId={_assessmentResult.ResultId}, TotalScore={_assessmentResult.TotalScore}");
+                var result = await _assessmentService.SubmitAssessmentAsync(AssessmentId, _assessmentResult);
 
-                // Submit to API
-                Console.WriteLine($"[SubmitAssessment] Submitting: MemberId={submission.MemberId}, AnswerCount={submission.Answers.Count}, TextAnswerCount={submission.TextAnswers.Count}");
-                var result = await _assessmentApiService.SubmitAssessmentAsync(AssessmentId, submission);
                 if (result != null)
                 {
-                    // Map API result to AssessmentResultDTO
-                    AssessmentResult = new AssessmentResultDTO
-                    {
-                        ResultId = result.ResultId,
-                        AssessmentId = AssessmentId,
-                        MemberId = _currentMemberId,
-                        TotalScore = result.TotalScore,
-                        ScoreDetails = result.ScoreDetails,
-                        Recommendation = result.Recommendation,
-                        CompletedOn = DateOnly.FromDateTime(DateTime.Now)
-                    };
-                    ShowResults = true;
-                    Console.WriteLine($"[SubmitAssessment] Assessment submitted successfully. ResultId: {result.ResultId}");
+                    _showResults = true;
+                    UpdateResultsUI();
+                    Console.WriteLine($"Assessment submitted successfully. ResultId: {result.ResultId}");
                 }
                 else
                 {
-                    HasError = true;
-                    ErrorMessage = "Failed to submit assessment. Please check your answers and try again.";
-                    Console.WriteLine("[SubmitAssessment] Submission failed.");
+                    _hasError = true;
+                    _errorMessage = "Failed to submit assessment. Please check your answers and try again.";
+                    Console.WriteLine("Submission failed. Check API response logs for details.");
+                    ShowPanels(error: true);
                 }
             }
             catch (Exception ex)
             {
-                HasError = true;
-                ErrorMessage = $"Failed to submit assessment: {ex.Message}";
-                Console.WriteLine($"[SubmitAssessment] Exception: {ex.Message}");
+                Console.WriteLine($"Submission Exception: {ex.Message}, StackTrace: {ex.StackTrace}");
+                _hasError = true;
+                _errorMessage = $"Failed to submit assessment: {ex.Message}";
+                ShowPanels(error: true);
             }
             finally
             {
-                IsSubmitting = false;
+                _isSubmitting = false;
+                SubmitButton.Content = "✓ Submit Assessment";
+                ShowPanels();
             }
         }
 
-        private string GetCurrentMemberId()
+        private void UpdateResultsUI()
         {
-            // Placeholder: Implement actual authentication logic
-            return "SampleMemberId"; // Replace with actual authentication mechanism
+            if (_assessmentResult == null)
+                return;
+
+            ResultsHeader.Text = $"{_assessment?.AssessmentType} Results";
+            TotalScore.Text = _assessmentResult.TotalScore.ToString();
+            Recommendation.Text = _assessmentResult.Recommendation;
+            ScoreDetails.ItemsSource = _assessmentResult.ScoreDetails?.Split(';').Select((detail, index) => ProcessAndReturnDetail(detail, index));
+            CompletedOn.Text = _assessmentResult.CompletedOn?.ToString("MMMM dd, yyyy");
+            ShowPanels(results: true);
         }
 
-        public event PropertyChangedEventHandler? PropertyChanged;
-        private void OnPropertyChanged(string propertyName)
+        private string ProcessAndReturnDetail(string detail, int index)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-            Console.WriteLine($"[OnPropertyChanged] Property: {propertyName}");
-        }
-    }
-
-    public class AnswerViewModel : INotifyPropertyChanged
-    {
-        private bool _isSelected;
-
-        public string AnswerId { get; set; }
-        public string Answer { get; set; }
-
-        public bool IsSelected
-        {
-            get => _isSelected;
-            set
+            var trimmedDetail = detail.Trim();
+            if (!string.IsNullOrEmpty(trimmedDetail) && trimmedDetail.Contains(':'))
             {
-                _isSelected = value;
-                OnPropertyChanged(nameof(IsSelected));
+                return trimmedDetail;
             }
-        }
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-        private void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-    }
-
-    file class RelayCommand : ICommand
-    {
-        private readonly Action<object> _execute;
-        private readonly Func<object, bool> _canExecute;
-
-        public RelayCommand(Action<object> execute, Func<object, bool> canExecute = null)
-        {
-            _execute = execute;
-            _canExecute = canExecute;
-        }
-
-        public bool CanExecute(object parameter) => _canExecute == null || _canExecute(parameter);
-        public void Execute(object parameter) => _execute(parameter);
-        public event EventHandler CanExecuteChanged
-        {
-            add => CommandManager.RequerySuggested += value;
-            remove => CommandManager.RequerySuggested -= value;
-        }
-    }
-
-    // Converters (Add these to a separate file or resource dictionary)
-    file class BooleanToVisibilityConverter : System.Windows.Data.IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            return (bool)value ? Visibility.Visible : Visibility.Collapsed;
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    public class NullToVisibilityConverter : System.Windows.Data.IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            return value == null ? Visibility.Collapsed : Visibility.Visible;
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    public class IndexToOneBasedConverter : System.Windows.Data.IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            if (value is int index)
+            else
             {
-                return index + 1;
+                return $"Detail {index + 1}: {trimmedDetail}";
             }
-            return value;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        private void RetryLoadAssessment_Click(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            LoadAssessmentAsync();
+        }
+
+        private void ConfirmExit_Click(object sender, RoutedEventArgs e)
+        {
+            _showExitConfirmation = true;
+            ShowPanels();
+        }
+
+        private void CancelExit_Click(object sender, RoutedEventArgs e)
+        {
+            _showExitConfirmation = false;
+            ShowPanels();
+        }
+
+        private void ExitAssessment_Click(object sender, RoutedEventArgs e)
+        {
+            NavigationService?.Navigate(new Uri("/Assessment.xaml", UriKind.Relative));
+        }
+
+        private void GoBackToAssessments_Click(object sender, RoutedEventArgs e)
+        {
+            NavigationService?.Navigate(new Uri("/Assessment.xaml", UriKind.Relative));
+        }
+
+        private void TakeAnotherAssessment_Click(object sender, RoutedEventArgs e)
+        {
+            NavigationService?.Navigate(new Uri("/Assessment.xaml", UriKind.Relative));
+        }
+
+        private void ShowPanels(bool loading = false, bool error = false, bool noContent = false, bool results = false, bool assessment = false)
+        {
+            LoadingPanel.Visibility = loading || _isLoading ? Visibility.Visible : Visibility.Collapsed;
+            ErrorPanel.Visibility = error || _hasError ? Visibility.Visible : Visibility.Collapsed;
+            NoContentPanel.Visibility = noContent ? Visibility.Visible : Visibility.Collapsed;
+            ResultsPanel.Visibility = results && _showResults ? Visibility.Visible : Visibility.Collapsed;
+            AssessmentPanel.Visibility = assessment && !_showResults ? Visibility.Visible : Visibility.Collapsed;
+            ExitConfirmationPanel.Visibility = _showExitConfirmation ? Visibility.Visible : Visibility.Collapsed;
+
+            if (_hasError)
+            {
+                ErrorMessage.Text = _errorMessage;
+            }
         }
     }
 }

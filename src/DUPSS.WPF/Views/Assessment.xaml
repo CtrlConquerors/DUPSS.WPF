@@ -1,187 +1,88 @@
 ﻿<Page x:Class="DUPSS.WPF.Views.Assessment"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:DUPSS.WPF.Views"
-      mc:Ignorable="d" 
-      Title="Assessment Page"
-      Background="#F0F4FF">
+      xmlns:dtOs="clr-namespace:DUPSS.DTO.DTOs;assembly=DUPSS.DTO"
+      Title="Assessments"
+      Background="#F7F9FC"
+      Loaded="Page_Loaded">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <Border Padding="20" Background="White" Margin="20" MaxWidth="850" HorizontalAlignment="Center" CornerRadius="10">
-            <StackPanel>
-                <!-- Header -->
-                <StackPanel HorizontalAlignment="Center" Margin="0,0,0,25">
-                    <TextBlock Text="&#x1F9E0;" FontSize="48" HorizontalAlignment="Center" />
-                    <TextBlock Text="Mental Health x Substance Use Assessments" FontSize="28" FontWeight="Bold" 
-                               Foreground="#3554d1" HorizontalAlignment="Center" Margin="0,10,0,0"/>
-                    <TextBlock Text="Complete validated screening tools to assess your mental health and substance use patterns."
-                               FontSize="16" Foreground="#3554d1" HorizontalAlignment="Center" Margin="0,5,0,0" TextWrapping="Wrap"/>
-                </StackPanel>
+        <StackPanel Margin="30" x:Name="MainPanel" Background="#F7F9FC">
 
-                <!-- Assessment List -->
-                <StackPanel x:Name="AssessmentContainer">
-                    <!-- Loading State -->
-                    <ContentControl x:Name="LoadingContent">
-                        <ContentControl.Style>
-                            <Style TargetType="ContentControl">
-                                <Setter Property="Visibility" Value="Visible"/>
-                                <Setter Property="Content">
-                                    <Setter.Value>
-                                        <StackPanel HorizontalAlignment="Center">
-                                            <TextBlock Text="Loading assessments..." FontSize="16" Margin="0,0,0,10"/>
-                                            <ProgressBar IsIndeterminate="True" Width="100" Height="10"/>
-                                        </StackPanel>
-                                    </Setter.Value>
-                                </Setter>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HasError}" Value="True">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding Assessments.Count}" Value="0">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding Assessments.Count}" Value="{x:Static Member=local:Assessment.NonZero}">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </ContentControl.Style>
-                    </ContentControl>
+            <!-- Header -->
+            <TextBlock Text="Mental Health &amp; Substance Use Assessments"
+                       FontSize="26"
+                       FontWeight="Bold"
+                       Foreground="#1e68ff"
+                       Margin="0,0,0,15"/>
 
-                    <!-- Error State -->
-                    <ContentControl x:Name="ErrorContent">
-                        <ContentControl.Style>
-                            <Style TargetType="ContentControl">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                                <Setter Property="Content">
-                                    <Setter.Value>
-                                        <StackPanel HorizontalAlignment="Center">
-                                            <TextBlock Text="Oops! Something went wrong while loading assessments. Please try again later."
-                                                       FontSize="16" Foreground="Red" TextWrapping="Wrap" Margin="0,0,0,10"/>
-                                            <Button Content="Retry" Width="100" Click="RetryLoadAssessments_Click"
-                                                    Background="#3554d1" Foreground="White" Padding="10,5"/>
-                                        </StackPanel>
-                                    </Setter.Value>
-                                </Setter>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HasError}" Value="True">
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </ContentControl.Style>
-                    </ContentControl>
+            <TextBlock Text="Complete validated screening tools to assess your mental health and substance use patterns. These assessments provide insights and recommendations for your wellbeing."
+                       FontSize="14"
+                       Foreground="Gray"
+                       Margin="0,0,0,20"
+                       TextWrapping="Wrap"/>
 
-                    <!-- No Assessments State -->
-                    <ContentControl x:Name="NoAssessmentsContent">
-                        <ContentControl.Style>
-                            <Style TargetType="ContentControl">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                                <Setter Property="Content">
-                                    <Setter.Value>
-                                        <TextBlock Text="No assessments available at the moment. Please check back later!"
-                                                   FontSize="16" TextWrapping="Wrap" HorizontalAlignment="Center"/>
-                                    </Setter.Value>
-                                </Setter>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Assessments.Count}" Value="0">
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding HasError}" Value="True">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </ContentControl.Style>
-                    </ContentControl>
-
-                    <!-- Assessments List -->
-                    <ContentControl x:Name="AssessmentsContent">
-                        <ContentControl.Style>
-                            <Style TargetType="ContentControl">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                                <Setter Property="Content">
-                                    <Setter.Value>
-                                        <ItemsControl ItemsSource="{Binding DisplayAssessments}">
-                                            <ItemsControl.ItemsPanel>
-                                                <ItemsPanelTemplate>
-                                                    <WrapPanel />
-                                                </ItemsPanelTemplate>
-                                            </ItemsControl.ItemsPanel>
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Border Background="#f5f8ff" Padding="15" Margin="10" CornerRadius="8" BorderBrush="#3554d122" BorderThickness="1" Width="300">
-                                                        <StackPanel>
-                                                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                                                                <TextBlock Text="{Binding AssessmentType}" FontWeight="Bold" FontSize="18" Foreground="#3554d1"/>
-                                                                <TextBlock Text="{Binding Version}" FontSize="14" Foreground="#666" Margin="10,0,0,0"/>
-                                                            </StackPanel>
-                                                            <TextBlock Text="{Binding DescriptionDisplay}" TextWrapping="Wrap" Margin="0,0,0,10" MaxHeight="80"/>
-                                                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                                                                <TextBlock Text="{Binding LanguageDisplay}" FontSize="12" Foreground="#555" Margin="0,0,10,0"/>
-                                                                <TextBlock Text="{Binding EstimatedDuration}" FontSize="12" Foreground="#555"/>
-                                                            </StackPanel>
-                                                            <StackPanel Orientation="Horizontal">
-                                                                <Button Content="Take Assessment" Width="120" Margin="0,0,10,0" Click="StartAssessment_Click"
-                                                                        Background="#3554d1" Foreground="White" Padding="10,5"/>
-                                                                <Button Content="Learn More" Width="120" Click="ViewAssessmentInfo_Click"
-                                                                        Background="#e5e7eb" Foreground="#3554d1" Padding="10,5"/>
-                                                            </StackPanel>
-                                                        </StackPanel>
-                                                    </Border>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-                                    </Setter.Value>
-                                </Setter>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Assessments.Count}" Value="{x:Static Member=local:Assessment.NonZero}">
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding HasError}" Value="True">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </ContentControl.Style>
-                    </ContentControl>
-
-                    <!-- Show More/Less Button -->
-                    <StackPanel HorizontalAlignment="Center" Margin="0,20,0,0">
-                        <Button Content="{Binding ToggleButtonText}" Width="200" Click="ToggleShowAllAssessments_Click"
-                                Background="#3554d1" Foreground="White" Padding="10,5" Visibility="{Binding ToggleButtonVisibility}"/>
-                    </StackPanel>
-                </StackPanel>
-
-                <!-- Quick Info Section -->
-                <GroupBox Header="💡 About These Assessments" Margin="0,20,0,0" FontWeight="Bold" Foreground="#3554d1">
-                    <StackPanel Margin="10,5">
-                        <Border Background="#f5f8ff" Padding="10" Margin="5" CornerRadius="8" BorderBrush="#3554d122" BorderThickness="1">
-                            <StackPanel>
-                                <TextBlock Text="CRAFFT Screening" FontWeight="Bold" FontSize="16" Foreground="#3554d1"/>
-                                <TextBlock Text="A validated tool for screening adolescents and young adults for substance use disorders. Takes about 2-3 minutes."
-                                           TextWrapping="Wrap" Margin="0,5,0,0"/>
-                            </StackPanel>
-                        </Border>
-                        <Border Background="#f5f8ff" Padding="10" Margin="5" CornerRadius="8" BorderBrush="#3554d122" BorderThickness="1">
-                            <StackPanel>
-                                <TextBlock Text="ASSIST Screening" FontWeight="Bold" FontSize="16" Foreground="#3554d1"/>
-                                <TextBlock Text="WHO's Alcohol, Smoking and Substance Involvement Screening Test. Comprehensive assessment taking 5-10 minutes."
-                                           TextWrapping="Wrap" Margin="0,5,0,0"/>
-                            </StackPanel>
-                        </Border>
-                        <Border Background="#f5f8ff" Padding="10" Margin="5" CornerRadius="8" BorderBrush="#3554d122" BorderThickness="1">
-                            <StackPanel>
-                                <TextBlock Text="Privacy x Confidentiality" FontWeight="Bold" FontSize="16" Foreground="#3554d1"/>
-                                <TextBlock Text="Your responses are confidential and used to provide personalized recommendations for your wellbeing."
-                                           TextWrapping="Wrap" Margin="0,5,0,0"/>
-                            </StackPanel>
-                        </Border>
-                    </StackPanel>
-                </GroupBox>
+            <!-- Error or Loading -->
+            <StackPanel x:Name="ErrorPanel" Visibility="Collapsed">
+                <TextBlock Text="Oops! Something went wrong while loading assessments. Please try again later."
+                           Foreground="Red" FontWeight="SemiBold"/>
+                <Button Content="Retry" Margin="0,10,0,0" Width="100" Click="RetryButton_Click"/>
             </StackPanel>
-        </Border>
+
+            <StackPanel x:Name="LoadingPanel" Visibility="Collapsed">
+                <TextBlock Text="Loading assessments..." FontStyle="Italic"/>
+                <ProgressBar IsIndeterminate="True" Height="4" Margin="0,5,0,0"/>
+            </StackPanel>
+
+            <!-- No Data -->
+            <StackPanel x:Name="NoDataPanel" Visibility="Collapsed">
+                <TextBlock Text="No assessments available at the moment. Please check back later!" Foreground="DarkGray"/>
+            </StackPanel>
+
+            <!-- Assessments List -->
+            <ItemsControl x:Name="AssessmentList" Visibility="Collapsed">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type dtOs:AssessmentDTO}">
+                        <Border Background="White" CornerRadius="10" Padding="15" Margin="0,0,0,10" BorderBrush="#ccc" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="{Binding AssessmentType}" FontWeight="Bold" FontSize="16"/>
+                                <TextBlock Text="{Binding Version}" Foreground="Gray"/>
+                                <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Margin="0,5,0,0"/>
+                                <StackPanel Orientation="Horizontal" Margin="0,10,0,0" HorizontalAlignment="Right">
+                                    <Button Content="Take Assessment" Margin="0,0,10,0" Click="TakeAssessment_Click" Tag="{Binding AssessmentId}"/>
+                                    <Button Content="Learn More" Click="LearnMore_Click" Tag="{Binding AssessmentId}"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <!-- Show More / Less -->
+            <StackPanel x:Name="ShowMorePanel" Visibility="Collapsed" Margin="0,10,0,0">
+                <Button x:Name="ToggleShowButton" Content="Show More Assessments" Click="ToggleShowButton_Click" Width="200"/>
+            </StackPanel>
+
+            <!-- Info Section -->
+            <StackPanel Margin="0,30,0,0">
+                <TextBlock Text="About These Assessments" FontSize="20" FontWeight="Bold" Foreground="#1e68ff" Margin="0,0,0,10"/>
+                <WrapPanel>
+                    <StackPanel Width="250" Margin="0,0,20,20">
+                        <TextBlock Text="CRAFFT Screening" FontWeight="Bold" />
+                        <TextBlock Text="A validated tool for screening adolescents and young adults for substance use disorders. Takes about 2-3 minutes." TextWrapping="Wrap"/>
+                    </StackPanel>
+                    <StackPanel Width="250" Margin="0,0,20,20">
+                        <TextBlock Text="ASSIST Screening" FontWeight="Bold" />
+                        <TextBlock Text="WHO's Alcohol, Smoking and Substance Involvement Screening Test. Comprehensive assessment taking 5-10 minutes." TextWrapping="Wrap"/>
+                    </StackPanel>
+                    <StackPanel Width="250">
+                        <TextBlock Text="Privacy &amp; Confidentiality" FontWeight="Bold" />
+                        <TextBlock Text="Your responses are confidential and used only to provide personalized recommendations for your wellbeing." TextWrapping="Wrap"/>
+                    </StackPanel>
+                </WrapPanel>
+            </StackPanel>
+
+        </StackPanel>
     </ScrollViewer>
 </Page>
