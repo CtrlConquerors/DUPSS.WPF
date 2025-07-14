@@ -149,9 +149,9 @@ namespace DUPSS.WPF.Views
         // Parameter for CourseId (set by navigation from Courses.xaml.cs)
         public string CourseId { get; set; } = string.Empty;
 
-        // Supported image extensions for local resources
-        private readonly string[] _imageExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
-        private readonly Uri _placeholderImageUri = new Uri("pack://application:,,,/DUPSS.WPF;component/Images/Courses/placeholder.png");
+        // Removed image-related fields
+        // private readonly string[] _imageExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
+        // private readonly Uri _placeholderImageUri = new Uri("pack://application:,,,/DUPSS.WPF;component/Images/Courses/placeholder.png");
 
         // MediaElement related properties
         // Removed _mediaTimer as it's no longer needed for updating slider/time
@@ -224,14 +224,14 @@ namespace DUPSS.WPF.Views
                 {
                     Course = fetchedCourse;
 
-                    // Resolve Course Image URL for WPF (pack URI)
-                    // Ensure ImageUrl is always set to a valid URI, even if it's the placeholder
-                    Course.ImageUrl = GetPackUriForImage(
-                        $"Images/Courses/{Course.CourseId}",
-                        _imageExtensions,
-                        _placeholderImageUri
-                    ).ToString();
-                    Debug.WriteLine($"Course Image URL set to: {Course.ImageUrl}");
+                    // Removed image loading code
+                    // Course.ImageUrl = GetPackUriForImage(
+                    //     $"Images/Courses/{Course.CourseId}",
+                    //     _imageExtensions,
+                    //     _placeholderImageUri
+                    // ).ToString();
+                    // Debug.WriteLine($"Course Image URL set to: {Course.ImageUrl}");
+
 
                     // Check if the current user is enrolled in this course
                     if (!string.IsNullOrEmpty(_currentLoggedInUserId))
@@ -275,38 +275,39 @@ namespace DUPSS.WPF.Views
             }
         }
 
-        /// <summary>
-        /// Helper method to construct a pack URI for an embedded image resource.
-        /// </summary>
-        /// <param name="basePath">The base path within the component (e.g., "Images/Courses/C0001").</param>
-        /// <param name="extensions">Array of possible file extensions (e.g., ".jpg", ".png").</param>
-        /// <param name="placeholderUri">The URI to use if no specific image is found.</param>
-        /// <returns>A Uri object for the image resource.</returns>
-        private Uri GetPackUriForImage(string basePath, string[] extensions, Uri placeholderUri)
-        {
-            foreach (var ext in extensions)
-            {
-                var potentialUriString = $"pack://application:,,,/DUPSS.WPF;component/{basePath}{ext}";
-                try
-                {
-                    var uri = new Uri(potentialUriString);
-                    if (Application.GetResourceStream(uri) != null)
-                    {
-                        return uri; // Found a valid image
-                    }
-                }
-                catch (UriFormatException)
-                {
-                    Debug.WriteLine($"Invalid URI format for: {potentialUriString}");
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"Error checking resource stream for {potentialUriString}: {ex.Message}");
-                }
-            }
-            Debug.WriteLine($"No specific image found for base path: {basePath}. Using placeholder.");
-            return placeholderUri; // Return placeholder if no image found
-        }
+        // Removed GetPackUriForImage helper method
+        // /// <summary>
+        // /// Helper method to construct a pack URI for an embedded image resource.
+        // /// </summary>
+        // /// <param name="basePath">The base path within the component (e.g., "Images/Courses/C0001").</param>
+        // /// <param name="extensions">Array of possible file extensions (e.g., ".jpg", ".png").</param>
+        // /// <param name="placeholderUri">The URI to use if no specific image is found.</param>
+        // /// <returns>A Uri object for the image resource.</returns>
+        // private Uri GetPackUriForImage(string basePath, string[] extensions, Uri placeholderUri)
+        // {
+        //     foreach (var ext in extensions)
+        //     {
+        //         var potentialUriString = $"pack://application:,,,/DUPSS.WPF;component/{basePath}{ext}";
+        //         try
+        //         {
+        //             var uri = new Uri(potentialUriString);
+        //             if (Application.GetResourceStream(uri) != null)
+        //             {
+        //                 return uri; // Found a valid image
+        //             }
+        //         }
+        //         catch (UriFormatException)
+        //         {
+        //             Debug.WriteLine($"Invalid URI format for: {potentialUriString}");
+        //         }
+        //         catch (Exception ex)
+        //         {
+        //             Debug.WriteLine($"Error checking resource stream for {potentialUriString}: {ex.Message}");
+        //         }
+        //     }
+        //     Debug.WriteLine($"No specific image found for base path: {basePath}. Using placeholder.");
+        //     return placeholderUri; // Return placeholder if no image found
+        // }
 
 
         private void ToggleModule(CourseModule module)
@@ -355,17 +356,18 @@ namespace DUPSS.WPF.Views
                     {
                         // Set source and play when expanded
                         // The StringToUriConverter in XAML will handle the null check for VideoUrl
-                        lesson.AssociatedMediaElement.Source = new Uri(lesson.VideoUrl!, UriKind.RelativeOrAbsolute);
-                        lesson.AssociatedMediaElement.Play();
-                        // Removed _mediaTimer.Start()
+                        // MODIFIED: Ensure VideoUrl is a valid string path for the converter
+                        if (!string.IsNullOrEmpty(lesson.VideoUrl))
+                        {
+                            lesson.AssociatedMediaElement.Source = new Uri(lesson.VideoUrl, UriKind.RelativeOrAbsolute);
+                            lesson.AssociatedMediaElement.Play();
+                        }
                     }
                     else
                     {
                         // Stop and clear source when collapsed
                         lesson.AssociatedMediaElement.Stop();
                         lesson.AssociatedMediaElement.Source = null;
-                        // Removed _mediaTimer.Stop()
-                        // Removed slider and time text resets
                     }
                 }
                 OnPropertyChanged(nameof(Modules)); // Notify UI of change
@@ -401,47 +403,6 @@ namespace DUPSS.WPF.Views
             ShowCompletionMessage("Error", $"Failed to play video: {e.ErrorException.Message}", "alert-danger");
         }
 
-        // Removed MediaTimer_Tick as it's no longer needed for updating slider/time
-        /*
-        private void MediaTimer_Tick(object? sender, EventArgs e)
-        {
-            // This timer is global. It needs to update the *currently playing* video's controls.
-            foreach (var module in Modules)
-            {
-                foreach (var lesson in module.Lessons)
-                {
-                    if (lesson.IsContentExpanded && lesson.Type == "Video" && lesson.AssociatedMediaElement != null && lesson.AssociatedMediaElement.Source != null)
-                    {
-                        MediaElement currentMediaElement = lesson.AssociatedMediaElement;
-                        if (currentMediaElement.NaturalDuration.HasTimeSpan)
-                        {
-                            DependencyObject? parentStackPanel = VisualTreeHelper.GetParent(currentMediaElement);
-                            if (parentStackPanel != null)
-                            {
-                                Slider? positionSlider = this.FindChild<Slider>(parentStackPanel, "PositionSlider");
-                                TextBlock? currentTimeText = this.FindChild<TextBlock>(parentStackPanel, "CurrentTimeText");
-
-                                if (positionSlider != null)
-                                {
-                                    // Prevent infinite loop by checking if the slider value is already close to the media position
-                                    if (Math.Abs(positionSlider.Value - currentMediaElement.Position.TotalSeconds) > 0.5)
-                                    {
-                                        positionSlider.Value = currentMediaElement.Position.TotalSeconds;
-                                    }
-                                }
-                                if (currentTimeText != null)
-                                {
-                                    currentTimeText.Text = currentMediaElement.Position.ToString(@"mm\:ss");
-                                }
-                            }
-                        }
-                        break; // Only one video should be expanded and playing at a time
-                    }
-                }
-            }
-        }
-        */
-
         // Playback control button clicks
         private void PlayButton_Click(object sender, RoutedEventArgs e)
         {
@@ -450,7 +411,6 @@ namespace DUPSS.WPF.Views
             if (lesson?.AssociatedMediaElement != null)
             {
                 lesson.AssociatedMediaElement.Play();
-                // Removed _mediaTimer.Start()
             }
         }
 
@@ -461,49 +421,8 @@ namespace DUPSS.WPF.Views
             if (lesson?.AssociatedMediaElement != null)
             {
                 lesson.AssociatedMediaElement.Pause();
-                // Removed _mediaTimer.Stop()
             }
         }
-
-        // Removed StopButton_Click
-        /*
-        private void StopButton_Click(object sender, RoutedEventArgs e)
-        {
-            Button? button = sender as Button;
-            CourseLesson? lesson = button?.DataContext as CourseLesson;
-            if (lesson?.AssociatedMediaElement != null)
-            {
-                lesson.AssociatedMediaElement.Stop();
-                _mediaTimer.Stop();
-                // Reset controls for this specific media element
-                DependencyObject? parentStackPanel = VisualTreeHelper.GetParent(lesson.AssociatedMediaElement);
-                if (parentStackPanel != null)
-                {
-                    Slider? positionSlider = this.FindChild<Slider>(parentStackPanel, "PositionSlider");
-                    TextBlock? currentTimeText = this.FindChild<TextBlock>(parentStackPanel, "CurrentTimeText");
-                    if (positionSlider != null) positionSlider.Value = 0;
-                    if (currentTimeText != null) currentTimeText.Text = "00:00";
-                }
-            }
-        }
-        */
-
-        // Removed PositionSlider_ValueChanged
-        /*
-        private void PositionSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            Slider? slider = sender as Slider;
-            CourseLesson? lesson = slider?.DataContext as CourseLesson;
-            if (lesson?.AssociatedMediaElement != null && lesson.AssociatedMediaElement.NaturalDuration.HasTimeSpan)
-            {
-                // Only seek if the change was user-initiated (not by the timer)
-                if (slider != null && !slider.IsMouseOver && Math.Abs(slider.Value - lesson.AssociatedMediaElement.Position.TotalSeconds) > 0.5)
-                {
-                    lesson.AssociatedMediaElement.Position = TimeSpan.FromSeconds(slider.Value);
-                }
-            }
-        }
-        */
 
         // Volume slider changed
         private void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -541,6 +460,9 @@ namespace DUPSS.WPF.Views
 
         private async Task CompleteCourse()
         {
+            // This method does NOT include any navigation logic.
+            // It focuses solely on updating the course completion status.
+
             if (CurrentEnrollment == null || string.IsNullOrEmpty(_currentLoggedInUserId))
             {
                 await ShowCompletionMessage("Error", "You are not enrolled in this course or not logged in.", "alert-danger");
@@ -610,16 +532,32 @@ namespace DUPSS.WPF.Views
 
         private void GoBackToCourses()
         {
-            if (NavigationService.CanGoBack)
+            Debug.WriteLine("Attempting to navigate back to Courses page.");
+
+            // Access the NavigationService directly from the Page
+            NavigationService? navService = NavigationService;
+
+            if (navService != null)
             {
-                NavigationService.GoBack();
+                if (navService.CanGoBack)
+                {
+                    navService.GoBack();
+                    Debug.WriteLine("NavigationService.GoBack() called.");
+                }
+                else
+                {
+                    // Fallback if no history, navigate to a default courses page
+                    // Ensure this URI is correct for your Courses page
+                    navService.Navigate(new Uri("/Views/Courses.xaml", UriKind.Relative));
+                    Debug.WriteLine("NavigationService.Navigate to /Views/Courses.xaml called.");
+                }
             }
             else
             {
-                // Fallback if no history, navigate to a default courses page
-                NavigationService.Navigate(new Uri("/Views/Courses.xaml", UriKind.Relative));
+                Debug.WriteLine("NavigationService is null. The page might not be hosted in a Frame.");
+                // Optionally, show a message to the user or handle this case differently
+                // MessageBox.Show("Navigation is not available. Please ensure the page is hosted in a Frame.", "Navigation Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-            Debug.WriteLine("Navigating back to Courses page.");
         }
 
         // Helper method to find a child control by name within a DependencyObject's visual tree

@@ -16,7 +16,7 @@
         <local:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
         <local:BooleanToChevronConverter x:Key="BooleanToChevronConverter"/>
 
-        <!-- NEW: Add the StringToUriConverter -->
+        <!-- StringToUriConverter is kept as it's used for MediaElement -->
         <local:StringToUriConverter x:Key="StringToUriConverter" />
 
         <!-- Cubic Bezier Easing Function for animations (MOVED HERE) -->
@@ -128,18 +128,16 @@
             <Setter Property="BorderBrush" Value="#eee"/>
         </Style>
 
+        <!-- Removed CourseSidebarImageStyle -->
+        <!--
         <Style x:Key="CourseSidebarImageStyle" TargetType="Image">
             <Setter Property="Width" Value="80"/>
             <Setter Property="Height" Value="80"/>
             <Setter Property="Stretch" Value="UniformToFill"/>
             <Setter Property="Margin" Value="0 0 0 15"/>
             <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality"/>
-            <Setter Property="Clip">
-                <Setter.Value>
-                    <EllipseGeometry Center="40,40" RadiusX="40" RadiusY="40"/>
-                </Setter.Value>
-            </Setter>
         </Style>
+        -->
 
         <Style x:Key="SidebarCourseTitleStyle" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
             <Setter Property="FontSize" Value="25.6"/>
@@ -530,7 +528,7 @@
                                                    Visibility="{Binding Content, Converter={StaticResource StringToVisibilityConverter}}"
                                                    TextWrapping="Wrap" Margin="0 0 0 15"/>
 
-                                        <!-- MODIFIED: Replaced WebView2 with MediaElement for local video playback -->
+                                        <!-- MediaElement for local video playback -->
                                         <MediaElement x:Name="LessonMediaElement"
                                                       Source="{Binding VideoUrl, Converter={StaticResource StringToUriConverter}}"
                                                       Visibility="{Binding VideoUrl, Converter={StaticResource StringToVisibilityConverter}}"
@@ -545,18 +543,18 @@
                                                       Loaded="LessonMediaElement_Loaded"
                                                       Unloaded="LessonMediaElement_Unloaded"/>
 
-                                            <!-- Video Controls (visible only when MediaElement is visible) -->
-                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 10 0 0"
+                                        <!-- Video Controls (visible only when MediaElement is visible) -->
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 10 0 0"
                                                     Visibility="{Binding ElementName=LessonMediaElement, Path=Visibility}">
-                                                <Button Content="Play" Margin="5" Padding="10 5" Click="PlayButton_Click"/>
-                                                <Button Content="Pause" Margin="5" Padding="10 5" Click="PauseButton_Click"/>
-                                                <!-- Removed Stop Button -->
-                                                <!-- Removed Position Slider and Time TextBlocks -->
-                                                <TextBlock Text="Vol:" Margin="15 0 5 0" VerticalAlignment="Center"/>
-                                                <Slider x:Name="VolumeSlider" Width="100" Margin="0"
+                                            <Button Content="Play" Margin="5" Padding="10 5" Click="PlayButton_Click"/>
+                                            <Button Content="Pause" Margin="5" Padding="10 5" Click="PauseButton_Click"/>
+                                            <!-- Removed Stop Button -->
+                                            <!-- Removed Position Slider and Time TextBlocks -->
+                                            <TextBlock Text="Vol:" Margin="15 0 5 0" VerticalAlignment="Center"/>
+                                            <Slider x:Name="VolumeSlider" Width="100" Margin="0"
                                                     Minimum="0" Maximum="1" Value="0.5"
                                                     ValueChanged="VolumeSlider_ValueChanged"/>
-                                            </StackPanel>
+                                        </StackPanel>
 
                                     </StackPanel>
                                 </Grid>
@@ -782,15 +780,7 @@
                         <!-- MODIFIED: CourseBrandingStyle applied to a Border, which contains a StackPanel for content -->
                         <Border Style="{StaticResource CourseBrandingStyle}">
                             <StackPanel>
-                                <!-- Image is now wrapped in a Border to apply CornerRadius -->
-                                <Border Width="80" Height="80" CornerRadius="40" Margin="0 0 0 15"
-                                        BorderThickness="3" BorderBrush="{StaticResource PrimaryBlue}"
-                                        Background="{StaticResource White}">
-                                    <Border.Effect>
-                                        <DropShadowEffect ShadowDepth="0" Color="#000000" Opacity="0.1" BlurRadius="8"/>
-                                    </Border.Effect>
-                                    <Image Source="{Binding Course.ImageUrl}" Style="{StaticResource CourseSidebarImageStyle}"/>
-                                </Border>
+                                <!-- Removed Image and its wrapping Border -->
                                 <TextBlock Text="{Binding Course.CourseName}" Style="{StaticResource SidebarCourseTitleStyle}"/>
                                 <TextBlock Text="{Binding Course.Topic.TopicName}" Style="{StaticResource SidebarCourseTopicStyle}"/>
                             </StackPanel>
@@ -946,7 +936,7 @@
                                                                                            Visibility="{Binding Content, Converter={StaticResource StringToVisibilityConverter}}"
                                                                                            TextWrapping="Wrap" Margin="0 0 0 15"/>
 
-                                                                                <!-- MODIFIED: Replaced WebView2 with MediaElement for local video playback -->
+                                                                                <!-- MediaElement for local video playback -->
                                                                                 <MediaElement x:Name="LessonMediaElement"
                                                                                               Source="{Binding VideoUrl, Converter={StaticResource StringToUriConverter}}"
                                                                                               Visibility="{Binding VideoUrl, Converter={StaticResource StringToVisibilityConverter}}"
