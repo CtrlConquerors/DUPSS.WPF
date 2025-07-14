@@ -1,18 +1,12 @@
-﻿
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Navigation;
 using DUPSS.ApiClients;
 using DUPSS.DTO.DTOs;
 
 namespace DUPSS.WPF.Views
 {
-    public partial class AssessmentPage : Page, INotifyPropertyChanged
+    public partial class Assessment : INotifyPropertyChanged
     {
         private readonly AssessmentApiService _assessmentApiService;
         private List<AssessmentDTO> _assessments;
@@ -21,10 +15,10 @@ namespace DUPSS.WPF.Views
         private const int DefaultAssessmentDisplayLimit = 6;
         private bool _isLoaded;
 
-        public AssessmentPage(AssessmentApiService assessmentApiService)
+        public Assessment()
         {
             InitializeComponent();
-            _assessmentApiService = assessmentApiService ?? throw new ArgumentNullException(nameof(assessmentApiService));
+            _assessmentApiService = new AssessmentApiService(App.HttpClient);
             _assessments = new List<AssessmentDTO>();
             _isLoaded = false;
             DataContext = this;
@@ -46,8 +40,10 @@ namespace DUPSS.WPF.Views
             }
         }
 
-        public IEnumerable<AssessmentDTO> DisplayAssessments =>
-            _showAllAssessments ? Assessments : Assessments.Take(DefaultAssessmentDisplayLimit);
+        public IEnumerable<AssessmentDTO> DisplayAssessments
+        {
+            get => _showAllAssessments ? Assessments : Assessments.Take(DefaultAssessmentDisplayLimit);
+        }
 
         public bool HasError
         {
@@ -140,20 +136,18 @@ namespace DUPSS.WPF.Views
 
         private void StartAssessment_Click(object sender, RoutedEventArgs e)
         {
-            if ((sender as Button)?.DataContext is AssessmentDTO assessment)
-            {
-                Console.WriteLine($"[StartAssessment] Navigating to AssessmentId={assessment.AssessmentId}");
-                NavigationService?.Navigate(new Uri($"/Views/AssessmentTakePage.xaml?assessmentId={assessment.AssessmentId}", UriKind.Relative));
-            }
+            if ((sender as Button)?.DataContext is not AssessmentDTO assessment)
+                return;
+            Console.WriteLine($"[StartAssessment] Navigating to AssessmentId={assessment.AssessmentId}");
+            NavigationService?.Navigate(new Uri($"/Views/AssessmentTake.xaml?assessmentId={assessment.AssessmentId}", UriKind.Relative));
         }
 
         private void ViewAssessmentInfo_Click(object sender, RoutedEventArgs e)
         {
-            if ((sender as Button)?.DataContext is AssessmentDTO assessment)
-            {
-                Console.WriteLine($"[ViewAssessmentInfo] Navigating to AssessmentId={assessment.AssessmentId}");
-                NavigationService?.Navigate(new Uri($"/Views/AssessmentInfoPage.xaml?assessmentId={assessment.AssessmentId}", UriKind.Relative));
-            }
+            if ((sender as Button)?.DataContext is not AssessmentDTO assessment)
+                return;
+            Console.WriteLine($"[ViewAssessmentInfo] Navigating to AssessmentId={assessment.AssessmentId}");
+            NavigationService?.Navigate(new Uri($"/Views/AssessmentInfo.xaml?assessmentId={assessment.AssessmentId}", UriKind.Relative));
         }
 
         public static string GetDefaultDescription(string assessmentType)
@@ -186,8 +180,8 @@ namespace DUPSS.WPF.Views
             };
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected void OnPropertyChanged(string propertyName)
+        public event PropertyChangedEventHandler? PropertyChanged;
+        private void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
@@ -198,7 +192,7 @@ namespace DUPSS.WPF.Views
         public static string DescriptionDisplay(this AssessmentDTO assessment)
         {
             if (string.IsNullOrEmpty(assessment.Description))
-                return AssessmentPage.GetDefaultDescription(assessment.AssessmentType);
+                return Assessment.GetDefaultDescription(assessment.AssessmentType);
             return assessment.Description.Length > 150
                 ? assessment.Description.Substring(0, 150) + "..."
                 : assessment.Description;
@@ -206,12 +200,12 @@ namespace DUPSS.WPF.Views
 
         public static string LanguageDisplay(this AssessmentDTO assessment)
         {
-            return AssessmentPage.GetLanguageDisplay(assessment.Language);
+            return Assessment.GetLanguageDisplay(assessment.Language);
         }
 
         public static string EstimatedDuration(this AssessmentDTO assessment)
         {
-            return AssessmentPage.GetEstimatedDuration(assessment.AssessmentType);
+            return Assessment.GetEstimatedDuration(assessment.AssessmentType);
         }
     }
 }

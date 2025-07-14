@@ -161,7 +161,7 @@
 
                     <Button Content="Campaign" Style="{StaticResource NavButtonStyle}" Tag="Campaign" Click="Navigate_Click"/>
                     <Button Content="Courses" Style="{StaticResource NavButtonStyle}" Tag="Courses" Click="Navigate_Click"/>
-                    <Button Content="Assessments" Style="{StaticResource NavButtonStyle}" Tag="Assessments" Click="Navigate_Click"/>
+                    <Button Content="Assessments" Style="{StaticResource NavButtonStyle}" Tag="Assessment" Click="Navigate_Click"/>
                     <Button Content="Blog" Style="{StaticResource NavButtonStyle}" Tag="Blog" Click="Navigate_Click"/>
                     
                 </StackPanel>

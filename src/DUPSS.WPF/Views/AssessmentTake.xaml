@@ -1,0 +1,242 @@
+﻿<Page x:Class="DUPSS.WPF.Views.AssessmentTake"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:DUPSS.WPF.Views"
+      mc:Ignorable="d" 
+      Title="Take Assessment Page"
+      Background="#F0F4FF">
+
+    <Grid>
+        <!-- Exit Confirmation Modal -->
+        <Border Visibility="{Binding ShowExitConfirmation, Converter={StaticResource BooleanToVisibilityConverter}}"
+                Background="#80000000" Panel.ZIndex="100">
+            <Border Background="White" Width="400" Height="200" VerticalAlignment="Center" HorizontalAlignment="Center" CornerRadius="10">
+                <StackPanel Margin="20">
+                    <TextBlock Text="Exit Assessment?" FontSize="18" FontWeight="Bold" Foreground="#3554d1"/>
+                    <TextBlock Text="Are you sure you want to exit this assessment? Your progress will be lost."
+                               TextWrapping="Wrap" Margin="0,10,0,20"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Button Content="Cancel" Width="100" Click="CancelExit_Click"
+                                Background="#e5e7eb" Foreground="#3554d1" Padding="10,5" Margin="0,0,10,0"/>
+                        <Button Content="Exit" Width="100" Click="ExitAssessment_Click"
+                                Background="#ff4444" Foreground="White" Padding="10,5"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Border>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <Border Padding="20" Background="White" Margin="20" MaxWidth="850" HorizontalAlignment="Center" CornerRadius="10">
+                <StackPanel>
+                    <!-- Loading State -->
+                    <ContentControl x:Name="LoadingContent">
+                        <ContentControl.Style>
+                            <Style TargetType="ContentControl">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Setter Property="Content">
+                                    <Setter.Value>
+                                        <StackPanel HorizontalAlignment="Center">
+                                            <TextBlock Text="Loading assessment..." FontSize="16" Margin="0,0,0,10"/>
+                                            <ProgressBar IsIndeterminate="True" Width="100" Height="10"/>
+                                        </StackPanel>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasError}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Questions.Count}" Value="0">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ShowResults}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding IsLoaded}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ContentControl.Style>
+                    </ContentControl>
+
+                    <!-- Error State -->
+                    <ContentControl x:Name="ErrorContent">
+                        <ContentControl.Style>
+                            <Style TargetType="ContentControl">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Setter Property="Content">
+                                    <Setter.Value>
+                                        <StackPanel HorizontalAlignment="Center">
+                                            <TextBlock Text="{Binding ErrorMessage}" FontSize="16" Foreground="Red" TextWrapping="Wrap" Margin="0,0,0,10"/>
+                                            <Button Content="Retry" Width="100" Click="RetryLoadAssessment_Click"
+                                                    Background="#3554d1" Foreground="White" Padding="10,5" Margin="0,0,10,0"/>
+                                            <Button Content="Back to Assessments" Width="150" Click="GoBackToAssessments_Click"
+                                                    Background="#e5e7eb" Foreground="#3554d1" Padding="10,5"/>
+                                        </StackPanel>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasError}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ContentControl.Style>
+                    </ContentControl>
+
+                    <!-- No Questions State -->
+                    <ContentControl x:Name="NoQuestionsContent">
+                        <ContentControl.Style>
+                            <Style TargetType="ContentControl">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Setter Property="Content">
+                                    <Setter.Value>
+                                        <StackPanel HorizontalAlignment="Center">
+                                            <TextBlock Text="Assessment Not Available" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+                                            <TextBlock Text="This assessment is currently not available or has no questions." FontSize="14" TextWrapping="Wrap" Margin="0,0,0,10"/>
+                                            <Button Content="Back to Assessments" Width="150" Click="GoBackToAssessments_Click"
+                                                    Background="#e5e7eb" Foreground="#3554d1" Padding="10,5"/>
+                                        </StackPanel>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Questions.Count}" Value="0">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding HasError}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ContentControl.Style>
+                    </ContentControl>
+
+                    <!-- Results State -->
+                    <ContentControl x:Name="ResultsContent">
+                        <ContentControl.Style>
+                            <Style TargetType="ContentControl">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Setter Property="Content">
+                                    <Setter.Value>
+                                        <StackPanel>
+                                            <StackPanel HorizontalAlignment="Center" Margin="0,0,0,20">
+                                                <TextBlock Text="✅ Assessment Complete" FontSize="24" FontWeight="Bold" Foreground="#3554d1"/>
+                                                <TextBlock Text="{Binding Assessment.AssessmentType, StringFormat='x Results'}" FontSize="20" Foreground="#3554d1" Margin="0,5,0,0"/>
+                                            </StackPanel>
+
+                                            <GroupBox Header="Results" Margin="0,10,0,0" FontWeight="Bold" Foreground="#3554d1">
+                                                <StackPanel Margin="10,5">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock Text="Total Score: " FontWeight="Bold" FontSize="16"/>
+                                                        <TextBlock Text="{Binding AssessmentResult.TotalScore}" FontSize="16"/>
+                                                    </StackPanel>
+                                                    <TextBlock Text="Recommendations" FontWeight="Bold" FontSize="16" Margin="0,10,0,5"/>
+                                                    <TextBlock Text="{Binding AssessmentResult.Recommendation}" TextWrapping="Wrap"/>
+                                                    <TextBlock Text="Score Details" FontWeight="Bold" FontSize="16" Margin="0,10,0,5" Visibility="{Binding AssessmentResult.ScoreDetails, Converter={StaticResource NullToVisibilityConverter}}"/>
+                                                    <ItemsControl ItemsSource="{Binding AssessmentResult.ScoreDetailsList}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="0,2"/>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                    <TextBlock Text="{Binding AssessmentResult.CompletedOn, StringFormat='Completed on: {0:MMMM dd, yyyy}'}" FontSize="14" Margin="0,10,0,0"/>
+                                                </StackPanel>
+                                            </GroupBox>
+
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
+                                                <Button Content="Take Another Assessment" Width="150" Click="TakeAnotherAssessment_Click"
+                                                        Background="#3554d1" Foreground="White" Padding="10,5" Margin="0,0,10,0"/>
+                                                <Button Content="Back to Assessments" Width="150" Click="GoBackToAssessments_Click"
+                                                        Background="#e5e7eb" Foreground="#3554d1" Padding="10,5"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ShowResults}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding HasError}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ContentControl.Style>
+                    </ContentControl>
+
+                    <!-- Assessment Taking State -->
+                    <ContentControl x:Name="AssessmentTakeContent">
+                        <ContentControl.Style>
+                            <Style TargetType="ContentControl">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Setter Property="Content">
+                                    <Setter.Value>
+                                        <StackPanel>
+                                            <!-- Header -->
+                                            <StackPanel Margin="0,0,0,20">
+                                                <TextBlock Text="{Binding Assessment.AssessmentType}" FontSize="24" FontWeight="Bold" Foreground="#3554d1"/>
+                                                <TextBlock Text="{Binding Assessment.Description}" TextWrapping="Wrap" FontSize="14" Margin="0,5,0,0"/>
+                                                <TextBlock Text="{Binding CurrentSubstance, StringFormat='Current Section: {{0}}'}" FontSize="14" Margin="0,5,0,0"
+                                                           Visibility="{Binding IsAssist, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                            </StackPanel>
+
+                                            <!-- Progress -->
+                                            <StackPanel Margin="0,0,0,20">
+                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                    <TextBlock Text="{Binding CurrentQuestionIndex, Converter={StaticResource IndexToOneBasedConverter}, StringFormat='Question {0} of {1}'}" FontSize="14"/>
+                                                    <TextBlock Text="{Binding ProgressPercentage, StringFormat=' ({0:F0}%)'}" FontSize="14" Margin="10,0,0,0"/>
+                                                </StackPanel>
+                                                <ProgressBar Value="{Binding ProgressPercentage}" Maximum="100" Height="10" Margin="0,5,0,0"/>
+                                            </StackPanel>
+
+                                            <!-- Question -->
+                                            <Border Background="#f5f8ff" Padding="15" Margin="0,0,0,20" CornerRadius="8" BorderBrush="#3554d122" BorderThickness="1">
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding CurrentQuestionIndex, Converter={StaticResource IndexToOneBasedConverter}, StringFormat='Question {0}'}" FontSize="16" FontWeight="Bold"/>
+                                                    <TextBlock Text="{Binding CurrentQuestion.Question}" TextWrapping="Wrap" FontSize="14" Margin="0,5,0,10"/>
+                                                    <ItemsControl ItemsSource="{Binding CurrentAnswers}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <RadioButton GroupName="Answers" Content="{Binding Answer}"
+                                                                             IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                                             Margin="0,5" Command="{Binding DataContext.SelectAnswerCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                                             CommandParameter="{Binding AnswerId}"/>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </StackPanel>
+                                            </Border>
+
+                                            <!-- Actions -->
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                <Button Content="Previous" Width="100" Click="PreviousQuestion_Click"
+                                                        IsEnabled="{Binding CanGoPrevious}"
+                                                        Background="#e5e7eb" Foreground="#3554d1" Padding="10,5" Margin="0,0,10,0"/>
+                                                <Button Content="{Binding NextButtonText}" Width="150" Click="NextOrSubmit_Click"
+                                                        IsEnabled="{Binding IsAnswerSelected}"
+                                                        Background="#3554d1" Foreground="White" Padding="10,5" Margin="0,0,10,0"/>
+                                                <Button Content="Exit Assessment" Width="100" Click="ConfirmExit_Click"
+                                                        Background="#ff4444" Foreground="White" Padding="10,5"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsLoaded}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding HasError}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ContentControl.Style>
+                    </ContentControl>
+                </StackPanel>
+            </Border>
+        </ScrollViewer>
+    </Grid>
+</Page>
